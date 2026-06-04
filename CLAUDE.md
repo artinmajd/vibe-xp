@@ -174,6 +174,14 @@ When the roadmap or this file doesn't cover a decision:
 2. **Default to consistency** with existing patterns in the codebase
 3. **If still unclear, ask** — don't guess on architecture decisions
 
+## Instructor collaboration
+
+Some steps require actions that only the instructor can take (e.g. creating a Supabase project, configuring Auth settings, copying API keys, setting up storage buckets). When a phase requires one of these:
+
+- **Stop and ask.** Do not skip or guess. Prompt the instructor with exactly what they need to do, step by step.
+- **Wait for confirmation** before continuing to the next step.
+- **Be specific:** tell them where to click, what to paste, and what to copy back. Don't assume familiarity with the tool.
+
 ## Working rhythm
 
 - **At session start:** read `CLAUDE.md`, then `ROADMAP.md`, then check which phase is current by looking at the most recent commits.
