@@ -1,0 +1,52 @@
+import { createServerClient } from "@/lib/supabase-server";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+
+export async function POST(request: Request) {
+  const cookieStore = await cookies();
+  if (cookieStore.get("instructor_auth")?.value !== process.env.INSTRUCTOR_PASSCODE) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
+  const { submission_id, action, xp_override, note } = await request.json();
+
+  if (!submission_id || !["approve", "reject"].includes(action)) {
+    return NextResponse.json({ error: "Missing or invalid fields." }, { status: 400 });
+  }
+
+  const supabase = createServerClient();
+
+  const { data: submission } = await supabase
+    .from("submissions")
+    .select("id, team_id, achievement_id, achievements(xp)")
+    .eq("id", submission_id)
+    .single();
+
+  if (!submission) {
+    return NextResponse.json({ error: "Submission not found." }, { status: 404 });
+  }
+
+  const defaultXp = (submission.achievements as unknown as { xp: number } | null)?.xp ?? 0;
+  const xpAwarded = action === "approve" ? (xp_override ?? defaultXp) : 0;
+  const status = action === "approve" ? "approved" : "rejected";
+
+  const { error: updateError } = await supabase
+    .from("submissions")
+    .update({ status, xp_awarded: xpAwarded, reviewed_at: new Date().toISOString() })
+    .eq("id", submission_id);
+
+  if (updateError) {
+    return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
+
+  await supabase.from("instructor_actions").insert({
+    instructor_email: "instructor",
+    submission_id,
+    team_id: submission.team_id,
+    action,
+    xp_delta: xpAwarded,
+    note: note ?? null,
+  });
+
+  return NextResponse.json({ ok: true, status, xp_awarded: xpAwarded });
+}
