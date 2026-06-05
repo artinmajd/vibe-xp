@@ -36,45 +36,52 @@ body {
   animation: fade-up 0.35s ease-out both;
 }
 
-/* Floating blobs */
+/* Floating blobs — large sweeping paths across the viewport */
 @keyframes blob-1 {
-  0%,100% { transform: translate(0px,   0px)   scale(1);    }
-  20%     { transform: translate(70px, -90px)  scale(1.08); }
-  45%     { transform: translate(-50px, 70px)  scale(0.93); }
-  70%     { transform: translate(90px,  50px)  scale(1.05); }
+  0%   { transform: translate(0px,    0px);   }
+  20%  { transform: translate(45vw,  -20vh);  }
+  40%  { transform: translate(60vw,   35vh);  }
+  60%  { transform: translate(15vw,   55vh);  }
+  80%  { transform: translate(-20vw,  25vh);  }
+  100% { transform: translate(0px,    0px);   }
 }
 @keyframes blob-2 {
-  0%,100% { transform: translate(0px,    0px)  scale(1);    }
-  25%     { transform: translate(-80px,  60px) scale(1.06); }
-  55%     { transform: translate(50px,  -80px) scale(0.95); }
-  80%     { transform: translate(-60px, -40px) scale(1.03); }
+  0%   { transform: translate(0px,   0px);    }
+  25%  { transform: translate(-40vw, 30vh);   }
+  50%  { transform: translate(-55vw,-30vh);   }
+  75%  { transform: translate(20vw, -45vh);   }
+  100% { transform: translate(0px,   0px);    }
 }
 @keyframes blob-3 {
-  0%,100% { transform: translate(0px,  0px)   scale(1);    }
-  30%     { transform: translate(60px, 80px)  scale(0.92); }
-  60%     { transform: translate(-70px,-60px) scale(1.07); }
-  85%     { transform: translate(40px, -30px) scale(1.02); }
+  0%   { transform: translate(0px,   0px);    }
+  20%  { transform: translate(-30vw, 40vh);   }
+  45%  { transform: translate(40vw,  50vh);   }
+  70%  { transform: translate(50vw, -25vh);   }
+  100% { transform: translate(0px,   0px);    }
 }
 @keyframes blob-4 {
-  0%,100% { transform: translate(0px,   0px)  scale(1);    }
-  15%     { transform: translate(-90px,-50px) scale(1.04); }
-  50%     { transform: translate(70px,  90px) scale(0.94); }
-  75%     { transform: translate(-30px, 60px) scale(1.06); }
+  0%   { transform: translate(0px,   0px);    }
+  30%  { transform: translate(50vw,  30vh);   }
+  60%  { transform: translate(-35vw, 45vh);   }
+  100% { transform: translate(0px,   0px);    }
 }
 @keyframes blob-5 {
-  0%,100% { transform: translate(0px,  0px)  scale(1);    }
-  35%     { transform: translate(80px,-70px) scale(0.96); }
-  65%     { transform: translate(-60px,50px) scale(1.05); }
+  0%   { transform: translate(0px,   0px);    }
+  35%  { transform: translate(-50vw,-35vh);   }
+  70%  { transform: translate(30vw,  40vh);   }
+  100% { transform: translate(0px,   0px);    }
 }
 @keyframes blob-6 {
-  0%,100% { transform: translate(0px,   0px)  scale(1);    }
-  40%     { transform: translate(-70px,-80px) scale(1.07); }
-  70%     { transform: translate(50px,  70px) scale(0.95); }
+  0%   { transform: translate(0px,   0px);    }
+  25%  { transform: translate(40vw, -40vh);   }
+  55%  { transform: translate(-45vw,-20vh);   }
+  80%  { transform: translate(-20vw, 50vh);   }
+  100% { transform: translate(0px,   0px);    }
 }
 
-.blob-1 { animation: blob-1 10s ease-in-out infinite; }
-.blob-2 { animation: blob-2 13s ease-in-out infinite; }
-.blob-3 { animation: blob-3 15s ease-in-out infinite; }
-.blob-4 { animation: blob-4 11s ease-in-out infinite; }
+.blob-1 { animation: blob-1 12s ease-in-out infinite; }
+.blob-2 { animation: blob-2 15s ease-in-out infinite; }
+.blob-3 { animation: blob-3 18s ease-in-out infinite; }
+.blob-4 { animation: blob-4 13s ease-in-out infinite; }
 .blob-5 { animation: blob-5 16s ease-in-out infinite; }
-.blob-6 { animation: blob-6 12s ease-in-out infinite; }
+.blob-6 { animation: blob-6 14s ease-in-out infinite; }
