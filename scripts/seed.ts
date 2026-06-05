@@ -29,7 +29,7 @@ const sessions = [
 // ─── Achievements ─────────────────────────────────────────────────────────────
 
 const achievements = [
-  // Block 1 — Team formation (awarded automatically by Phase 6 logic)
+  // Block 1 — Team formation
   {
     slug: "team-names",
     session_number: 1,
@@ -37,8 +37,8 @@ const achievements = [
     title: "Named & Ready",
     description: "Your team has a name. You're official.",
     xp: 2,
-    proof_type: "instructor_flag",
-    proof_config: { description: "Auto-awarded when a team reaches 3 members." },
+    proof_type: "screenshot", // auto-awarded by join logic — no student form
+    proof_config: {},
     is_secret: false,
   },
   {
@@ -48,8 +48,8 @@ const achievements = [
     title: "App Idea Submitted",
     description: "Every team member shared what they'd build with AI.",
     xp: 2,
-    proof_type: "fields",
-    proof_config: { fields: ["Your app idea"] },
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "fields", fields: ["Your app idea"] },
     is_secret: false,
   },
 
@@ -61,8 +61,8 @@ const achievements = [
     title: "Letter Counter",
     description: "Built a letter-counting tool using AI.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -72,8 +72,8 @@ const achievements = [
     title: "Double Down",
     description: "Asked AI the same question twice and compared the answers.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -83,8 +83,8 @@ const achievements = [
     title: "Hallucination Hunter",
     description: "Caught AI making something up and proved it was wrong.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -94,8 +94,8 @@ const achievements = [
     title: "Fact Checker",
     description: "Verified an AI claim using a reliable source.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
 
@@ -107,8 +107,8 @@ const achievements = [
     title: "Contradiction Machine",
     description: "Got AI to contradict itself in the same conversation.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -118,8 +118,8 @@ const achievements = [
     title: "Context Loader",
     description: "Wrote a 200+ word context document that made AI responses noticeably better.",
     xp: 10,
-    proof_type: "text",
-    proof_config: { min_words: 200 },
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "text", min_words: 200 },
     is_secret: false,
   },
   {
@@ -129,8 +129,8 @@ const achievements = [
     title: "Context Upgrade",
     description: "Added 3 new details to your context document and saw the difference.",
     xp: 10,
-    proof_type: "fields",
-    proof_config: { fields: ["New detail 1", "New detail 2", "New detail 3"] },
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "fields", fields: ["New detail 1", "New detail 2", "New detail 3"] },
     is_secret: false,
   },
   {
@@ -140,8 +140,8 @@ const achievements = [
     title: "Follow-Up Investigator",
     description: "Used follow-up questions to dig deeper into an AI answer.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
 
@@ -153,8 +153,9 @@ const achievements = [
     title: "Cursor Ready",
     description: "Set up Cursor and got your coding environment ready.",
     xp: 10,
-    proof_type: "checklist",
+    proof_type: "instructor_flag",
     proof_config: {
+      form_type: "checklist",
       items: [
         "Cursor installed",
         "Signed in",
@@ -171,7 +172,7 @@ const achievements = [
     title: "Neighbor Assist",
     description: "Helped another team by sharing your team code with them.",
     xp: 5,
-    proof_type: "code_entry",
+    proof_type: "code_entry", // DB-validated — auto-submit makes sense
     proof_config: {},
     is_secret: false,
   },
@@ -184,8 +185,8 @@ const achievements = [
     title: "First File",
     description: "Created your first file in Cursor using AI.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -195,8 +196,8 @@ const achievements = [
     title: "Browser Launch",
     description: "Got your app running in a browser for the first time.",
     xp: 5,
-    proof_type: "url",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "url" },
     is_secret: false,
   },
   {
@@ -206,8 +207,8 @@ const achievements = [
     title: "Personalization",
     description: "Made your app your own — custom text, colors, or style.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
 
@@ -219,8 +220,8 @@ const achievements = [
     title: "Add Image",
     description: "Added an image to your app.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -230,8 +231,8 @@ const achievements = [
     title: "Add Button",
     description: "Added a clickable button to your app.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -241,8 +242,8 @@ const achievements = [
     title: "Add Hyperlink",
     description: "Added a working hyperlink to your app.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -252,8 +253,8 @@ const achievements = [
     title: "Add Animation",
     description: "Added an animation or transition to your app.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -263,8 +264,8 @@ const achievements = [
     title: "Custom Background",
     description: "Added a custom background color or image.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -274,8 +275,8 @@ const achievements = [
     title: "Second Page",
     description: "Added a second page to your app with navigation.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -285,8 +286,8 @@ const achievements = [
     title: "User Interaction",
     description: "Added something the user can interact with (input, form, etc.).",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -296,8 +297,8 @@ const achievements = [
     title: "Add Sound",
     description: "Added a sound or audio element to your app.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -307,8 +308,8 @@ const achievements = [
     title: "Fix a Broken Page",
     description: "Something broke and you fixed it using AI.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -318,8 +319,8 @@ const achievements = [
     title: "Undo a Failed Change",
     description: "Reverted a change that broke something and recovered cleanly.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -329,8 +330,8 @@ const achievements = [
     title: "10 Prompts",
     description: "Sent at least 10 prompts to build or improve your app.",
     xp: 5,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
@@ -340,8 +341,8 @@ const achievements = [
     title: "Image + Button + Animation Combo",
     description: "Combined an image, a button, and an animation in one app.",
     xp: 10,
-    proof_type: "screenshot",
-    proof_config: {},
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
 

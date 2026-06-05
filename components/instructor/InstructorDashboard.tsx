@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 type PendingSubmission = {
@@ -45,7 +45,13 @@ type Tab = "pending" | "teams" | "session" | "leaderboard";
 export default function InstructorDashboard({ pending, teams, sessions, activeSession }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("pending");
+
+  useEffect(() => {
+    const id = setInterval(() => router.refresh(), 5000);
+    return () => clearInterval(id);
+  }, [router]);
   const [busy, setBusy] = useState<string | null>(null); // id of submission/team being acted on
+  const [lightbox, setLightbox] = useState<string | null>(null);
   const [xpOverrides, setXpOverrides] = useState<Record<string, number>>({});
   const [grantAmounts, setGrantAmounts] = useState<Record<string, string>>({});
   const [grantReasons, setGrantReasons] = useState<Record<string, string>>({});
@@ -174,16 +180,22 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
                     </div>
 
                     {/* Proof data preview */}
-                    <div className="bg-zinc-800 rounded-lg p-3 mb-4 text-xs text-zinc-300 font-mono break-all">
+                    <div className="mb-4">
                       {s.screenshot_url && (
-                        <a href={s.screenshot_url} target="_blank" rel="noopener noreferrer"
-                          className="text-indigo-400 hover:underline block mb-1">
-                          View screenshot ↗
-                        </a>
+                        <img
+                          src={s.screenshot_url}
+                          alt="Submission screenshot"
+                          onClick={() => setLightbox(s.screenshot_url)}
+                          className="rounded-lg max-h-64 object-contain bg-zinc-800 w-full mb-2 cursor-zoom-in"
+                        />
                       )}
-                      {Object.entries(s.proof_data).map(([k, v]) => (
-                        <div key={k}><span className="text-zinc-500">{k}:</span> {String(v)}</div>
-                      ))}
+                      {Object.keys(s.proof_data).length > 0 && (
+                        <div className="bg-zinc-800 rounded-lg p-3 text-xs text-zinc-300 font-mono break-all">
+                          {Object.entries(s.proof_data).map(([k, v]) => (
+                            <div key={k}><span className="text-zinc-500">{k}:</span> {String(v)}</div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Actions */}
@@ -349,6 +361,20 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
         )}
 
       </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 cursor-zoom-out p-4"
+        >
+          <img
+            src={lightbox}
+            alt="Full screen screenshot"
+            className="max-w-full max-h-full rounded-lg object-contain"
+          />
+        </div>
+      )}
     </main>
   );
 }

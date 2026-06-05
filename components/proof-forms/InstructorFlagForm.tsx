@@ -2,13 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { redirectAfterSubmit } from "@/lib/submit-redirect";
 
-export default function UrlForm({ achievementSlug }: { achievementSlug: string }) {
+export default function InstructorFlagForm({
+  achievementSlug,
+  description,
+}: {
+  achievementSlug: string;
+  description?: string;
+}) {
   const router = useRouter();
-  const [url, setUrl] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -18,7 +22,7 @@ export default function UrlForm({ achievementSlug }: { achievementSlug: string }
     const res = await fetch("/api/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ achievement_slug: achievementSlug, proof_data: { url } }),
+      body: JSON.stringify({ achievement_slug: achievementSlug, proof_data: {} }),
     });
     const body = await res.json();
 
@@ -28,33 +32,24 @@ export default function UrlForm({ achievementSlug }: { achievementSlug: string }
       return;
     }
 
-    if (body.status === "pending") {
-      router.refresh();
-    } else {
-      redirectAfterSubmit(router, body.newly_unlocked ?? []);
-    }
+    router.refresh();
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <label className="text-sm text-zinc-300">URL</label>
-        <input
-          type="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://..."
-          required
-          className="bg-zinc-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-      </div>
+      {description && (
+        <p className="text-sm text-zinc-400">{description}</p>
+      )}
+      <p className="text-sm text-zinc-500">
+        Tap the button below when you're ready — your instructor will review and award your XP.
+      </p>
       {error && <p className="text-red-400 text-sm">{error}</p>}
       <button
         type="submit"
         disabled={loading}
         className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-lg px-4 py-3 text-sm transition-colors"
       >
-        {loading ? "Submitting..." : "Submit"}
+        {loading ? "Submitting..." : "I'm ready — flag my instructor ✋"}
       </button>
     </form>
   );

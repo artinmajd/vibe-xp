@@ -41,7 +41,11 @@ export default function ScreenshotForm({ achievementSlug }: { achievementSlug: s
       return;
     }
 
-    redirectAfterSubmit(router, submitBody.newly_unlocked ?? []);
+    if (submitBody.status === "pending") {
+      router.refresh();
+    } else {
+      redirectAfterSubmit(router, submitBody.newly_unlocked ?? []);
+    }
   }
 
   return (

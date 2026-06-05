@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     .eq("achievement_id", achievement.id)
     .maybeSingle();
 
-  if (existing) {
+  if (existing && existing.status !== "rejected") {
     return NextResponse.json(
       { error: "Already done — your team already submitted this one.", already_done: true },
       { status: 409 }
@@ -86,16 +86,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: validationResult.reason }, { status: 422 });
   }
 
-  // Insert submission
-  const { error: insertError } = await supabase.from("submissions").insert({
-    team_id: teamId,
-    student_id: user.id,
-    achievement_id: achievement.id,
-    proof_data: proof_data ?? {},
-    screenshot_url: screenshot_url ?? null,
-    status,
-    xp_awarded: xpAwarded,
-  });
+  // Insert or update (if resubmitting after rejection)
+  const { error: insertError } = existing
+    ? await supabase.from("submissions").update({
+        student_id: user.id,
+        proof_data: proof_data ?? {},
+        screenshot_url: screenshot_url ?? null,
+        status,
+        xp_awarded: xpAwarded,
+        reviewed_at: null,
+      }).eq("id", existing.id)
+    : await supabase.from("submissions").insert({
+        team_id: teamId,
+        student_id: user.id,
+        achievement_id: achievement.id,
+        proof_data: proof_data ?? {},
+        screenshot_url: screenshot_url ?? null,
+        status,
+        xp_awarded: xpAwarded,
+      });
 
   if (insertError) {
     if (insertError.code === "23505") {
@@ -107,8 +116,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
 
-  // Check for newly unlocked secret achievements
+  // Check for newly unlocked secret achievements for the submitting team
   const newlyUnlocked = await checkSecretAchievements(teamId, supabase);
+
+  // For neighbor-assist, also check the helped team immediately so collaborator
+  // fires for them without waiting for their next submission
+  if (achievement_slug === "neighbor-assist" && status === "auto_approved") {
+    const helpedCode = (proof_data ?? {}).code as string | undefined;
+    if (helpedCode) {
+      const { data: helpedTeam } = await supabase
+        .from("teams")
+        .select("id")
+        .eq("code", helpedCode)
+        .maybeSingle();
+      if (helpedTeam) {
+        await checkSecretAchievements(helpedTeam.id, supabase);
+      }
+    }
+  }
 
   return NextResponse.json({
     ok: true,

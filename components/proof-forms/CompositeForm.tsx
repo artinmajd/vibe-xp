@@ -62,7 +62,11 @@ export default function CompositeForm({
       return;
     }
 
-    redirectAfterSubmit(router, body.newly_unlocked ?? []);
+    if (body.status === "pending") {
+      router.refresh();
+    } else {
+      redirectAfterSubmit(router, body.newly_unlocked ?? []);
+    }
   }
 
   const allChecked = (items ?? []).every((item) => checked.includes(item));

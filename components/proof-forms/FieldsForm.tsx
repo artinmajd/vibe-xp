@@ -38,7 +38,11 @@ export default function FieldsForm({
       return;
     }
 
-    redirectAfterSubmit(router, body.newly_unlocked ?? []);
+    if (body.status === "pending") {
+      router.refresh();
+    } else {
+      redirectAfterSubmit(router, body.newly_unlocked ?? []);
+    }
   }
 
   return (

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
 import SecretUnlockedToast from "@/components/SecretUnlockedToast";
+import PendingPoller from "@/components/PendingPoller";
 
 export default async function DashboardPage() {
   const user = await requireAuth();
@@ -67,6 +68,8 @@ export default async function DashboardPage() {
     (submissions ?? []).map((s) => [s.achievement_id, s])
   );
 
+  const hasPending = (submissions ?? []).some((s) => s.status === "pending");
+
   // Earned secret achievements
   const { data: secretSubmissions } = await supabase
     .from("submissions")
@@ -94,6 +97,7 @@ export default async function DashboardPage() {
       <Suspense>
         <SecretUnlockedToast />
       </Suspense>
+      {hasPending && <PendingPoller />}
       <div className="max-w-2xl mx-auto flex flex-col gap-8">
 
         {/* Team header */}
