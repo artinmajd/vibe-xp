@@ -9,6 +9,7 @@ import {
   validateFields,
   validateCodeEntry,
   validateComposite,
+  validateQuiz,
 } from "@/lib/validators";
 
 export async function runValidator(
@@ -35,6 +36,8 @@ export async function runValidator(
       return validateCodeEntry(proofData, teamId, supabase);
     case "composite":
       return validateComposite(proofData, screenshotUrl, config);
+    case "quiz":
+      return validateQuiz(proofData, config);
     case "instructor_flag":
       // Always valid — lands in pending queue for instructor review
       return { valid: true };

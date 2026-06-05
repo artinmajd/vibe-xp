@@ -3,6 +3,7 @@ import { createAuthClient } from "@/lib/supabase-auth";
 import { runValidator } from "@/lib/dispatch-validator";
 import { checkSecretAchievements } from "@/lib/check-secrets";
 import { Achievement } from "@/lib/types";
+import { calcTotalQuizXP, QuizQuestion, QuizAnswer } from "@/lib/quiz-xp";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -72,6 +73,7 @@ export async function POST(request: Request) {
 
   // Determine status and XP
   const isInstructorFlag = achievement.proof_type === "instructor_flag";
+  const isQuiz = achievement.proof_type === "quiz";
   let status: string;
   let xpAwarded: number;
 
@@ -80,9 +82,14 @@ export async function POST(request: Request) {
     xpAwarded = 0;
   } else if (validationResult.valid) {
     status = "auto_approved";
-    xpAwarded = achievement.xp;
+    if (isQuiz) {
+      const config = achievement.proof_config as { questions: QuizQuestion[] };
+      const answers = (proof_data?.answers ?? []) as QuizAnswer[];
+      xpAwarded = calcTotalQuizXP(config.questions ?? [], answers);
+    } else {
+      xpAwarded = achievement.xp;
+    }
   } else {
-    // Validation failed — return an error so the user can fix their input
     return NextResponse.json({ error: validationResult.reason }, { status: 422 });
   }
 

@@ -391,6 +391,39 @@ const achievements = [
     proof_config: { description: "Auto-awarded when all 3 team members have at least one approved submission." },
     is_secret: true,
   },
+  // Quiz sample
+  {
+    slug: "ai-quiz",
+    session_number: 1,
+    block_number: 1,
+    title: "AI Knowledge Check",
+    description: "Quick quiz on how AI works. Answer fast for max XP.",
+    xp: 15,
+    proof_type: "quiz",
+    proof_config: {
+      questions: [
+        {
+          question: "What does AI stand for?",
+          options: ["Automatic Internet", "Artificial Intelligence", "Advanced Input", "Animated Interaction"],
+          correct_index: 1,
+          xp: 5,
+        },
+        {
+          question: "Which of these is a popular AI chat tool?",
+          options: ["Minecraft", "ChatGPT", "Google Maps", "Spotify"],
+          correct_index: 1,
+          xp: 5,
+        },
+        {
+          question: "What do you call the instructions you give to an AI?",
+          options: ["A query", "A command", "A prompt", "A request"],
+          correct_index: 2,
+          xp: 5,
+        },
+      ],
+    },
+    is_secret: false,
+  },
 ];
 
 // ─── Main ─────────────────────────────────────────────────────────────────────

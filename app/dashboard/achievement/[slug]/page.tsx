@@ -9,7 +9,9 @@ import ChecklistForm from "@/components/proof-forms/ChecklistForm";
 import FieldsForm from "@/components/proof-forms/FieldsForm";
 import CodeEntryForm from "@/components/proof-forms/CodeEntryForm";
 import CompositeForm from "@/components/proof-forms/CompositeForm";
+import QuizForm from "@/components/proof-forms/QuizForm";
 import PendingPoller from "@/components/PendingPoller";
+import { QuizQuestion } from "@/lib/quiz-xp";
 
 export default async function AchievementPage({
   params,
@@ -79,6 +81,13 @@ export default async function AchievementPage({
             achievementSlug={slug}
             require={(config.require as string[]) ?? []}
             items={(config.items as string[]) ?? []}
+          />
+        );
+      case "quiz":
+        return (
+          <QuizForm
+            achievementSlug={slug}
+            questions={(config.questions as QuizQuestion[]) ?? []}
           />
         );
       case "instructor_flag": {

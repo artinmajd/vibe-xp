@@ -1,4 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { QuizQuestion, QuizAnswer } from "@/lib/quiz-xp";
 
 export type ValidationResult = {
   valid: boolean;
@@ -81,6 +82,23 @@ export async function validateCodeEntry(
   if (!team) return { valid: false, reason: "That code doesn't match any team." };
   if (team.id === ownTeamId) return { valid: false, reason: "That's your own team's code." };
 
+  return { valid: true };
+}
+
+export function validateQuiz(proofData: Record<string, unknown>, config: Record<string, unknown>): ValidationResult {
+  const questions = (config.questions as QuizQuestion[]) ?? [];
+  const answers = (proofData.answers as QuizAnswer[]) ?? [];
+  if (answers.length !== questions.length) {
+    return { valid: false, reason: "All questions must be answered." };
+  }
+  for (const answer of answers) {
+    if (typeof answer.chosen_index !== "number" && answer.chosen_index !== null) {
+      return { valid: false, reason: "Invalid answer format." };
+    }
+    if (typeof answer.time_elapsed !== "number") {
+      return { valid: false, reason: "Invalid timing data." };
+    }
+  }
   return { valid: true };
 }
 
