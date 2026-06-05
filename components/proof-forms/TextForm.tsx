@@ -48,8 +48,8 @@ export default function TextForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <div className="flex justify-between items-center">
-          <label className="text-sm text-zinc-300">Your text</label>
-          <span className={`text-xs font-mono ${meetsThreshold ? "text-green-400" : "text-zinc-500"}`}>
+          <label className="text-sm font-medium text-slate-700">Your text</label>
+          <span className={`text-xs font-mono font-medium ${meetsThreshold ? "text-green-600" : "text-slate-400"}`}>
             {wordCount} / {minWords} words
           </span>
         </div>
@@ -59,10 +59,10 @@ export default function TextForm({
           rows={8}
           placeholder={`Write at least ${minWords} words...`}
           required
-          className="bg-zinc-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+          className="bg-white border border-slate-200 text-slate-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none placeholder:text-slate-400"
         />
       </div>
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
       <button
         type="submit"
         disabled={loading || !meetsThreshold}

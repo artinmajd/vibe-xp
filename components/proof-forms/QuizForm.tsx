@@ -126,8 +126,8 @@ export default function QuizForm({
   if (phase === "ready") {
     return (
       <div className="flex flex-col gap-4">
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-        <p className="text-zinc-400 text-sm">
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+        <p className="text-slate-500 text-sm">
           {questions.length} question{questions.length !== 1 ? "s" : ""} · 60 seconds each · answer faster for more XP
         </p>
         <button
@@ -144,7 +144,7 @@ export default function QuizForm({
   if (phase === "submitting") {
     return (
       <div className="flex items-center justify-center py-8">
-        <p className="text-zinc-400 text-sm">Saving your answers...</p>
+        <p className="text-slate-400 text-sm">Saving your answers...</p>
       </div>
     );
   }
@@ -154,8 +154,8 @@ export default function QuizForm({
     return (
       <div className="flex flex-col gap-6">
         <div className="text-center">
-          <p className="text-3xl font-bold text-indigo-400">+{totalXP} XP</p>
-          <p className="text-zinc-500 text-sm mt-1">Quiz complete</p>
+          <p className="text-3xl font-bold text-indigo-600">+{totalXP} XP</p>
+          <p className="text-slate-400 text-sm mt-1">Quiz complete</p>
         </div>
 
         <div className="flex flex-col gap-4 max-h-96 overflow-y-auto pr-1">
@@ -167,12 +167,12 @@ export default function QuizForm({
             const earned = calcQuestionXP(q, answer);
 
             return (
-              <div key={qi} className="bg-zinc-800 rounded-xl p-4">
+              <div key={qi} className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                 <div className="flex items-start justify-between mb-3">
-                  <p className="text-sm font-medium text-white">
+                  <p className="text-sm font-semibold text-slate-900">
                     {qi + 1}. {q.question}
                   </p>
-                  <span className={`ml-3 shrink-0 text-xs font-semibold tabular-nums ${earned > 0 ? "text-green-400" : "text-zinc-500"}`}>
+                  <span className={`ml-3 shrink-0 text-xs font-semibold tabular-nums ${earned > 0 ? "text-green-600" : "text-slate-400"}`}>
                     {earned}/{q.xp} XP
                   </span>
                 </div>
@@ -180,9 +180,9 @@ export default function QuizForm({
                   {q.options.map((option, oi) => {
                     const isCorrect = oi === q.correct_index;
                     const wasChosen = oi === answer?.chosen_index;
-                    let style = "bg-zinc-700 text-zinc-300";
-                    if (isCorrect) style = "bg-green-900 text-green-300 border border-green-700";
-                    else if (wasChosen && !isCorrect) style = "bg-red-900 text-red-300 border border-red-700";
+                    let style = "bg-white border border-slate-200 text-slate-600";
+                    if (isCorrect) style = "bg-green-50 text-green-700 border border-green-300";
+                    else if (wasChosen && !isCorrect) style = "bg-red-50 text-red-700 border border-red-300";
 
                     return (
                       <div key={oi} className={`rounded-lg px-3 py-2 text-xs ${style}`}>
@@ -191,7 +191,7 @@ export default function QuizForm({
                     );
                   })}
                 </div>
-                {unanswered && <p className="text-xs text-zinc-500 mt-2">Time ran out</p>}
+                {unanswered && <p className="text-xs text-slate-400 mt-2">Time ran out</p>}
               </div>
             );
           })}
@@ -212,14 +212,14 @@ export default function QuizForm({
     <div className="flex flex-col gap-6">
       {/* Header: question count + timer */}
       <div className="flex items-center justify-between">
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-slate-400 font-medium">
           Question {questionIndex + 1} of {questions.length}
         </p>
 
         {/* Circular timer */}
         <div className="relative flex items-center justify-center w-20 h-20">
           <svg width="80" height="80" viewBox="-4 -4 88 88" className="-rotate-90">
-            <circle cx="40" cy="40" r={RADIUS} fill="none" stroke="#3f3f46" strokeWidth="5" />
+            <circle cx="40" cy="40" r={RADIUS} fill="none" stroke="#e2e8f0" strokeWidth="5" />
             <circle
               cx="40" cy="40" r={RADIUS}
               fill="none"
@@ -231,14 +231,14 @@ export default function QuizForm({
               style={{ transition: "stroke-dashoffset 1s linear, stroke 0.3s" }}
             />
           </svg>
-          <span className={`absolute text-lg font-bold ${isLowTime ? "text-red-400" : "text-white"}`}>
+          <span className={`absolute text-lg font-bold ${isLowTime ? "text-red-500" : "text-slate-900"}`}>
             {timeRemaining}
           </span>
         </div>
       </div>
 
       {/* Question text */}
-      <p className="text-base font-semibold text-white leading-snug">
+      <p className="text-base font-semibold text-slate-900 leading-snug">
         {currentQuestion.question}
       </p>
 
@@ -250,8 +250,8 @@ export default function QuizForm({
             onClick={() => setSelectedIndex(oi)}
             className={`text-left rounded-xl px-4 py-3 text-sm border transition-colors ${
               selectedIndex === oi
-                ? "bg-indigo-700 border-indigo-500 text-white"
-                : "bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-500"
+                ? "bg-indigo-600 border-indigo-600 text-white"
+                : "bg-white border-slate-200 text-slate-700 hover:border-indigo-300"
             }`}
           >
             {option}

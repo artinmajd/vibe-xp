@@ -38,12 +38,12 @@ export default function InstructorFlagForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {description && (
-        <p className="text-sm text-zinc-400">{description}</p>
+        <p className="text-sm text-slate-600">{description}</p>
       )}
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-slate-500">
         Tap the button below when you're ready — your instructor will review and award your XP.
       </p>
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
       <button
         type="submit"
         disabled={loading}

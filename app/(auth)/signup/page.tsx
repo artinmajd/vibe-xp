@@ -20,10 +20,7 @@ export default function SignupPage() {
 
     const supabase = createBrowserClient();
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
 
     if (signUpError || !data.user) {
       setError(signUpError?.message ?? "Something broke. Try again, or grab an instructor.");
@@ -48,62 +45,70 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
+    <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-white mb-2">Create your account</h1>
-        <p className="text-zinc-400 mb-8 text-sm">Join your team and start earning XP.</p>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-zinc-300">Display name</label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="e.g. Artin"
-              required
-              className="bg-zinc-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-600 mb-4 shadow">
+            <span className="text-xl">⚡</span>
+          </Link>
+          <h1 className="text-2xl font-bold text-slate-900">Create your account</h1>
+          <p className="text-slate-500 mt-1 text-sm">Join your team and start earning XP.</p>
+        </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-zinc-300">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="firstname.lastname@class.local"
-              required
-              className="bg-zinc-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-700">Display name</label>
+              <input
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="e.g. Artin"
+                required
+                className="bg-white border border-slate-200 text-slate-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-slate-400"
+              />
+            </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-zinc-300">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Choose a password"
-              required
-              className="bg-zinc-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-700">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="firstname.lastname@class.local"
+                required
+                className="bg-white border border-slate-200 text-slate-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-slate-400"
+              />
+            </div>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-700">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Choose a password"
+                required
+                className="bg-white border border-slate-200 text-slate-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-slate-400"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-lg px-4 py-3 text-sm transition-colors"
-          >
-            {loading ? "Creating account..." : "Let's go"}
-          </button>
-        </form>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        <p className="mt-6 text-sm text-zinc-500">
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-lg px-4 py-3 text-sm transition-colors"
+            >
+              {loading ? "Creating account..." : "Let's go"}
+            </button>
+          </form>
+        </div>
+
+        <p className="mt-5 text-center text-sm text-slate-500">
           Already have an account?{" "}
-          <Link href="/login" className="text-indigo-400 hover:underline">
+          <Link href="/login" className="text-indigo-600 font-medium hover:underline">
             Log in
           </Link>
         </p>

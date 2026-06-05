@@ -11,7 +11,6 @@ export default async function DashboardPage() {
   const user = await requireAuth();
   const supabase = createServerClient();
 
-  // Student + team
   const { data: student } = await supabase
     .from("students")
     .select("*, teams(*)")
@@ -27,7 +26,6 @@ export default async function DashboardPage() {
     code: string;
   };
 
-  // Team members
   const { data: membersRaw } = await supabase
     .from("team_members")
     .select("student_id, students(display_name)")
@@ -38,14 +36,12 @@ export default async function DashboardPage() {
     return s?.display_name ?? "Unknown";
   });
 
-  // Active session
   const { data: session } = await supabase
     .from("sessions")
     .select("*")
     .eq("is_active", true)
     .maybeSingle();
 
-  // Achievements for active session (non-secret only)
   const { data: achievements } = await supabase
     .from("achievements")
     .select("*")
@@ -54,7 +50,6 @@ export default async function DashboardPage() {
     .eq("is_active", true)
     .order("block_number");
 
-  // All team submissions for this session (for team progress counts)
   const achievementIds = (achievements ?? []).map((a) => a.id);
   const { data: allTeamSubs } = achievementIds.length
     ? await supabase
@@ -64,14 +59,12 @@ export default async function DashboardPage() {
         .in("achievement_id", achievementIds)
     : { data: [] };
 
-  // This student's submissions
   const mySubsMap = new Map(
     (allTeamSubs ?? [])
       .filter((s) => s.student_id === user.id)
       .map((s) => [s.achievement_id, s])
   );
 
-  // Team approved count per achievement
   const teamDoneMap = new Map<string, number>();
   for (const s of allTeamSubs ?? []) {
     if (s.status === "auto_approved" || s.status === "approved") {
@@ -83,7 +76,6 @@ export default async function DashboardPage() {
     (s) => s.student_id === user.id && s.status === "pending"
   );
 
-  // Earned secret achievements
   const { data: secretSubmissions } = await supabase
     .from("submissions")
     .select("achievement_id, achievements(title, description, xp_awarded)")
@@ -95,7 +87,6 @@ export default async function DashboardPage() {
     return !!a;
   });
 
-  // XP and level
   const { totalXp, levelInfo } = await getTeamXP(team.id);
   const xpInCurrentLevel = totalXp - levelInfo.currentThreshold;
   const xpNeededForLevel = levelInfo.nextThreshold
@@ -106,37 +97,36 @@ export default async function DashboardPage() {
     : 100;
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white px-4 py-10">
+    <main className="min-h-screen bg-slate-50 text-slate-900 px-4 py-10">
       <Suspense>
         <SecretUnlockedToast />
       </Suspense>
       {hasPending && <PendingPoller />}
-      <div className="max-w-2xl mx-auto flex flex-col gap-8">
+      <div className="max-w-2xl mx-auto flex flex-col gap-6">
 
         {/* Team header */}
-        <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
           <div className="flex items-start justify-between mb-4">
             <div>
               <div className="flex items-center gap-3 mb-1">
                 <span className="text-3xl">{team.emoji ?? "🏆"}</span>
-                <h1 className="text-2xl font-bold">{team.name}</h1>
+                <h1 className="text-2xl font-bold text-slate-900">{team.name}</h1>
               </div>
-              <p className="text-zinc-500 text-sm font-mono">Code: {team.code}</p>
+              <p className="text-slate-400 text-sm font-mono">Code: {team.code}</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-indigo-400">{totalXp} XP</p>
-              <p className="text-sm text-zinc-400">{levelInfo.name}</p>
+              <p className="text-2xl font-bold text-indigo-600">{totalXp} XP</p>
+              <p className="text-sm text-slate-500">{levelInfo.name}</p>
             </div>
           </div>
 
-          {/* XP progress bar */}
           {levelInfo.nextThreshold && (
             <div>
-              <div className="flex justify-between text-xs text-zinc-500 mb-1">
+              <div className="flex justify-between text-xs text-slate-400 mb-1">
                 <span>Level {levelInfo.level}</span>
-                <span>{levelInfo.xpToNext} XP to {levelInfo.name === "AI Master Builder" ? "max" : `Level ${levelInfo.level + 1}`}</span>
+                <span>{levelInfo.xpToNext} XP to Level {levelInfo.level + 1}</span>
               </div>
-              <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-indigo-500 rounded-full transition-all"
                   style={{ width: `${progress}%` }}
@@ -145,15 +135,14 @@ export default async function DashboardPage() {
             </div>
           )}
 
-          {/* Members */}
           <div className="mt-4 flex flex-wrap gap-2">
             {members.map((name) => (
               <span
                 key={name}
-                className={`text-xs px-3 py-1 rounded-full ${
+                className={`text-xs px-3 py-1 rounded-full font-medium ${
                   name === student.display_name
-                    ? "bg-indigo-900 text-indigo-300"
-                    : "bg-zinc-800 text-zinc-400"
+                    ? "bg-indigo-100 text-indigo-700"
+                    : "bg-slate-100 text-slate-600"
                 }`}
               >
                 {name}
@@ -164,8 +153,8 @@ export default async function DashboardPage() {
 
         {/* Active session */}
         {session && (
-          <div className="bg-indigo-950 border border-indigo-800 rounded-xl px-5 py-3">
-            <p className="text-indigo-300 text-sm font-semibold">
+          <div className="bg-indigo-600 rounded-xl px-5 py-3">
+            <p className="text-white text-sm font-semibold">
               Session {session.id} — {session.title}
             </p>
           </div>
@@ -173,8 +162,8 @@ export default async function DashboardPage() {
 
         {/* Achievements */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Achievements</h2>
-          <div className="flex flex-col gap-3">
+          <h2 className="text-base font-semibold text-slate-700 mb-3 px-1">Achievements</h2>
+          <div className="flex flex-col gap-2">
             {(achievements ?? []).map((achievement) => {
               const mySub = mySubsMap.get(achievement.id);
               const isApproved = mySub?.status === "auto_approved" || mySub?.status === "approved";
@@ -185,37 +174,37 @@ export default async function DashboardPage() {
                 <Link
                   key={achievement.id}
                   href={`/dashboard/achievement/${achievement.slug}`}
-                  className={`flex items-center justify-between rounded-xl px-5 py-4 border transition-colors ${
+                  className={`flex items-center justify-between rounded-xl px-4 py-4 border transition-colors ${
                     isApproved
-                      ? "bg-zinc-900 border-green-800 opacity-75"
+                      ? "bg-white border-green-200 opacity-70"
                       : isPending
-                      ? "bg-zinc-900 border-yellow-800"
-                      : "bg-zinc-900 border-zinc-800 hover:border-indigo-700"
+                      ? "bg-white border-amber-300"
+                      : "bg-white border-slate-200 hover:border-indigo-300 hover:shadow-sm"
                   }`}
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className={`text-sm font-medium ${isApproved ? "text-zinc-400 line-through" : "text-white"}`}>
+                      <p className={`text-sm font-semibold ${isApproved ? "text-slate-400 line-through" : "text-slate-900"}`}>
                         {achievement.title}
                       </p>
                       {achievement.proof_type === "quiz" && (
-                        <span className="text-xs bg-violet-900 text-violet-300 px-1.5 py-0.5 rounded font-medium">
+                        <span className="text-xs bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded font-medium">
                           Quiz
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-zinc-500 mt-0.5">{achievement.description}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{achievement.description}</p>
                     {teamDone > 0 && !isApproved && (
-                      <p className="text-xs text-zinc-600 mt-1">{teamDone}/3 teammates done</p>
+                      <p className="text-xs text-slate-400 mt-1">{teamDone}/3 teammates done</p>
                     )}
                   </div>
                   <div className="ml-4 shrink-0 text-right">
                     {isApproved ? (
-                      <span className="text-green-400 text-xs font-semibold">+{mySub?.xp_awarded} XP ✓</span>
+                      <span className="text-green-600 text-xs font-semibold">+{mySub?.xp_awarded} XP ✓</span>
                     ) : isPending ? (
-                      <span className="text-yellow-400 text-xs">Pending</span>
+                      <span className="text-amber-500 text-xs font-medium">Pending</span>
                     ) : (
-                      <span className="text-indigo-400 text-xs font-semibold">+{achievement.xp} XP</span>
+                      <span className="text-indigo-600 text-xs font-semibold">+{achievement.xp} XP</span>
                     )}
                   </div>
                 </Link>
@@ -227,15 +216,15 @@ export default async function DashboardPage() {
         {/* Earned secrets */}
         {earnedSecrets.length > 0 && (
           <div>
-            <h2 className="text-lg font-semibold mb-4">Secret Achievements</h2>
-            <div className="flex flex-col gap-3">
+            <h2 className="text-base font-semibold text-slate-700 mb-3 px-1">Secret Achievements</h2>
+            <div className="flex flex-col gap-2">
               {earnedSecrets.map((s) => {
                 const a = s.achievements as unknown as { title: string; description: string } | null;
                 if (!a) return null;
                 return (
-                  <div key={s.achievement_id} className="bg-zinc-900 border border-yellow-800 rounded-xl px-5 py-4">
-                    <p className="text-sm font-medium text-yellow-300">⭐ {a.title}</p>
-                    <p className="text-xs text-zinc-500 mt-0.5">{a.description}</p>
+                  <div key={s.achievement_id} className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-4">
+                    <p className="text-sm font-semibold text-amber-700">⭐ {a.title}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{a.description}</p>
                   </div>
                 );
               })}
@@ -243,11 +232,11 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Footer actions */}
-        <div className="flex gap-4 text-sm text-zinc-500">
-          <a href="/logout" className="hover:text-zinc-300">Log out</a>
+        {/* Footer */}
+        <div className="flex gap-4 text-sm text-slate-400 pb-4">
+          <a href="/logout" className="hover:text-slate-600">Log out</a>
           <form action="/api/teams/leave" method="POST">
-            <button type="submit" className="hover:text-red-400">Leave team</button>
+            <button type="submit" className="hover:text-red-500">Leave team</button>
           </form>
         </div>
 

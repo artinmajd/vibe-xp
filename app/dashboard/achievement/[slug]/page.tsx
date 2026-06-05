@@ -22,7 +22,6 @@ export default async function AchievementPage({
   const user = await requireAuth();
   const supabase = createServerClient();
 
-  // Get student and team
   const { data: student } = await supabase
     .from("students")
     .select("team_id")
@@ -31,7 +30,6 @@ export default async function AchievementPage({
 
   if (!student?.team_id) redirect("/team-setup");
 
-  // Get achievement
   const { data: achievement } = await supabase
     .from("achievements")
     .select("*")
@@ -41,7 +39,6 @@ export default async function AchievementPage({
 
   if (!achievement) notFound();
 
-  // Get this student's submission
   const { data: submission } = await supabase
     .from("submissions")
     .select("*")
@@ -49,7 +46,6 @@ export default async function AchievementPage({
     .eq("achievement_id", achievement.id)
     .maybeSingle();
 
-  // Count how many teammates have an approved submission for this achievement
   const { data: teamSubs } = await supabase
     .from("submissions")
     .select("student_id")
@@ -116,54 +112,56 @@ export default async function AchievementPage({
         }
       }
       default:
-        return <p className="text-zinc-500 text-sm">Unknown proof type.</p>;
+        return <p className="text-slate-500 text-sm">Unknown proof type.</p>;
     }
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white px-4 py-12">
+    <main className="min-h-screen bg-slate-50 text-slate-900 px-4 py-10">
       <div className="max-w-lg mx-auto">
-        <Link href="/dashboard" className="text-zinc-500 text-sm hover:text-zinc-300 mb-8 inline-block">
+        <Link href="/dashboard" className="text-slate-400 text-sm hover:text-slate-600 mb-8 inline-flex items-center gap-1">
           ← Back to dashboard
         </Link>
 
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-xs font-mono bg-indigo-900 text-indigo-300 px-2 py-1 rounded">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full">
               +{achievement.xp} XP
             </span>
             {achievement.proof_type === "quiz" && (
-              <span className="text-xs bg-violet-900 text-violet-300 px-2 py-1 rounded font-medium">
+              <span className="text-xs font-semibold bg-violet-100 text-violet-700 px-2.5 py-1 rounded-full">
                 Quiz
               </span>
             )}
             {achievement.proof_type === "instructor_flag" && (
-              <span className="text-xs bg-amber-900 text-amber-300 px-2 py-1 rounded font-medium">
+              <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full">
                 Needs approval
               </span>
             )}
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">{achievement.title}</h1>
-          <p className="text-zinc-400 text-sm">{achievement.description}</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-1">{achievement.title}</h1>
+          <p className="text-slate-500 text-sm">{achievement.description}</p>
         </div>
 
+        {/* Submission state */}
         {submission?.status === "auto_approved" || submission?.status === "approved" ? (
-          <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800">
-            <p className="text-green-400 font-semibold text-lg mb-1">Nice — +{submission.xp_awarded} XP 🎉</p>
-            <p className="text-zinc-500 text-sm">
+          <div className="bg-white rounded-2xl p-6 border border-green-200 shadow-sm">
+            <p className="text-green-600 font-bold text-lg mb-1">Nice — +{submission.xp_awarded} XP 🎉</p>
+            <p className="text-slate-400 text-sm">
               Submitted {new Date(submission.submitted_at).toLocaleDateString()}
             </p>
           </div>
         ) : submission?.status === "pending" ? (
-          <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800">
+          <div className="bg-white rounded-2xl p-6 border border-amber-200 shadow-sm">
             <PendingPoller />
-            <p className="text-yellow-400 font-semibold mb-1">Submitted — waiting for review</p>
-            <p className="text-zinc-500 text-sm">Your instructor will approve this soon.</p>
+            <p className="text-amber-600 font-semibold mb-1">Submitted — waiting for review</p>
+            <p className="text-slate-400 text-sm">Your instructor will approve this soon.</p>
           </div>
         ) : (
-          <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800">
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
             {submission?.status === "rejected" && (
-              <p className="text-red-400 text-sm mb-4">Try again.</p>
+              <p className="text-red-500 text-sm mb-4">Try again.</p>
             )}
             {renderForm()}
           </div>
@@ -171,7 +169,7 @@ export default async function AchievementPage({
 
         {/* Team progress */}
         {teamDoneCount > 0 && (
-          <p className="text-xs text-zinc-600 mt-3">
+          <p className="text-xs text-slate-400 mt-3 px-1">
             {teamDoneCount} / 3 teammates done
           </p>
         )}

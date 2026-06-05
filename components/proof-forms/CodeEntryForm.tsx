@@ -38,18 +38,18 @@ export default function CodeEntryForm({ achievementSlug }: { achievementSlug: st
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <label className="text-sm text-zinc-300">Another team's code</label>
+        <label className="text-sm font-medium text-slate-700">Another team's code</label>
         <input
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           placeholder="e.g. NOVA-2847"
           required
-          className="bg-zinc-800 text-white rounded-lg px-4 py-3 text-sm font-mono outline-none focus:ring-2 focus:ring-indigo-500"
+          className="bg-white border border-slate-200 text-slate-900 rounded-lg px-4 py-3 text-sm font-mono outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-slate-400"
         />
-        <p className="text-xs text-zinc-500">Enter the join code of a team you helped — not your own.</p>
+        <p className="text-xs text-slate-400">Enter the join code of a team you helped — not your own.</p>
       </div>
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
       <button
         type="submit"
         disabled={loading}

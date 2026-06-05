@@ -51,16 +51,16 @@ export default function ScreenshotForm({ achievementSlug }: { achievementSlug: s
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <label className="text-sm text-zinc-300">Screenshot</label>
+        <label className="text-sm font-medium text-slate-700">Screenshot</label>
         <input
           type="file"
           accept="image/png,image/jpeg,image/webp"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           required
-          className="text-sm text-zinc-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-zinc-700 file:text-white hover:file:bg-zinc-600"
+          className="text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:font-medium hover:file:bg-indigo-100"
         />
       </div>
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
       <button
         type="submit"
         disabled={loading}
