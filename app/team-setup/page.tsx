@@ -3,8 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import DarkBackground from "@/components/DarkBackground";
 
 type View = "choose" | "create" | "join";
+
+const inputClass = "bg-white/10 border border-white/20 text-white placeholder:text-white/30 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent";
+const bgStyle = { background: "linear-gradient(135deg, #1e1b4b 0%, #2e1065 40%, #1e3a8a 100%)" };
+const cardStyle = { background: "rgba(255,255,255,0.1)", backdropFilter: "blur(20px)" };
 
 export default function TeamSetupPage() {
   const router = useRouter();
@@ -62,25 +67,27 @@ export default function TeamSetupPage() {
 
   if (view === "choose") {
     return (
-      <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-        <div className="w-full max-w-sm">
+      <main className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden" style={bgStyle}>
+        <DarkBackground />
+        <div className="relative z-10 w-full max-w-sm">
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-600 mb-4 shadow">
               <span className="text-xl">⚡</span>
             </Link>
-            <h1 className="text-2xl font-bold text-slate-900">Join or create a team</h1>
-            <p className="text-slate-500 text-sm mt-1">Teams are 3 people. You earn XP together.</p>
+            <h1 className="text-2xl font-bold text-white">Join or create a team</h1>
+            <p className="text-white/50 text-sm mt-1">Teams are 3 people. You earn XP together.</p>
           </div>
           <div className="flex flex-col gap-3">
             <button
               onClick={() => setView("create")}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl px-4 py-4 text-sm transition-colors shadow-sm"
+              className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl px-4 py-4 text-sm transition-colors cursor-pointer"
             >
               Create a new team
             </button>
             <button
               onClick={() => setView("join")}
-              className="bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl px-4 py-4 text-sm transition-colors border border-slate-200 shadow-sm"
+              className="text-white/80 font-semibold rounded-xl px-4 py-4 text-sm transition-all border border-white/20 hover:border-white/40 hover:text-white cursor-pointer"
+              style={{ background: "rgba(255,255,255,0.08)" }}
             >
               Join an existing team
             </button>
@@ -92,42 +99,43 @@ export default function TeamSetupPage() {
 
   if (view === "create") {
     return (
-      <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-        <div className="w-full max-w-sm">
-          <button onClick={() => setView("choose")} className="text-slate-500 text-sm mb-6 hover:text-slate-700 flex items-center gap-1">
+      <main className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden" style={bgStyle}>
+        <DarkBackground />
+        <div className="relative z-10 w-full max-w-sm">
+          <button onClick={() => setView("choose")} className="text-white/50 text-sm mb-6 hover:text-white/80 flex items-center gap-1 cursor-pointer">
             ← Back
           </button>
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">Name your team</h1>
-          <p className="text-slate-500 text-sm mb-6">Pick something good — your teammates will see it.</p>
+          <h1 className="text-2xl font-bold text-white mb-1">Name your team</h1>
+          <p className="text-white/50 text-sm mb-6">Pick something good — your teammates will see it.</p>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="rounded-2xl border border-white/15 p-6" style={cardStyle}>
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-700">Team name</label>
+                <label className="text-sm font-medium text-white/70">Team name</label>
                 <input
                   type="text"
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
                   placeholder="e.g. The Debuggers"
                   required
-                  className="bg-white border border-slate-200 text-slate-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-slate-400"
+                  className={inputClass}
                 />
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-700">
-                  Team emoji <span className="text-slate-400 font-normal">(optional)</span>
+                <label className="text-sm font-medium text-white/70">
+                  Team emoji <span className="text-white/30 font-normal">(optional)</span>
                 </label>
                 <input
                   type="text"
                   value={emoji}
                   onChange={(e) => setEmoji(e.target.value)}
                   placeholder="e.g. 🚀"
-                  className="bg-white border border-slate-200 text-slate-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-slate-400"
+                  className={inputClass}
                 />
               </div>
 
-              {error && <p className="text-red-500 text-sm">{error}</p>}
+              {error && <p className="text-red-400 text-sm">{error}</p>}
 
               <button
                 type="submit"
@@ -144,29 +152,30 @@ export default function TeamSetupPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <button onClick={() => setView("choose")} className="text-slate-500 text-sm mb-6 hover:text-slate-700">
+    <main className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden" style={bgStyle}>
+      <DarkBackground />
+      <div className="relative z-10 w-full max-w-sm">
+        <button onClick={() => setView("choose")} className="text-white/50 text-sm mb-6 hover:text-white/80 cursor-pointer">
           ← Back
         </button>
-        <h1 className="text-2xl font-bold text-slate-900 mb-1">Enter your team code</h1>
-        <p className="text-slate-500 text-sm mb-6">Get the code from the person who created the team.</p>
+        <h1 className="text-2xl font-bold text-white mb-1">Enter your team code</h1>
+        <p className="text-white/50 text-sm mb-6">Get the code from the person who created the team.</p>
 
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div className="rounded-2xl border border-white/15 p-6" style={cardStyle}>
           <form onSubmit={handleJoin} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-slate-700">Team code</label>
+              <label className="text-sm font-medium text-white/70">Team code</label>
               <input
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="e.g. NOVA-2847"
                 required
-                className="bg-white border border-slate-200 text-slate-900 rounded-lg px-4 py-3 text-sm font-mono outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-slate-400"
+                className={`${inputClass} font-mono`}
               />
             </div>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-red-400 text-sm">{error}</p>}
 
             <button
               type="submit"

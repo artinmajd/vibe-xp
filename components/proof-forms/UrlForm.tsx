@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { redirectAfterSubmit } from "@/lib/submit-redirect";
 
+const inputClass = "bg-white/10 border border-white/20 text-white placeholder:text-white/30 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent";
+
 export default function UrlForm({ achievementSlug }: { achievementSlug: string }) {
   const router = useRouter();
   const [url, setUrl] = useState("");
@@ -38,17 +40,17 @@ export default function UrlForm({ achievementSlug }: { achievementSlug: string }
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-slate-700">URL</label>
+        <label className="text-sm font-medium text-white/70">URL</label>
         <input
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://..."
           required
-          className="bg-white border border-slate-200 text-slate-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-slate-400"
+          className={inputClass}
         />
       </div>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-red-400 text-sm">{error}</p>}
       <button
         type="submit"
         disabled={loading}

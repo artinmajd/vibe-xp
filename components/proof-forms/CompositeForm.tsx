@@ -75,20 +75,20 @@ export default function CompositeForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       {requiredTypes.includes("screenshot") && (
         <div className="flex flex-col gap-1">
-          <label className="text-sm text-zinc-300">Screenshot</label>
+          <label className="text-sm font-medium text-white/70">Screenshot</label>
           <input
             type="file"
             accept="image/png,image/jpeg,image/webp"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             required
-            className="text-sm text-zinc-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-zinc-700 file:text-white hover:file:bg-zinc-600"
+            className="text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-500/30 file:text-indigo-200 file:font-medium hover:file:bg-indigo-500/50 cursor-pointer"
           />
         </div>
       )}
 
       {requiredTypes.includes("checklist") && items && items.length > 0 && (
         <div className="flex flex-col gap-3">
-          <p className="text-sm text-zinc-300">Checklist</p>
+          <p className="text-sm font-medium text-white/70">Checklist</p>
           {items.map((item) => (
             <label key={item} className="flex items-center gap-3 cursor-pointer">
               <input
@@ -97,7 +97,7 @@ export default function CompositeForm({
                 onChange={() => toggle(item)}
                 className="w-4 h-4 rounded accent-indigo-500"
               />
-              <span className="text-sm text-zinc-300">{item}</span>
+              <span className="text-sm text-white/80">{item}</span>
             </label>
           ))}
         </div>

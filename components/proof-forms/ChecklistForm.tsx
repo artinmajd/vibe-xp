@@ -58,13 +58,13 @@ export default function ChecklistForm({
               type="checkbox"
               checked={checked.includes(item)}
               onChange={() => toggle(item)}
-              className="w-4 h-4 rounded accent-indigo-600"
+              className="w-4 h-4 rounded accent-indigo-500"
             />
-            <span className="text-sm text-slate-700">{item}</span>
+            <span className="text-sm text-white/80">{item}</span>
           </label>
         ))}
       </div>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-red-400 text-sm">{error}</p>}
       <button
         type="submit"
         disabled={loading || !allChecked}

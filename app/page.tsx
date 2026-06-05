@@ -1,22 +1,26 @@
 import Link from "next/link";
+import DarkBackground from "@/components/DarkBackground";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div className="max-w-md w-full flex flex-col items-center gap-10">
+    <main className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
+      style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #2e1065 40%, #1e3a8a 100%)" }}>
+      <DarkBackground />
+
+      <div className="relative z-10 max-w-md w-full flex flex-col items-center gap-10">
 
         {/* Logo */}
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 mb-4 shadow-lg">
             <span className="text-3xl">⚡</span>
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">vibe-xp</h1>
-          <p className="text-slate-500 mt-2 text-sm">Earn XP. Level up your team.</p>
+          <h1 className="text-4xl font-extrabold tracking-tight text-white">vibe-xp</h1>
+          <p className="text-white/50 mt-2 text-sm">Earn XP. Level up your team.</p>
         </div>
 
         {/* Student actions */}
         <div className="w-full flex flex-col gap-3">
-          <p className="text-xs text-slate-400 uppercase tracking-widest text-center font-medium">Students</p>
+          <p className="text-xs text-white/40 uppercase tracking-widest text-center font-medium">Students</p>
           <Link
             href="/login"
             className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl px-4 py-4 text-center text-sm transition-colors shadow-sm"
@@ -25,7 +29,8 @@ export default function Home() {
           </Link>
           <Link
             href="/signup"
-            className="w-full bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl px-4 py-4 text-center text-sm transition-colors border border-slate-200 shadow-sm"
+            className="w-full text-white/80 font-semibold rounded-xl px-4 py-4 text-center text-sm transition-all border border-white/20 hover:border-white/40 hover:text-white"
+            style={{ background: "rgba(255,255,255,0.08)" }}
           >
             Sign up
           </Link>
@@ -33,22 +38,24 @@ export default function Home() {
 
         {/* Divider */}
         <div className="w-full flex items-center gap-3">
-          <div className="flex-1 h-px bg-slate-200" />
-          <span className="text-slate-400 text-xs">or</span>
-          <div className="flex-1 h-px bg-slate-200" />
+          <div className="flex-1 h-px bg-white/15" />
+          <span className="text-white/30 text-xs">or</span>
+          <div className="flex-1 h-px bg-white/15" />
         </div>
 
         {/* Instructor + leaderboard */}
         <div className="w-full flex flex-col gap-3">
           <Link
             href="/instructor"
-            className="w-full bg-white hover:bg-slate-50 text-slate-600 font-medium rounded-xl px-4 py-3 text-center text-sm transition-colors border border-slate-200 shadow-sm"
+            className="w-full text-white/60 font-medium rounded-xl px-4 py-3 text-center text-sm transition-all border border-white/15 hover:border-white/30 hover:text-white/80"
+            style={{ background: "rgba(255,255,255,0.06)" }}
           >
             Instructor dashboard
           </Link>
           <Link
             href="/leaderboard"
-            className="w-full bg-white hover:bg-slate-50 text-slate-600 font-medium rounded-xl px-4 py-3 text-center text-sm transition-colors border border-slate-200 shadow-sm"
+            className="w-full text-white/60 font-medium rounded-xl px-4 py-3 text-center text-sm transition-all border border-white/15 hover:border-white/30 hover:text-white/80"
+            style={{ background: "rgba(255,255,255,0.06)" }}
           >
             Leaderboard
           </Link>
