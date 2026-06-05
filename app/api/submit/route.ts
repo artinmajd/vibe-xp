@@ -1,6 +1,7 @@
 import { createServerClient } from "@/lib/supabase-server";
 import { createAuthClient } from "@/lib/supabase-auth";
 import { runValidator } from "@/lib/dispatch-validator";
+import { checkSecretAchievements } from "@/lib/check-secrets";
 import { Achievement } from "@/lib/types";
 import { NextResponse } from "next/server";
 
@@ -106,12 +107,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
 
-  // Phase 10: secret achievement check goes here
+  // Check for newly unlocked secret achievements
+  const newlyUnlocked = await checkSecretAchievements(teamId, supabase);
 
   return NextResponse.json({
     ok: true,
     status,
     xp_awarded: xpAwarded,
     message: xpAwarded > 0 ? `Nice — +${xpAwarded} XP.` : "Submitted! Your instructor will review it.",
+    newly_unlocked: newlyUnlocked,
   });
 }

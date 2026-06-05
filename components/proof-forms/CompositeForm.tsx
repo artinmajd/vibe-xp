@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { redirectAfterSubmit } from "@/lib/submit-redirect";
 
 export default function CompositeForm({
   achievementSlug,
@@ -61,7 +62,7 @@ export default function CompositeForm({
       return;
     }
 
-    router.push("/dashboard");
+    redirectAfterSubmit(router, body.newly_unlocked ?? []);
   }
 
   const allChecked = (items ?? []).every((item) => checked.includes(item));

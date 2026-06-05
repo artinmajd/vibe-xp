@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { redirectAfterSubmit } from "@/lib/submit-redirect";
 
 export default function FieldsForm({
   achievementSlug,
@@ -37,7 +38,7 @@ export default function FieldsForm({
       return;
     }
 
-    router.push("/dashboard");
+    redirectAfterSubmit(router, body.newly_unlocked ?? []);
   }
 
   return (

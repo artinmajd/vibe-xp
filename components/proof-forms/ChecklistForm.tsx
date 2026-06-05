@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { redirectAfterSubmit } from "@/lib/submit-redirect";
 
 export default function ChecklistForm({
   achievementSlug,
@@ -41,7 +42,7 @@ export default function ChecklistForm({
       return;
     }
 
-    router.push("/dashboard");
+    redirectAfterSubmit(router, body.newly_unlocked ?? []);
   }
 
   return (

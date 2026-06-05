@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { redirectAfterSubmit } from "@/lib/submit-redirect";
 
 export default function CodeEntryForm({ achievementSlug }: { achievementSlug: string }) {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function CodeEntryForm({ achievementSlug }: { achievementSlug: st
       return;
     }
 
-    router.push("/dashboard");
+    redirectAfterSubmit(router, body.newly_unlocked ?? []);
   }
 
   return (

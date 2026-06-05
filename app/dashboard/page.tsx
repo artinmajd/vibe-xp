@@ -3,6 +3,8 @@ import { createServerClient } from "@/lib/supabase-server";
 import { getTeamXP } from "@/lib/team-xp";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
+import SecretUnlockedToast from "@/components/SecretUnlockedToast";
 
 export default async function DashboardPage() {
   const user = await requireAuth();
@@ -89,6 +91,9 @@ export default async function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white px-4 py-10">
+      <Suspense>
+        <SecretUnlockedToast />
+      </Suspense>
       <div className="max-w-2xl mx-auto flex flex-col gap-8">
 
         {/* Team header */}
