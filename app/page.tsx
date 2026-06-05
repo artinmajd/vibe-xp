@@ -12,9 +12,7 @@ export default function Home() {
 
         {/* Logo */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl overflow-hidden mb-4 shadow-lg">
-            <Image src="/assets/logo.png" alt="vibe-xp logo" width={80} height={80} className="object-contain" />
-          </div>
+          <Image src="/assets/logo.png" alt="vibe-xp logo" width={120} height={120} className="mx-auto mb-2 object-contain" style={{ mixBlendMode: "screen" }} />
           <h1 className="text-4xl font-extrabold tracking-tight text-white">vibe-xp</h1>
           <p className="text-white/50 mt-2 text-sm">Earn XP. Level up your team.</p>
         </div>
