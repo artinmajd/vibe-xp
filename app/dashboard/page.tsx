@@ -135,7 +135,7 @@ export default async function DashboardPage() {
         <div className="animate-fade-up flex items-center justify-between">
           <div>
             <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">Logged in as</p>
-            <p className="text-2xl font-extrabold text-slate-900 leading-tight">{student.display_name} 👋</p>
+            <p className="text-2xl font-extrabold text-slate-900 leading-tight">{student.display_name}</p>
           </div>
           <a
             href="/logout"
@@ -165,22 +165,6 @@ export default async function DashboardPage() {
                 <p className="text-4xl font-black text-white tabular-nums">{totalXp}</p>
                 <p className="text-indigo-200 text-xs font-semibold uppercase tracking-wide">XP</p>
               </div>
-            </div>
-
-            {/* Members */}
-            <div className="relative flex flex-wrap gap-2 mb-5">
-              {members.map((name) => (
-                <span
-                  key={name}
-                  className={`text-xs px-3 py-1 rounded-full font-semibold ${
-                    name === student.display_name
-                      ? "bg-white text-indigo-700"
-                      : "bg-white/20 text-white"
-                  }`}
-                >
-                  {name}
-                </span>
-              ))}
             </div>
 
             {/* XP bar */}
