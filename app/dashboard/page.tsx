@@ -152,36 +152,37 @@ export default async function DashboardPage() {
           </a>
         </div>
 
-        {/* ── Hero team card ── */}
-        <div className="animate-fade-up rounded-3xl overflow-hidden shadow-2xl bg-white">
+        {/* ── Hero team card — glass ── */}
+        <div className="animate-fade-up rounded-3xl overflow-hidden shadow-2xl border border-white/25"
+          style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(20px)" }}>
           <div className="px-6 pt-6 pb-5">
             <div className="flex items-start justify-between mb-5">
               <div className="flex items-center gap-3">
                 <div className="text-5xl select-none">{team.emoji ?? "🏆"}</div>
                 <div>
-                  <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">{team.name}</h1>
-                  <p className="text-slate-400 text-xs font-mono mt-0.5">Code: {team.code}</p>
+                  <h1 className="text-2xl font-extrabold text-white leading-tight">{team.name}</h1>
+                  <p className="text-white/50 text-xs font-mono mt-0.5">Code: {team.code}</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-4xl font-black text-indigo-600 tabular-nums">{totalXp}</p>
-                <p className="text-slate-400 text-xs font-semibold uppercase tracking-wide">XP</p>
+                <p className="text-4xl font-black text-white tabular-nums">{totalXp}</p>
+                <p className="text-white/60 text-xs font-semibold uppercase tracking-wide">XP</p>
               </div>
             </div>
 
             {levelInfo.nextThreshold && (
               <div>
-                <div className="flex justify-between text-xs text-slate-400 mb-1.5">
-                  <span className="font-semibold text-slate-600">{levelInfo.name}</span>
+                <div className="flex justify-between text-xs text-white/60 mb-1.5">
+                  <span className="font-semibold text-white/80">{levelInfo.name}</span>
                   <span>{levelInfo.xpToNext} XP to next level</span>
                 </div>
-                <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-3 bg-white/15 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full animate-xp-fill"
                     style={{
                       width: `${progress}%`,
-                      background: "linear-gradient(to right, #6366f1, #a855f7)",
-                      boxShadow: "0 0 10px rgba(99,102,241,0.4)",
+                      background: "linear-gradient(to right, #a5b4fc, #e879f9)",
+                      boxShadow: "0 0 12px rgba(167,139,250,0.7)",
                     }}
                   />
                 </div>
@@ -189,11 +190,12 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          <div className="px-6 py-3 flex items-center justify-between border-t border-slate-100 bg-slate-50">
+          <div className="px-6 py-3 flex items-center justify-between border-t border-white/10"
+            style={{ background: "rgba(255,255,255,0.08)" }}>
             <span className={`text-xs font-bold px-3 py-1 rounded-full text-white bg-gradient-to-r ${levelGradient}`}>
               Level {levelInfo.level} · {levelInfo.name}
             </span>
-            <span className="text-xs text-slate-400 font-medium">
+            <span className="text-xs text-white/50 font-medium">
               {doneCount} / {(achievements ?? []).length} done
             </span>
           </div>
@@ -202,8 +204,8 @@ export default async function DashboardPage() {
         {/* ── Session banner ── */}
         {session && (
           <div
-            className="animate-fade-up rounded-2xl px-5 py-3 flex items-center gap-3 bg-indigo-600"
-            style={{ animationDelay: "0.05s" }}
+            className="animate-fade-up rounded-2xl px-5 py-3 flex items-center gap-3 border border-indigo-400/30"
+            style={{ animationDelay: "0.05s", background: "rgba(30,27,75,0.75)" }}
           >
             <span className="text-lg">📅</span>
             <p className="text-white text-sm font-semibold">
@@ -214,7 +216,7 @@ export default async function DashboardPage() {
 
         {/* ── Achievements ── */}
         <div className="animate-fade-up" style={{ animationDelay: "0.1s" }}>
-          <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest mb-3 px-1">Achievements</h2>
+          <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3 px-1">Achievements</h2>
           <div className="flex flex-col gap-2">
             {(achievements ?? []).map((achievement, i) => {
               const mySub = mySubsMap.get(achievement.id);
@@ -226,49 +228,56 @@ export default async function DashboardPage() {
                 <Link
                   key={achievement.id}
                   href={`/dashboard/achievement/${achievement.slug}`}
-                  style={{ animationDelay: `${0.12 + i * 0.03}s` }}
-                  className={`animate-fade-up group flex items-center justify-between rounded-2xl px-4 py-4 border transition-all duration-200 bg-white ${
-                    isApproved
-                      ? "border-green-200 opacity-80"
+                  style={{
+                    animationDelay: `${0.12 + i * 0.03}s`,
+                    background: isApproved
+                      ? "rgba(30,27,75,0.55)"
                       : isPending
-                      ? "border-amber-300"
-                      : "border-slate-200 hover:-translate-y-0.5 hover:shadow-md hover:border-indigo-300"
+                      ? "rgba(46,28,15,0.75)"
+                      : "rgba(30,27,75,0.75)",
+                  }}
+                  className={`animate-fade-up group flex items-center justify-between rounded-2xl px-4 py-4 border transition-all duration-200 ${
+                    isApproved
+                      ? "border-green-500/25 opacity-70"
+                      : isPending
+                      ? "border-amber-500/40"
+                      : "border-indigo-400/20 hover:-translate-y-0.5 hover:shadow-lg hover:border-indigo-400/40"
                   }`}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className={`text-sm font-semibold truncate ${isApproved ? "text-slate-400 line-through" : "text-slate-900"}`}>
+                      <p className={`text-sm font-semibold truncate ${isApproved ? "text-white/40 line-through" : "text-white"}`}>
                         {achievement.title}
                       </p>
                       {achievement.proof_type === "quiz" && (
-                        <span className="text-xs bg-violet-100 text-violet-700 border border-violet-200 px-2 py-0.5 rounded-full font-semibold shrink-0">
+                        <span className="text-xs bg-violet-500/30 text-violet-200 border border-violet-400/30 px-2 py-0.5 rounded-full font-semibold shrink-0">
                           Quiz
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5 truncate">{achievement.description}</p>
+                    <p className="text-xs text-white/40 mt-0.5 truncate">{achievement.description}</p>
                     {teamDone > 0 && !isApproved && (
                       <div className="flex items-center gap-1 mt-1.5">
                         {[...Array(3)].map((_, j) => (
-                          <div key={j} className={`w-1.5 h-1.5 rounded-full ${j < teamDone ? "bg-indigo-400" : "bg-slate-200"}`} />
+                          <div key={j} className={`w-1.5 h-1.5 rounded-full ${j < teamDone ? "bg-indigo-300" : "bg-white/15"}`} />
                         ))}
-                        <span className="text-xs text-slate-400 ml-1">{teamDone}/3 done</span>
+                        <span className="text-xs text-white/40 ml-1">{teamDone}/3 done</span>
                       </div>
                     )}
                   </div>
 
                   <div className="ml-3 shrink-0 text-right">
                     {isApproved ? (
-                      <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">
+                      <span className="inline-flex items-center gap-1 bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-bold px-2.5 py-1 rounded-full">
                         ✓ +{mySub?.xp_awarded} XP
                       </span>
                     ) : isPending ? (
-                      <span className="inline-flex items-center gap-1.5 text-amber-600 text-xs font-semibold">
+                      <span className="inline-flex items-center gap-1.5 text-amber-300 text-xs font-semibold">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                         Pending
                       </span>
                     ) : (
-                      <span className="inline-flex items-center bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                      <span className="inline-flex items-center bg-indigo-500/25 border border-indigo-400/30 text-indigo-200 text-xs font-bold px-2.5 py-1 rounded-full group-hover:bg-indigo-500 group-hover:text-white group-hover:border-indigo-500 transition-all">
                         +{achievement.xp} XP
                       </span>
                     )}
@@ -282,15 +291,18 @@ export default async function DashboardPage() {
         {/* ── Secret achievements ── */}
         {earnedSecrets.length > 0 && (
           <div className="animate-fade-up" style={{ animationDelay: "0.2s" }}>
-            <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest mb-3 px-1">Secret Achievements</h2>
+            <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3 px-1">Secret Achievements</h2>
             <div className="flex flex-col gap-2">
               {earnedSecrets.map((s) => {
                 const a = s.achievements as unknown as { title: string; description: string } | null;
                 if (!a) return null;
                 return (
-                  <div key={s.achievement_id} className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-4">
-                    <p className="text-sm font-bold text-amber-800">⭐ {a.title}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{a.description}</p>
+                  <div key={s.achievement_id}
+                    className="border border-amber-500/30 rounded-2xl px-4 py-4"
+                    style={{ background: "rgba(46,28,15,0.75)" }}
+                  >
+                    <p className="text-sm font-bold text-amber-300">⭐ {a.title}</p>
+                    <p className="text-xs text-white/40 mt-0.5">{a.description}</p>
                   </div>
                 );
               })}
