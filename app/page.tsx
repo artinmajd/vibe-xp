@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import DarkBackground from "@/components/DarkBackground";
 
 export default function Home() {
@@ -11,8 +12,8 @@ export default function Home() {
 
         {/* Logo */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 mb-4 shadow-lg">
-            <span className="text-3xl">⚡</span>
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl overflow-hidden mb-4 shadow-lg">
+            <Image src="/assets/logo.png" alt="vibe-xp logo" width={80} height={80} className="object-contain" />
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-white">vibe-xp</h1>
           <p className="text-white/50 mt-2 text-sm">Earn XP. Level up your team.</p>

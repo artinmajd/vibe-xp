@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import DarkBackground from "@/components/DarkBackground";
 
 type View = "choose" | "create" | "join";
@@ -71,8 +72,8 @@ export default function TeamSetupPage() {
         <DarkBackground />
         <div className="relative z-10 w-full max-w-sm">
           <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-600 mb-4 shadow">
-              <span className="text-xl">⚡</span>
+            <Link href="/" className="inline-flex items-center justify-center w-10 h-10 rounded-xl overflow-hidden mb-4 shadow">
+              <Image src="/assets/logo.png" alt="vibe-xp logo" width={40} height={40} className="object-contain" />
             </Link>
             <h1 className="text-2xl font-bold text-white">Join or create a team</h1>
             <p className="text-white/50 text-sm mt-1">Teams are 3 people. You earn XP together.</p>

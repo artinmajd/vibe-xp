@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase-browser";
 import Link from "next/link";
+import Image from "next/image";
 import DarkBackground from "@/components/DarkBackground";
 
 const inputClass = "bg-white/10 border border-white/20 text-white placeholder:text-white/30 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent";
@@ -39,8 +40,8 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-600 mb-4 shadow">
-            <span className="text-xl">⚡</span>
+          <Link href="/" className="inline-flex items-center justify-center w-10 h-10 rounded-xl overflow-hidden mb-4 shadow">
+            <Image src="/assets/logo.png" alt="vibe-xp logo" width={40} height={40} className="object-contain" />
           </Link>
           <h1 className="text-2xl font-bold text-white">Welcome back</h1>
           <p className="text-white/50 mt-1 text-sm">Log in to see your team's progress.</p>
