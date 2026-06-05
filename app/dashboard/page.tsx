@@ -115,14 +115,22 @@ export default async function DashboardPage() {
 
   return (
     <main className="min-h-screen text-slate-900 px-4 py-10 relative overflow-x-hidden"
-      style={{ background: "linear-gradient(135deg, #eef2ff 0%, #faf5ff 50%, #f0fdf4 100%)" }}>
+      style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #2e1065 40%, #1e3a8a 100%)" }}>
 
-      {/* Decorative blobs */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full bg-indigo-300/20 blur-3xl" />
-        <div className="absolute top-1/2 -left-48 w-[400px] h-[400px] rounded-full bg-violet-300/20 blur-3xl" />
-        <div className="absolute -bottom-32 right-1/3 w-[350px] h-[350px] rounded-full bg-emerald-200/20 blur-3xl" />
+      {/* Animated blobs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        {/* Large blobs */}
+        <div className="blob-1 absolute top-[10%] left-[15%] w-[420px] h-[420px] rounded-full bg-indigo-500/40 blur-[100px]" />
+        <div className="blob-2 absolute top-[30%] right-[10%] w-[500px] h-[500px] rounded-full bg-violet-600/35 blur-[120px]" />
+        <div className="blob-3 absolute bottom-[10%] left-[25%] w-[380px] h-[380px] rounded-full bg-blue-500/35 blur-[100px]" />
+        {/* Smaller accent blobs */}
+        <div className="blob-4 absolute top-[60%] right-[30%] w-[220px] h-[220px] rounded-full bg-purple-400/40 blur-[70px]" />
+        <div className="blob-5 absolute top-[5%] right-[40%] w-[180px] h-[180px] rounded-full bg-sky-400/30 blur-[60px]" />
+        <div className="blob-6 absolute bottom-[25%] right-[5%] w-[260px] h-[260px] rounded-full bg-fuchsia-500/35 blur-[80px]" />
       </div>
+
+      {/* Glass overlay so content sits on frosted glass */}
+      <div className="pointer-events-none fixed inset-0 backdrop-blur-[2px]" />
 
       <Suspense>
         <SecretUnlockedToast />
@@ -132,55 +140,51 @@ export default async function DashboardPage() {
       <div className="max-w-2xl mx-auto flex flex-col gap-5">
 
         {/* ── Top bar ── */}
-        <div className="animate-fade-up flex items-center justify-between">
+        <div className="animate-fade-up flex items-center justify-between relative z-10">
           <div>
-            <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">Logged in as</p>
-            <p className="text-2xl font-extrabold text-slate-900 leading-tight">{student.display_name}</p>
+            <p className="text-xs text-indigo-200/70 font-medium uppercase tracking-widest">Logged in as</p>
+            <p className="text-2xl font-extrabold text-white leading-tight">{student.display_name}</p>
           </div>
           <a
             href="/logout"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-500 text-sm font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md text-white/80 text-sm font-semibold hover:bg-white/20 transition-all duration-200"
           >
-            <span>👋</span> Log out
+            Log out
           </a>
         </div>
 
         {/* ── Hero team card ── */}
-        <div className="animate-fade-up rounded-3xl overflow-hidden shadow-lg">
-          {/* Gradient top */}
-          <div className={`bg-gradient-to-br from-indigo-600 to-violet-600 px-6 pt-6 pb-8 relative`}>
-            {/* Decorative circles */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-16 translate-x-16" />
-            <div className="absolute bottom-0 left-8 w-32 h-32 bg-white/5 rounded-full translate-y-10" />
-
-            <div className="relative flex items-start justify-between mb-4">
+        <div className="animate-fade-up rounded-3xl overflow-hidden shadow-2xl border border-white/20"
+          style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(20px)" }}>
+          <div className="px-6 pt-6 pb-5 relative">
+            <div className="relative flex items-start justify-between mb-5">
               <div className="flex items-center gap-3">
                 <div className="text-5xl drop-shadow-sm select-none">{team.emoji ?? "🏆"}</div>
                 <div>
                   <h1 className="text-2xl font-extrabold text-white leading-tight">{team.name}</h1>
-                  <p className="text-indigo-200 text-xs font-mono mt-0.5">Code: {team.code}</p>
+                  <p className="text-white/50 text-xs font-mono mt-0.5">Code: {team.code}</p>
                 </div>
               </div>
               <div className="text-right">
                 <p className="text-4xl font-black text-white tabular-nums">{totalXp}</p>
-                <p className="text-indigo-200 text-xs font-semibold uppercase tracking-wide">XP</p>
+                <p className="text-white/60 text-xs font-semibold uppercase tracking-wide">XP</p>
               </div>
             </div>
 
             {/* XP bar */}
             {levelInfo.nextThreshold && (
-              <div className="relative">
-                <div className="flex justify-between text-xs text-indigo-200 mb-1.5">
-                  <span className="font-semibold">{levelInfo.name}</span>
+              <div>
+                <div className="flex justify-between text-xs text-white/60 mb-1.5">
+                  <span className="font-semibold text-white/80">{levelInfo.name}</span>
                   <span>{levelInfo.xpToNext} XP to next level</span>
                 </div>
-                <div className="h-3 bg-white/20 rounded-full overflow-hidden">
+                <div className="h-3 bg-white/15 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full animate-xp-fill"
                     style={{
                       width: `${progress}%`,
                       background: "linear-gradient(to right, #a5b4fc, #e879f9)",
-                      boxShadow: "0 0 10px rgba(167,139,250,0.6)",
+                      boxShadow: "0 0 12px rgba(167,139,250,0.7)",
                     }}
                   />
                 </div>
@@ -188,12 +192,12 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          {/* Level + progress footer */}
-          <div className="bg-white px-6 py-3 flex items-center justify-between border-t border-slate-100">
+          {/* Level footer */}
+          <div className="px-6 py-3 flex items-center justify-between border-t border-white/10">
             <span className={`text-xs font-bold px-3 py-1 rounded-full text-white bg-gradient-to-r ${levelGradient}`}>
               Level {levelInfo.level} · {levelInfo.name}
             </span>
-            <span className="text-xs text-slate-400 font-medium">
+            <span className="text-xs text-white/50 font-medium">
               {doneCount} / {(achievements ?? []).length} done
             </span>
           </div>
@@ -202,8 +206,8 @@ export default async function DashboardPage() {
         {/* ── Session banner ── */}
         {session && (
           <div
-            className="animate-fade-up rounded-2xl px-5 py-3 flex items-center gap-3"
-            style={{ animationDelay: "0.05s", background: "linear-gradient(to right, #4f46e5, #7c3aed)" }}
+            className="animate-fade-up rounded-2xl px-5 py-3 flex items-center gap-3 border border-white/15"
+            style={{ animationDelay: "0.05s", background: "rgba(255,255,255,0.10)", backdropFilter: "blur(16px)" }}
           >
             <span className="text-lg">📅</span>
             <p className="text-white text-sm font-semibold">
@@ -214,7 +218,7 @@ export default async function DashboardPage() {
 
         {/* ── Achievements ── */}
         <div className="animate-fade-up" style={{ animationDelay: "0.1s" }}>
-          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3 px-1">Achievements</h2>
+          <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3 px-1">Achievements</h2>
           <div className="flex flex-col gap-2">
             {(achievements ?? []).map((achievement, i) => {
               const mySub = mySubsMap.get(achievement.id);
@@ -226,54 +230,57 @@ export default async function DashboardPage() {
                 <Link
                   key={achievement.id}
                   href={`/dashboard/achievement/${achievement.slug}`}
-                  style={{ animationDelay: `${0.12 + i * 0.03}s` }}
+                  style={{
+                    animationDelay: `${0.12 + i * 0.03}s`,
+                    background: isApproved
+                      ? "rgba(255,255,255,0.08)"
+                      : isPending
+                      ? "rgba(251,191,36,0.12)"
+                      : "rgba(255,255,255,0.10)",
+                    backdropFilter: "blur(16px)",
+                  }}
                   className={`animate-fade-up group flex items-center justify-between rounded-2xl px-4 py-4 border transition-all duration-200 ${
                     isApproved
-                      ? "bg-white/70 border-green-200"
+                      ? "border-green-400/30"
                       : isPending
-                      ? "bg-amber-50 border-amber-300"
-                      : "bg-white border-slate-200 hover:-translate-y-0.5 hover:shadow-md hover:border-indigo-300"
+                      ? "border-amber-400/40"
+                      : "border-white/15 hover:-translate-y-0.5 hover:shadow-lg hover:border-white/30 hover:bg-white/15"
                   }`}
                 >
-                  {/* Left accent strip */}
-                  <div className={`absolute left-0 top-3 bottom-3 w-1 rounded-r-full transition-all ${
-                    isApproved ? "bg-green-400" : isPending ? "bg-amber-400" : "bg-transparent group-hover:bg-indigo-400"
-                  }`} style={{ position: "relative", marginLeft: "-16px", marginRight: "12px", width: "3px", flexShrink: 0 }} />
-
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className={`text-sm font-semibold truncate ${isApproved ? "text-slate-400 line-through" : "text-slate-900"}`}>
+                      <p className={`text-sm font-semibold truncate ${isApproved ? "text-white/40 line-through" : "text-white"}`}>
                         {achievement.title}
                       </p>
                       {achievement.proof_type === "quiz" && (
-                        <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-semibold shrink-0">
+                        <span className="text-xs bg-violet-500/30 text-violet-200 border border-violet-400/30 px-2 py-0.5 rounded-full font-semibold shrink-0">
                           Quiz
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5 truncate">{achievement.description}</p>
+                    <p className="text-xs text-white/40 mt-0.5 truncate">{achievement.description}</p>
                     {teamDone > 0 && !isApproved && (
-                      <div className="flex items-center gap-1 mt-1">
+                      <div className="flex items-center gap-1 mt-1.5">
                         {[...Array(3)].map((_, j) => (
-                          <div key={j} className={`w-1.5 h-1.5 rounded-full ${j < teamDone ? "bg-indigo-400" : "bg-slate-200"}`} />
+                          <div key={j} className={`w-1.5 h-1.5 rounded-full ${j < teamDone ? "bg-indigo-300" : "bg-white/20"}`} />
                         ))}
-                        <span className="text-xs text-slate-400 ml-1">{teamDone}/3 done</span>
+                        <span className="text-xs text-white/40 ml-1">{teamDone}/3 done</span>
                       </div>
                     )}
                   </div>
 
                   <div className="ml-3 shrink-0 text-right">
                     {isApproved ? (
-                      <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">
+                      <span className="inline-flex items-center gap-1 bg-green-500/20 text-green-300 border border-green-400/30 text-xs font-bold px-2.5 py-1 rounded-full">
                         ✓ +{mySub?.xp_awarded} XP
                       </span>
                     ) : isPending ? (
-                      <span className="inline-flex items-center gap-1.5 text-amber-600 text-xs font-semibold">
+                      <span className="inline-flex items-center gap-1.5 text-amber-300 text-xs font-semibold">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                         Pending
                       </span>
                     ) : (
-                      <span className="inline-flex items-center bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                      <span className="inline-flex items-center bg-white/10 border border-white/20 text-white/80 text-xs font-bold px-2.5 py-1 rounded-full group-hover:bg-indigo-500/60 group-hover:border-indigo-400/50 group-hover:text-white transition-all">
                         +{achievement.xp} XP
                       </span>
                     )}
@@ -287,17 +294,18 @@ export default async function DashboardPage() {
         {/* ── Secret achievements ── */}
         {earnedSecrets.length > 0 && (
           <div className="animate-fade-up" style={{ animationDelay: "0.2s" }}>
-            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3 px-1">Secret Achievements</h2>
+            <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3 px-1">Secret Achievements</h2>
             <div className="flex flex-col gap-2">
               {earnedSecrets.map((s) => {
                 const a = s.achievements as unknown as { title: string; description: string } | null;
                 if (!a) return null;
                 return (
                   <div key={s.achievement_id}
-                    className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl px-4 py-4"
+                    className="border border-amber-400/30 rounded-2xl px-4 py-4"
+                    style={{ background: "rgba(251,191,36,0.12)", backdropFilter: "blur(16px)" }}
                   >
-                    <p className="text-sm font-bold text-amber-800">⭐ {a.title}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{a.description}</p>
+                    <p className="text-sm font-bold text-amber-200">⭐ {a.title}</p>
+                    <p className="text-xs text-white/50 mt-0.5">{a.description}</p>
                   </div>
                 );
               })}
