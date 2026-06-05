@@ -327,7 +327,14 @@ export default async function DashboardPage() {
         )}
 
         {/* ── Footer ── */}
-        <div className="flex justify-end pb-6">
+        <div className="flex items-center justify-between pb-6">
+          <Link
+            href="/"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          >
+            ← Home
+          </Link>
           <LeaveTeamButton teamName={team.name} />
         </div>
 
