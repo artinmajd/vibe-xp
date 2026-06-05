@@ -146,7 +146,8 @@ export default async function DashboardPage() {
           </div>
           <a
             href="/logout"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-all duration-200 shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
+            style={{ background: "rgba(255,255,255,0.08)" }}
           >
             Log out
           </a>
