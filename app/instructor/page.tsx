@@ -43,12 +43,13 @@ export default async function InstructorPage() {
     (teamsRaw ?? []).map(async (t) => {
       const { data: membersRaw } = await supabase
         .from("team_members")
-        .select("students(display_name)")
+        .select("student_id, students(display_name)")
         .eq("team_id", t.id);
 
-      const members = (membersRaw ?? []).map(
-        (m) => (m.students as unknown as { display_name: string } | null)?.display_name ?? "Unknown"
-      );
+      const members = (membersRaw ?? []).map((m) => ({
+        id: m.student_id,
+        name: (m.students as unknown as { display_name: string } | null)?.display_name ?? "Unknown",
+      }));
 
       const { totalXp, levelInfo } = await getTeamXP(t.id);
 

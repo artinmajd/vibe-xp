@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+type Member = { id: string; name: string };
+
 type PendingSubmission = {
   id: string;
   team_id: string;
@@ -21,7 +23,7 @@ type TeamInfo = {
   name: string;
   emoji: string | null;
   code: string;
-  members: string[];
+  members: Member[];
   totalXp: number;
   sessionXp: number;
   levelName: string;
@@ -50,11 +52,19 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
     const id = setInterval(() => router.refresh(), 5000);
     return () => clearInterval(id);
   }, [router]);
-  const [busy, setBusy] = useState<string | null>(null); // id of submission/team being acted on
+
+  const [busy, setBusy] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [xpOverrides, setXpOverrides] = useState<Record<string, number>>({});
   const [grantAmounts, setGrantAmounts] = useState<Record<string, string>>({});
   const [grantReasons, setGrantReasons] = useState<Record<string, string>>({});
+
+  // Team editing
+  const [editingTeam, setEditingTeam] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmoji, setEditEmoji] = useState("");
+  const [reassigning, setReassigning] = useState<string | null>(null);
+  const [reassignTarget, setReassignTarget] = useState<Record<string, string>>({});
 
   async function handleApprove(id: string, xpOverride?: number) {
     setBusy(id);
@@ -92,7 +102,33 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
     router.refresh();
   }
 
-async function handleSwitchSession(sessionId: number) {
+  async function handleSaveTeam(teamId: string) {
+    setBusy(`edit-${teamId}`);
+    await fetch("/api/instructor/teams", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ team_id: teamId, name: editName, emoji: editEmoji }),
+    });
+    setBusy(null);
+    setEditingTeam(null);
+    router.refresh();
+  }
+
+  async function handleReassign(studentId: string) {
+    const newTeamId = reassignTarget[studentId];
+    if (!newTeamId) return;
+    setReassigning(studentId);
+    await fetch("/api/instructor/teams", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ student_id: studentId, new_team_id: newTeamId }),
+    });
+    setReassigning(null);
+    setReassignTarget((prev) => { const n = { ...prev }; delete n[studentId]; return n; });
+    router.refresh();
+  }
+
+  async function handleSwitchSession(sessionId: number) {
     setBusy(`session-${sessionId}`);
     await fetch("/api/instructor/session", {
       method: "POST",
@@ -152,7 +188,6 @@ async function handleSwitchSession(sessionId: number) {
               <p className="text-zinc-500 text-sm">No pending submissions. You're all caught up.</p>
             ) : (
               <div className="flex flex-col gap-6">
-                {/* Group by team */}
                 {Array.from(
                   pending.reduce((map, s) => {
                     if (!map.has(s.team_id)) map.set(s.team_id, { team_name: s.team_name, submissions: [] });
@@ -177,7 +212,6 @@ async function handleSwitchSession(sessionId: number) {
                             <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded font-mono">{s.proof_type}</span>
                           </div>
 
-                          {/* Proof data preview */}
                           <div className="mb-4">
                             {s.screenshot_url && (
                               <img
@@ -196,7 +230,6 @@ async function handleSwitchSession(sessionId: number) {
                             )}
                           </div>
 
-                          {/* Actions */}
                           <div className="flex items-center gap-3 flex-wrap">
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-zinc-500">XP:</span>
@@ -239,29 +272,93 @@ async function handleSwitchSession(sessionId: number) {
           <div className="flex flex-col gap-6">
             {teams.map((team) => (
               <div key={team.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">{team.emoji ?? "🏆"}</span>
-                    <div>
-                      <p className="font-semibold">{team.name}</p>
-                      <p className="text-xs text-zinc-500 font-mono">{team.code}</p>
+
+                {/* Header — view or edit mode */}
+                {editingTeam === team.id ? (
+                  <div className="flex items-center gap-2 mb-4">
+                    <input
+                      type="text"
+                      value={editEmoji}
+                      onChange={(e) => setEditEmoji(e.target.value)}
+                      placeholder="Emoji"
+                      className="w-14 bg-zinc-800 text-white rounded px-2 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 text-center"
+                    />
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      placeholder="Team name"
+                      className="flex-1 bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                    <button
+                      disabled={busy === `edit-${team.id}` || !editName.trim()}
+                      onClick={() => handleSaveTeam(team.id)}
+                      className="bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                    >
+                      {busy === `edit-${team.id}` ? "Saving…" : "Save"}
+                    </button>
+                    <button
+                      onClick={() => setEditingTeam(null)}
+                      className="text-zinc-500 hover:text-zinc-300 text-xs px-2 py-2"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{team.emoji ?? "🏆"}</span>
+                      <div>
+                        <p className="font-semibold">{team.name}</p>
+                        <p className="text-xs text-zinc-500 font-mono">{team.code}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-indigo-400 font-bold">{team.totalXp} XP total</p>
+                        <p className="text-xs text-zinc-500">{team.sessionXp} session · {team.levelName}</p>
+                      </div>
+                      <button
+                        onClick={() => { setEditingTeam(team.id); setEditName(team.name); setEditEmoji(team.emoji ?? ""); }}
+                        className="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Edit
+                      </button>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-indigo-400 font-bold">{team.totalXp} XP total</p>
-                    <p className="text-xs text-zinc-500">{team.sessionXp} session · {team.levelName}</p>
-                  </div>
-                </div>
+                )}
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {team.members.map((m) => (
-                    <span key={m} className="text-xs bg-zinc-800 text-zinc-400 px-3 py-1 rounded-full">{m}</span>
-                  ))}
+                {/* Members with reassign controls */}
+                <div className="flex flex-col gap-2 mb-4">
                   {team.members.length === 0 && <span className="text-xs text-zinc-600">No members yet</span>}
+                  {team.members.map((m) => (
+                    <div key={m.id} className="flex items-center gap-2">
+                      <span className="text-xs bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg min-w-24">{m.name}</span>
+                      <select
+                        value={reassignTarget[m.id] ?? ""}
+                        onChange={(e) => setReassignTarget((prev) => ({ ...prev, [m.id]: e.target.value }))}
+                        className="bg-zinc-800 text-zinc-400 text-xs rounded px-2 py-1.5 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                      >
+                        <option value="">Move to…</option>
+                        {teams.filter((t) => t.id !== team.id).map((t) => (
+                          <option key={t.id} value={t.id}>{t.emoji ?? "🏆"} {t.name}</option>
+                        ))}
+                      </select>
+                      {reassignTarget[m.id] && (
+                        <button
+                          disabled={reassigning === m.id}
+                          onClick={() => handleReassign(m.id)}
+                          className="bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          {reassigning === m.id ? "Moving…" : "Move"}
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
 
                 {/* Grant / Deduct XP */}
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap border-t border-zinc-800 pt-4">
                   <input
                     type="number"
                     placeholder="XP (use − for deduct)"
@@ -285,8 +382,8 @@ async function handleSwitchSession(sessionId: number) {
                   >
                     Grant XP
                   </button>
-
                 </div>
+
               </div>
             ))}
           </div>
