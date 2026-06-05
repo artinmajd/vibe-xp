@@ -46,6 +46,7 @@ function LeaderboardInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const view = (searchParams.get("view") ?? "total") as "total" | "session";
+  const isEmbed = searchParams.get("embed") === "1";
 
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [highlightedIds, setHighlightedIds] = useState<Set<string>>(new Set());
@@ -194,16 +195,18 @@ function LeaderboardInner() {
           </div>
         )}
 
-        {/* Back button */}
-        <div className="mt-8 pb-2">
-          <a
-            href={isSignedIn ? "/dashboard" : "/"}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
-            style={{ background: "rgba(255,255,255,0.08)" }}
-          >
-            ← {isSignedIn ? "Dashboard" : "Main Menu"}
-          </a>
-        </div>
+        {/* Back button — hidden when embedded in instructor dashboard */}
+        {!isEmbed && (
+          <div className="mt-8 pb-2">
+            <a
+              href={isSignedIn ? "/dashboard" : "/"}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
+              style={{ background: "rgba(255,255,255,0.08)" }}
+            >
+              ← {isSignedIn ? "Dashboard" : "Main Menu"}
+            </a>
+          </div>
+        )}
 
       </div>
     </main>

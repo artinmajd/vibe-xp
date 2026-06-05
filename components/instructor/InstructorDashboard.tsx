@@ -334,7 +334,7 @@ async function handleSwitchSession(sessionId: number) {
           <div>
             <p className="text-xs text-zinc-500 mb-3">Live preview — same view as the projector.</p>
             <iframe
-              src="/leaderboard"
+              src="/leaderboard?embed=1"
               className="w-full rounded-xl border border-zinc-800"
               style={{ height: "600px" }}
             />
