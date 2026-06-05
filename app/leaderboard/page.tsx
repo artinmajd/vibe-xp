@@ -171,6 +171,7 @@ function LeaderboardInner() {
                   {/* Members row */}
                   {team.members.length > 0 && (
                     <div className="flex items-center gap-2 mt-3 pl-20">
+                      <span className="text-xs text-white/35 font-medium">Members:</span>
                       {team.members.map((m) => (
                         <span key={m} className="text-xs font-medium px-3 py-1 rounded-full border border-white/15 text-white/55"
                           style={{ background: "rgba(255,255,255,0.07)" }}>
