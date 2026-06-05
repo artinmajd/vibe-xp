@@ -16,10 +16,23 @@ export async function GET(request: NextRequest) {
     .eq("is_active", true)
     .maybeSingle();
 
-  // All teams
+  // All teams with members
   const { data: teams } = await supabase
     .from("teams")
     .select("id, name, emoji");
+
+  const { data: membersRaw } = await supabase
+    .from("team_members")
+    .select("team_id, students(display_name)");
+
+  const membersByTeam = new Map<string, string[]>();
+  for (const m of membersRaw ?? []) {
+    const name = (m.students as unknown as { display_name: string } | null)?.display_name;
+    if (!name) continue;
+    const arr = membersByTeam.get(m.team_id) ?? [];
+    arr.push(name);
+    membersByTeam.set(m.team_id, arr);
+  }
 
   if (!teams || teams.length === 0) {
     return NextResponse.json({ teams: [], session });
@@ -69,6 +82,7 @@ export async function GET(request: NextRequest) {
       teamId: team.id,
       name: team.name,
       emoji: team.emoji,
+      members: membersByTeam.get(team.id) ?? [],
       sessionXp,
       totalXp,
       level: levelInfo.level,

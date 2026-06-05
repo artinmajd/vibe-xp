@@ -8,6 +8,7 @@ type TeamRow = {
   teamId: string;
   name: string;
   emoji: string | null;
+  members: string[];
   sessionXp: number;
   totalXp: number;
   level: number;
@@ -126,7 +127,7 @@ function LeaderboardInner() {
               return (
                 <div
                   key={team.teamId}
-                  className={`flex items-center gap-6 rounded-2xl px-8 py-6 border transition-all duration-500 ${
+                  className={`group relative flex items-center gap-6 rounded-2xl px-8 py-6 border transition-all duration-500 ${
                     isHighlighted
                       ? "border-indigo-400/60 scale-[1.01]"
                       : idx === 0
@@ -142,6 +143,18 @@ function LeaderboardInner() {
                     backdropFilter: idx === 0 ? "blur(20px)" : undefined,
                   }}
                 >
+                  {/* Member tooltip on hover */}
+                  {team.members.length > 0 && (
+                    <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 whitespace-nowrap"
+                        style={{ background: "rgba(15,10,40,0.92)", backdropFilter: "blur(12px)" }}>
+                        {team.members.map((m) => (
+                          <span key={m} className="text-xs text-white/80 font-medium">{m}</span>
+                        ))}
+                      </div>
+                      <div className="w-2 h-2 bg-white/10 border-b border-r border-white/20 rotate-45 mx-auto -mt-1" />
+                    </div>
+                  )}
                   {/* Rank */}
                   <span className={`text-5xl font-black w-16 text-center ${RANK_COLORS[idx] ?? "text-white/30"}`}>
                     {idx + 1}

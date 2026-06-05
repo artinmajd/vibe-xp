@@ -189,6 +189,23 @@ export default async function DashboardPage() {
             )}
           </div>
 
+          {members.length > 0 && (
+            <div className="px-6 pt-3 pb-4 flex items-center gap-2 flex-wrap">
+              {members.map((name) => (
+                <span
+                  key={name}
+                  className={`text-xs px-3 py-1 rounded-full font-medium border ${
+                    name === student.display_name
+                      ? "bg-indigo-500/30 border-indigo-400/40 text-indigo-200"
+                      : "bg-white/10 border-white/15 text-white/60"
+                  }`}
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          )}
+
           <div className="px-6 py-3 flex items-center justify-between border-t border-white/10"
             style={{ background: "rgba(255,255,255,0.08)" }}>
             <span className={`text-xs font-bold px-3 py-1 rounded-full text-white bg-gradient-to-r ${levelGradient}`}>
