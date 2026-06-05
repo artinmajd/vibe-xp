@@ -166,65 +166,81 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
             {pending.length === 0 ? (
               <p className="text-zinc-500 text-sm">No pending submissions. You're all caught up.</p>
             ) : (
-              <div className="flex flex-col gap-4">
-                {pending.map((s) => (
-                  <div key={s.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className="font-semibold text-sm">{s.achievement_title}</p>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                          {s.team_name} · {s.student_name} · {new Date(s.submitted_at).toLocaleTimeString()}
-                        </p>
-                      </div>
-                      <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded font-mono">{s.proof_type}</span>
-                    </div>
+              <div className="flex flex-col gap-6">
+                {/* Group by team */}
+                {Array.from(
+                  pending.reduce((map, s) => {
+                    if (!map.has(s.team_id)) map.set(s.team_id, { team_name: s.team_name, submissions: [] });
+                    map.get(s.team_id)!.submissions.push(s);
+                    return map;
+                  }, new Map<string, { team_name: string; submissions: PendingSubmission[] }>())
+                ).map(([teamId, { team_name, submissions }]) => (
+                  <div key={teamId}>
+                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2 px-1">
+                      {team_name} · {submissions.length} pending
+                    </p>
+                    <div className="flex flex-col gap-3">
+                      {submissions.map((s) => (
+                        <div key={s.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <p className="font-semibold text-sm">{s.achievement_title}</p>
+                              <p className="text-xs text-zinc-500 mt-0.5">
+                                {s.student_name} · {new Date(s.submitted_at).toLocaleTimeString()}
+                              </p>
+                            </div>
+                            <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded font-mono">{s.proof_type}</span>
+                          </div>
 
-                    {/* Proof data preview */}
-                    <div className="mb-4">
-                      {s.screenshot_url && (
-                        <img
-                          src={s.screenshot_url}
-                          alt="Submission screenshot"
-                          onClick={() => setLightbox(s.screenshot_url)}
-                          className="rounded-lg max-h-64 object-contain bg-zinc-800 w-full mb-2 cursor-zoom-in"
-                        />
-                      )}
-                      {Object.keys(s.proof_data).length > 0 && (
-                        <div className="bg-zinc-800 rounded-lg p-3 text-xs text-zinc-300 font-mono break-all">
-                          {Object.entries(s.proof_data).map(([k, v]) => (
-                            <div key={k}><span className="text-zinc-500">{k}:</span> {String(v)}</div>
-                          ))}
+                          {/* Proof data preview */}
+                          <div className="mb-4">
+                            {s.screenshot_url && (
+                              <img
+                                src={s.screenshot_url}
+                                alt="Submission screenshot"
+                                onClick={() => setLightbox(s.screenshot_url)}
+                                className="rounded-lg max-h-64 object-contain bg-zinc-800 w-full mb-2 cursor-zoom-in"
+                              />
+                            )}
+                            {Object.keys(s.proof_data).length > 0 && (
+                              <div className="bg-zinc-800 rounded-lg p-3 text-xs text-zinc-300 font-mono break-all">
+                                {Object.entries(s.proof_data).map(([k, v]) => (
+                                  <div key={k}><span className="text-zinc-500">{k}:</span> {String(v)}</div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-zinc-500">XP:</span>
+                              <input
+                                type="number"
+                                value={xpOverrides[s.id] ?? s.achievement_xp}
+                                onChange={(e) =>
+                                  setXpOverrides((prev) => ({ ...prev, [s.id]: parseInt(e.target.value) || 0 }))
+                                }
+                                className="w-16 bg-zinc-800 text-white rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+                              />
+                            </div>
+                            <button
+                              disabled={busy === s.id}
+                              onClick={() => handleApprove(s.id, xpOverrides[s.id] ?? s.achievement_xp)}
+                              className="bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              disabled={busy === s.id}
+                              onClick={() => handleReject(s.id)}
+                              className="bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                            >
+                              Reject
+                            </button>
+                          </div>
                         </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-zinc-500">XP:</span>
-                        <input
-                          type="number"
-                          value={xpOverrides[s.id] ?? s.achievement_xp}
-                          onChange={(e) =>
-                            setXpOverrides((prev) => ({ ...prev, [s.id]: parseInt(e.target.value) || 0 }))
-                          }
-                          className="w-16 bg-zinc-800 text-white rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
-                        />
-                      </div>
-                      <button
-                        disabled={busy === s.id}
-                        onClick={() => handleApprove(s.id, xpOverrides[s.id] ?? s.achievement_xp)}
-                        className="bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        disabled={busy === s.id}
-                        onClick={() => handleReject(s.id)}
-                        className="bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
-                      >
-                        Reject
-                      </button>
+                      ))}
                     </div>
                   </div>
                 ))}
