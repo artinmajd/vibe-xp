@@ -181,10 +181,6 @@ function LeaderboardInner() {
           </div>
         )}
 
-        {/* Footer */}
-        <p className="text-center text-white/20 text-xs mt-8">
-          Updates every 5 seconds
-        </p>
       </div>
     </main>
   );
