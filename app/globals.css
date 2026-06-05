@@ -79,9 +79,9 @@ body {
   100% { transform: translate(0px,   0px);    }
 }
 
-.blob-1 { animation: blob-1 22s ease-in-out infinite; }
-.blob-2 { animation: blob-2 28s ease-in-out infinite; }
-.blob-3 { animation: blob-3 32s ease-in-out infinite; }
-.blob-4 { animation: blob-4 24s ease-in-out infinite; }
-.blob-5 { animation: blob-5 30s ease-in-out infinite; }
-.blob-6 { animation: blob-6 26s ease-in-out infinite; }
+.blob-1 { animation: blob-1 60s ease-in-out infinite; }
+.blob-2 { animation: blob-2 75s ease-in-out infinite; }
+.blob-3 { animation: blob-3 90s ease-in-out infinite; }
+.blob-4 { animation: blob-4 65s ease-in-out infinite; }
+.blob-5 { animation: blob-5 80s ease-in-out infinite; }
+.blob-6 { animation: blob-6 70s ease-in-out infinite; }

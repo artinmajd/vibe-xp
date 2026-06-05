@@ -23,7 +23,8 @@ export default function LeaveTeamButton({ teamName }: { teamName: string }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 bg-white text-red-500 text-sm font-semibold hover:bg-red-50 hover:border-red-300 transition-all duration-200 shadow-sm"
+        className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-500/40 text-red-300 text-sm font-semibold hover:border-red-400/60 hover:text-red-200 transition-all duration-200"
+        style={{ background: "rgba(30,27,75,0.75)" }}
       >
         🚪 Leave team
       </button>

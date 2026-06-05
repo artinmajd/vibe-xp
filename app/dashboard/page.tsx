@@ -128,15 +128,15 @@ export default async function DashboardPage() {
         <div className="blob-6 absolute bottom-[25%] right-[5%] w-[180px] h-[180px] rounded-full bg-fuchsia-500/60 blur-[8px]" />
       </div>
 
-      {/* Glass overlay so content sits on frosted glass */}
-      <div className="pointer-events-none fixed inset-0 backdrop-blur-[2px]" />
+      {/* Glass overlay behind content */}
+      <div className="pointer-events-none fixed inset-0 z-0 backdrop-blur-[2px]" />
 
       <Suspense>
         <SecretUnlockedToast />
       </Suspense>
       {hasPending && <PendingPoller />}
 
-      <div className="max-w-2xl mx-auto flex flex-col gap-5">
+      <div className="relative z-10 max-w-2xl mx-auto flex flex-col gap-5">
 
         {/* ── Top bar ── */}
         <div className="animate-fade-up flex items-center justify-between relative z-10">
