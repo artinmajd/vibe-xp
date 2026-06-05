@@ -164,11 +164,18 @@ export default function QuizForm({
             const correct = answer?.chosen_index === q.correct_index;
             const unanswered = answer?.chosen_index === null;
 
+            const earned = calcQuestionXP(q, answer);
+
             return (
               <div key={qi} className="bg-zinc-800 rounded-xl p-4">
-                <p className="text-sm font-medium text-white mb-3">
-                  {qi + 1}. {q.question}
-                </p>
+                <div className="flex items-start justify-between mb-3">
+                  <p className="text-sm font-medium text-white">
+                    {qi + 1}. {q.question}
+                  </p>
+                  <span className={`ml-3 shrink-0 text-xs font-semibold tabular-nums ${earned > 0 ? "text-green-400" : "text-zinc-500"}`}>
+                    {earned}/{q.xp} XP
+                  </span>
+                </div>
                 <div className="flex flex-col gap-2">
                   {q.options.map((option, oi) => {
                     const isCorrect = oi === q.correct_index;
@@ -180,17 +187,11 @@ export default function QuizForm({
                     return (
                       <div key={oi} className={`rounded-lg px-3 py-2 text-xs ${style}`}>
                         {option}
-                        {isCorrect && wasChosen && (
-                          <span className="ml-2 font-semibold">
-                            +{calcQuestionXP(q, answer)} XP
-                          </span>
-                        )}
                       </div>
                     );
                   })}
                 </div>
                 {unanswered && <p className="text-xs text-zinc-500 mt-2">Time ran out</p>}
-                {!unanswered && !correct && <p className="text-xs text-zinc-500 mt-2">+0 XP</p>}
               </div>
             );
           })}
