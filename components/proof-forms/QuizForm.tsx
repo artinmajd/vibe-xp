@@ -217,7 +217,7 @@ export default function QuizForm({
 
         {/* Circular timer */}
         <div className="relative flex items-center justify-center w-20 h-20">
-          <svg width="80" height="80" className="-rotate-90">
+          <svg width="80" height="80" viewBox="-4 -4 88 88" className="-rotate-90">
             <circle cx="40" cy="40" r={RADIUS} fill="none" stroke="#3f3f46" strokeWidth="5" />
             <circle
               cx="40" cy="40" r={RADIUS}
