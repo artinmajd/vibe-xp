@@ -133,13 +133,22 @@ export default async function DashboardPage() {
             <p className="text-xs text-indigo-200/70 font-medium uppercase tracking-widest">Logged in as</p>
             <p className="text-2xl font-extrabold text-white leading-tight">{student.display_name}</p>
           </div>
-          <a
-            href="/logout"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
-            style={{ background: "rgba(255,255,255,0.08)" }}
-          >
-            Log out
-          </a>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/leaderboard"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
+              style={{ background: "rgba(255,255,255,0.08)" }}
+            >
+              🏆 Leaderboard
+            </Link>
+            <a
+              href="/logout"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
+              style={{ background: "rgba(255,255,255,0.08)" }}
+            >
+              Log out
+            </a>
+          </div>
         </div>
 
         {/* ── Hero team card — glass ── */}
