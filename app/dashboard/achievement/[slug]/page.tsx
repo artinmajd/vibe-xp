@@ -132,6 +132,16 @@ export default async function AchievementPage({
             <span className="text-xs font-mono bg-indigo-900 text-indigo-300 px-2 py-1 rounded">
               +{achievement.xp} XP
             </span>
+            {achievement.proof_type === "quiz" && (
+              <span className="text-xs bg-violet-900 text-violet-300 px-2 py-1 rounded font-medium">
+                Quiz
+              </span>
+            )}
+            {achievement.proof_type === "instructor_flag" && (
+              <span className="text-xs bg-amber-900 text-amber-300 px-2 py-1 rounded font-medium">
+                Needs approval
+              </span>
+            )}
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">{achievement.title}</h1>
           <p className="text-zinc-400 text-sm">{achievement.description}</p>

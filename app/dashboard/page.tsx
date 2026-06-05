@@ -194,9 +194,16 @@ export default async function DashboardPage() {
                   }`}
                 >
                   <div>
-                    <p className={`text-sm font-medium ${isApproved ? "text-zinc-400 line-through" : "text-white"}`}>
-                      {achievement.title}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className={`text-sm font-medium ${isApproved ? "text-zinc-400 line-through" : "text-white"}`}>
+                        {achievement.title}
+                      </p>
+                      {achievement.proof_type === "quiz" && (
+                        <span className="text-xs bg-violet-900 text-violet-300 px-1.5 py-0.5 rounded font-medium">
+                          Quiz
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-zinc-500 mt-0.5">{achievement.description}</p>
                     {teamDone > 0 && !isApproved && (
                       <p className="text-xs text-zinc-600 mt-1">{teamDone}/3 teammates done</p>
