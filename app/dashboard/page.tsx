@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import SecretUnlockedToast from "@/components/SecretUnlockedToast";
 import PendingPoller from "@/components/PendingPoller";
+import LeaveTeamButton from "@/components/LeaveTeamButton";
 
 const LEVEL_GRADIENTS: Record<string, string> = {
   "Builder":          "from-slate-400 to-slate-500",
@@ -129,6 +130,20 @@ export default async function DashboardPage() {
       {hasPending && <PendingPoller />}
 
       <div className="max-w-2xl mx-auto flex flex-col gap-5">
+
+        {/* ── Top bar ── */}
+        <div className="animate-fade-up flex items-center justify-between">
+          <div>
+            <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">Logged in as</p>
+            <p className="text-2xl font-extrabold text-slate-900 leading-tight">{student.display_name} 👋</p>
+          </div>
+          <a
+            href="/logout"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-500 text-sm font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
+          >
+            <span>👋</span> Log out
+          </a>
+        </div>
 
         {/* ── Hero team card ── */}
         <div className="animate-fade-up rounded-3xl overflow-hidden shadow-lg">
@@ -307,11 +322,8 @@ export default async function DashboardPage() {
         )}
 
         {/* ── Footer ── */}
-        <div className="flex gap-4 text-sm text-slate-400 pb-6 px-1">
-          <a href="/logout" className="hover:text-slate-600 transition-colors">Log out</a>
-          <form action="/api/teams/leave" method="POST">
-            <button type="submit" className="hover:text-red-500 transition-colors">Leave team</button>
-          </form>
+        <div className="flex justify-end pb-6">
+          <LeaveTeamButton teamName={team.name} />
         </div>
 
       </div>
