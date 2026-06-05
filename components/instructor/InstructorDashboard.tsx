@@ -55,7 +55,6 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
   const [xpOverrides, setXpOverrides] = useState<Record<string, number>>({});
   const [grantAmounts, setGrantAmounts] = useState<Record<string, string>>({});
   const [grantReasons, setGrantReasons] = useState<Record<string, string>>({});
-  const [kahootAmounts, setKahootAmounts] = useState<Record<string, string>>({});
 
   async function handleApprove(id: string, xpOverride?: number) {
     setBusy(id);
@@ -93,21 +92,7 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
     router.refresh();
   }
 
-  async function handleKahoot(teamId: string) {
-    const amount = parseInt(kahootAmounts[teamId] ?? "0", 10);
-    if (isNaN(amount) || amount < 0 || amount > 4) return;
-    setBusy(`kahoot-${teamId}`);
-    await fetch("/api/instructor/grant-xp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ team_id: teamId, xp: amount, reason: "Kahoot block XP" }),
-    });
-    setKahootAmounts((prev) => ({ ...prev, [teamId]: "" }));
-    setBusy(null);
-    router.refresh();
-  }
-
-  async function handleSwitchSession(sessionId: number) {
+async function handleSwitchSession(sessionId: number) {
     setBusy(`session-${sessionId}`);
     await fetch("/api/instructor/session", {
       method: "POST",
@@ -301,26 +286,6 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
                     Grant XP
                   </button>
 
-                  {/* Kahoot quick-grant */}
-                  <div className="flex items-center gap-2 ml-2 pl-2 border-l border-zinc-700">
-                    <span className="text-xs text-zinc-500">Kahoot:</span>
-                    <input
-                      type="number"
-                      min={0}
-                      max={4}
-                      placeholder="0–4"
-                      value={kahootAmounts[team.id] ?? ""}
-                      onChange={(e) => setKahootAmounts((prev) => ({ ...prev, [team.id]: e.target.value }))}
-                      className="w-16 bg-zinc-800 text-white rounded px-2 py-2 text-xs outline-none focus:ring-1 focus:ring-yellow-500"
-                    />
-                    <button
-                      disabled={busy === `kahoot-${team.id}` || !kahootAmounts[team.id]}
-                      onClick={() => handleKahoot(team.id)}
-                      className="bg-yellow-700 hover:bg-yellow-600 disabled:opacity-50 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
-                    >
-                      Award
-                    </button>
-                  </div>
                 </div>
               </div>
             ))}
