@@ -11,34 +11,31 @@ async function autoAwardTeamNames(supabase: ReturnType<typeof createServerClient
 
   if (!achievement) return;
 
-  // Check if already awarded
-  const { data: existing } = await supabase
-    .from("submissions")
-    .select("id")
-    .eq("team_id", teamId)
-    .eq("achievement_id", achievement.id)
-    .maybeSingle();
-
-  if (existing) return;
-
-  // Get any team member to use as student_id for the submission record
-  const { data: member } = await supabase
+  // Award to every team member individually
+  const { data: members } = await supabase
     .from("team_members")
     .select("student_id")
-    .eq("team_id", teamId)
-    .limit(1)
-    .single();
+    .eq("team_id", teamId);
 
-  if (!member) return;
+  for (const member of members ?? []) {
+    const { data: existing } = await supabase
+      .from("submissions")
+      .select("id")
+      .eq("student_id", member.student_id)
+      .eq("achievement_id", achievement.id)
+      .maybeSingle();
 
-  await supabase.from("submissions").insert({
-    team_id: teamId,
-    student_id: member.student_id,
-    achievement_id: achievement.id,
-    proof_data: {},
-    status: "auto_approved",
-    xp_awarded: achievement.xp,
-  });
+    if (existing) continue;
+
+    await supabase.from("submissions").insert({
+      team_id: teamId,
+      student_id: member.student_id,
+      achievement_id: achievement.id,
+      proof_data: {},
+      status: "auto_approved",
+      xp_awarded: achievement.xp,
+    });
+  }
 }
 
 export async function POST(request: Request) {

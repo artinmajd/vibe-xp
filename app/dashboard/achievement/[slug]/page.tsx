@@ -39,13 +39,23 @@ export default async function AchievementPage({
 
   if (!achievement) notFound();
 
-  // Get existing submission for this team
+  // Get this student's submission
   const { data: submission } = await supabase
     .from("submissions")
     .select("*")
-    .eq("team_id", student.team_id)
+    .eq("student_id", user.id)
     .eq("achievement_id", achievement.id)
     .maybeSingle();
+
+  // Count how many teammates have an approved submission for this achievement
+  const { data: teamSubs } = await supabase
+    .from("submissions")
+    .select("student_id")
+    .eq("team_id", student.team_id)
+    .eq("achievement_id", achievement.id)
+    .in("status", ["auto_approved", "approved"]);
+
+  const teamDoneCount = (teamSubs ?? []).length;
 
   const config = achievement.proof_config as Record<string, unknown>;
 
@@ -138,6 +148,13 @@ export default async function AchievementPage({
             )}
             {renderForm()}
           </div>
+        )}
+
+        {/* Team progress */}
+        {teamDoneCount > 0 && (
+          <p className="text-xs text-zinc-600 mt-3">
+            {teamDoneCount} / 3 teammates done
+          </p>
         )}
       </div>
     </main>

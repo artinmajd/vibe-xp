@@ -54,21 +54,34 @@ export default async function DashboardPage() {
     .eq("is_active", true)
     .order("block_number");
 
-  // Team's submissions for this session
+  // All team submissions for this session (for team progress counts)
   const achievementIds = (achievements ?? []).map((a) => a.id);
-  const { data: submissions } = achievementIds.length
+  const { data: allTeamSubs } = achievementIds.length
     ? await supabase
         .from("submissions")
-        .select("achievement_id, status, xp_awarded")
+        .select("achievement_id, status, xp_awarded, student_id")
         .eq("team_id", team.id)
         .in("achievement_id", achievementIds)
     : { data: [] };
 
-  const submittedMap = new Map(
-    (submissions ?? []).map((s) => [s.achievement_id, s])
+  // This student's submissions
+  const mySubsMap = new Map(
+    (allTeamSubs ?? [])
+      .filter((s) => s.student_id === user.id)
+      .map((s) => [s.achievement_id, s])
   );
 
-  const hasPending = (submissions ?? []).some((s) => s.status === "pending");
+  // Team approved count per achievement
+  const teamDoneMap = new Map<string, number>();
+  for (const s of allTeamSubs ?? []) {
+    if (s.status === "auto_approved" || s.status === "approved") {
+      teamDoneMap.set(s.achievement_id, (teamDoneMap.get(s.achievement_id) ?? 0) + 1);
+    }
+  }
+
+  const hasPending = (allTeamSubs ?? []).some(
+    (s) => s.student_id === user.id && s.status === "pending"
+  );
 
   // Earned secret achievements
   const { data: secretSubmissions } = await supabase
@@ -163,9 +176,10 @@ export default async function DashboardPage() {
           <h2 className="text-lg font-semibold mb-4">Achievements</h2>
           <div className="flex flex-col gap-3">
             {(achievements ?? []).map((achievement) => {
-              const sub = submittedMap.get(achievement.id);
-              const isApproved = sub?.status === "auto_approved" || sub?.status === "approved";
-              const isPending = sub?.status === "pending";
+              const mySub = mySubsMap.get(achievement.id);
+              const isApproved = mySub?.status === "auto_approved" || mySub?.status === "approved";
+              const isPending = mySub?.status === "pending";
+              const teamDone = teamDoneMap.get(achievement.id) ?? 0;
 
               return (
                 <Link
@@ -184,10 +198,13 @@ export default async function DashboardPage() {
                       {achievement.title}
                     </p>
                     <p className="text-xs text-zinc-500 mt-0.5">{achievement.description}</p>
+                    {teamDone > 0 && !isApproved && (
+                      <p className="text-xs text-zinc-600 mt-1">{teamDone}/3 teammates done</p>
+                    )}
                   </div>
                   <div className="ml-4 shrink-0 text-right">
                     {isApproved ? (
-                      <span className="text-green-400 text-xs font-semibold">+{sub?.xp_awarded} XP ✓</span>
+                      <span className="text-green-400 text-xs font-semibold">+{mySub?.xp_awarded} XP ✓</span>
                     ) : isPending ? (
                       <span className="text-yellow-400 text-xs">Pending</span>
                     ) : (

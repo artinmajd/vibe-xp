@@ -46,17 +46,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Achievement not found." }, { status: 404 });
   }
 
-  // Check for existing submission
+  // Check for existing submission by this student
   const { data: existing } = await supabase
     .from("submissions")
     .select("id, status, xp_awarded")
-    .eq("team_id", teamId)
+    .eq("student_id", user.id)
     .eq("achievement_id", achievement.id)
     .maybeSingle();
 
   if (existing && existing.status !== "rejected") {
     return NextResponse.json(
-      { error: "Already done — your team already submitted this one.", already_done: true },
+      { error: "You already submitted this one.", already_done: true },
       { status: 409 }
     );
   }
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
   if (insertError) {
     if (insertError.code === "23505") {
       return NextResponse.json(
-        { error: "Already done — your team already submitted this one.", already_done: true },
+        { error: "You already submitted this one.", already_done: true },
         { status: 409 }
       );
     }

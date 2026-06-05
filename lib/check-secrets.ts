@@ -76,17 +76,16 @@ export async function checkSecretAchievements(
       .in("slug", skepticSlugs);
 
     if (skepticAchs) {
-      const { count } = await supabase
+      const { data: skepticSubs } = await supabase
         .from("submissions")
-        .select("*", { count: "exact", head: true })
+        .select("achievement_id")
         .eq("team_id", teamId)
         .in("status", ["auto_approved", "approved"])
-        .in(
-          "achievement_id",
-          skepticAchs.map((a) => a.id)
-        );
+        .in("achievement_id", skepticAchs.map((a) => a.id));
 
-      if ((count ?? 0) >= 3) {
+      const distinctAchs = new Set((skepticSubs ?? []).map((s) => s.achievement_id));
+
+      if (distinctAchs.size >= 3) {
         await autoAward(supabase, teamId, skeptic);
         unlocked.push({ slug: skeptic.slug, title: skeptic.title, xp: skeptic.xp });
       }
