@@ -120,13 +120,13 @@ export default async function DashboardPage() {
       {/* Animated blobs */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         {/* Large blobs */}
-        <div className="blob-1 absolute top-[10%] left-[15%] w-[420px] h-[420px] rounded-full bg-indigo-500/40 blur-[100px]" />
-        <div className="blob-2 absolute top-[30%] right-[10%] w-[500px] h-[500px] rounded-full bg-violet-600/35 blur-[120px]" />
-        <div className="blob-3 absolute bottom-[10%] left-[25%] w-[380px] h-[380px] rounded-full bg-blue-500/35 blur-[100px]" />
+        <div className="blob-1 absolute top-[10%] left-[15%] w-[320px] h-[320px] rounded-full bg-indigo-500/50 blur-[40px]" />
+        <div className="blob-2 absolute top-[30%] right-[10%] w-[380px] h-[380px] rounded-full bg-violet-600/45 blur-[50px]" />
+        <div className="blob-3 absolute bottom-[10%] left-[25%] w-[300px] h-[300px] rounded-full bg-blue-500/45 blur-[40px]" />
         {/* Smaller accent blobs */}
-        <div className="blob-4 absolute top-[60%] right-[30%] w-[220px] h-[220px] rounded-full bg-purple-400/40 blur-[70px]" />
-        <div className="blob-5 absolute top-[5%] right-[40%] w-[180px] h-[180px] rounded-full bg-sky-400/30 blur-[60px]" />
-        <div className="blob-6 absolute bottom-[25%] right-[5%] w-[260px] h-[260px] rounded-full bg-fuchsia-500/35 blur-[80px]" />
+        <div className="blob-4 absolute top-[60%] right-[30%] w-[180px] h-[180px] rounded-full bg-purple-400/55 blur-[30px]" />
+        <div className="blob-5 absolute top-[5%] right-[40%] w-[150px] h-[150px] rounded-full bg-sky-400/45 blur-[25px]" />
+        <div className="blob-6 absolute bottom-[25%] right-[5%] w-[200px] h-[200px] rounded-full bg-fuchsia-500/50 blur-[35px]" />
       </div>
 
       {/* Glass overlay so content sits on frosted glass */}
