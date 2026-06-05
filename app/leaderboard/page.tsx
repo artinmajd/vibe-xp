@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import DarkBackground from "@/components/DarkBackground";
+import { createBrowserClient } from "@/lib/supabase-browser";
 
 type TeamRow = {
   teamId: string;
@@ -48,7 +49,14 @@ function LeaderboardInner() {
 
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [highlightedIds, setHighlightedIds] = useState<Set<string>>(new Set());
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const prevOrderRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    createBrowserClient().auth.getSession().then(({ data: { session } }) => {
+      setIsSignedIn(!!session);
+    });
+  }, []);
 
   const fetchLeaderboard = useCallback(async () => {
     const res = await fetch(`/api/leaderboard?view=${view}`);
@@ -189,11 +197,11 @@ function LeaderboardInner() {
         {/* Back button */}
         <div className="mt-8 pb-2">
           <a
-            href="/dashboard"
+            href={isSignedIn ? "/dashboard" : "/"}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
             style={{ background: "rgba(255,255,255,0.08)" }}
           >
-            ← Dashboard
+            ← {isSignedIn ? "Dashboard" : "Main Menu"}
           </a>
         </div>
 
