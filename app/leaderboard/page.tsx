@@ -127,7 +127,7 @@ function LeaderboardInner() {
               return (
                 <div
                   key={team.teamId}
-                  className={`flex items-center gap-6 rounded-2xl px-8 py-6 border transition-all duration-500 ${
+                  className={`rounded-2xl px-8 py-5 border transition-all duration-500 ${
                     isHighlighted
                       ? "border-indigo-400/60 scale-[1.01]"
                       : idx === 0
@@ -143,37 +143,42 @@ function LeaderboardInner() {
                     backdropFilter: idx === 0 ? "blur(20px)" : undefined,
                   }}
                 >
-                  {/* Rank */}
-                  <span className={`text-5xl font-black w-16 text-center ${RANK_COLORS[idx] ?? "text-white/30"}`}>
-                    {idx + 1}
-                  </span>
+                  {/* Top row: rank · emoji · name · XP */}
+                  <div className="flex items-center gap-6">
+                    <span className={`text-5xl font-black w-16 text-center shrink-0 ${RANK_COLORS[idx] ?? "text-white/30"}`}>
+                      {idx + 1}
+                    </span>
 
-                  {/* Emoji + name */}
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <span className="text-4xl">{team.emoji ?? "🏆"}</span>
-                    <div className="min-w-0">
-                      <p className="text-2xl font-bold truncate">{team.name}</p>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <span className="text-4xl">{team.emoji ?? "🏆"}</span>
+                      <div className="min-w-0">
+                        <p className="text-2xl font-bold truncate">{team.name}</p>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium border border-white/10 ${LEVEL_COLORS[team.levelName] ?? "bg-white/10 text-white/50"}`}>
                           {team.levelName}
                         </span>
-                        {team.members.map((m) => (
-                          <span key={m} className="text-xs text-white/50">{m}</span>
-                        ))}
                       </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <p className="text-4xl font-black text-white">{xp}</p>
+                      <p className="text-sm text-white/40">XP</p>
+                      {view === "total" && (
+                        <p className="text-xs text-white/25 mt-1">{team.sessionXp} this session</p>
+                      )}
                     </div>
                   </div>
 
-                  {/* XP */}
-                  <div className="text-right shrink-0">
-                    <p className="text-4xl font-black text-white">{xp}</p>
-                    <p className="text-sm text-white/40">XP</p>
-                    {view === "total" && (
-                      <p className="text-xs text-white/25 mt-1">
-                        {team.sessionXp} this session
-                      </p>
-                    )}
-                  </div>
+                  {/* Members row */}
+                  {team.members.length > 0 && (
+                    <div className="flex items-center gap-2 mt-3 pl-20">
+                      {team.members.map((m) => (
+                        <span key={m} className="text-xs font-medium px-3 py-1 rounded-full border border-white/15 text-white/55"
+                          style={{ background: "rgba(255,255,255,0.07)" }}>
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
