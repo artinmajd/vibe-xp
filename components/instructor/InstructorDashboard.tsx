@@ -65,6 +65,7 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
   const [editEmoji, setEditEmoji] = useState("");
   const [reassigning, setReassigning] = useState<string | null>(null);
   const [reassignTarget, setReassignTarget] = useState<Record<string, string>>({});
+  const [kicking, setKicking] = useState<string | null>(null);
 
   async function handleApprove(id: string, xpOverride?: number) {
     setBusy(id);
@@ -125,6 +126,17 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
     });
     setReassigning(null);
     setReassignTarget((prev) => { const n = { ...prev }; delete n[studentId]; return n; });
+    router.refresh();
+  }
+
+  async function handleKick(studentId: string) {
+    setKicking(studentId);
+    await fetch("/api/instructor/teams", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ student_id: studentId }),
+    });
+    setKicking(null);
     router.refresh();
   }
 
@@ -340,9 +352,11 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
                         className="bg-zinc-800 text-zinc-400 text-xs rounded px-2 py-1.5 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                       >
                         <option value="">Move to…</option>
-                        {teams.filter((t) => t.id !== team.id).map((t) => (
-                          <option key={t.id} value={t.id}>{t.emoji ?? "🏆"} {t.name}</option>
-                        ))}
+                        {teams
+                          .filter((t) => t.id !== team.id && t.members.length < 3)
+                          .map((t) => (
+                            <option key={t.id} value={t.id}>{t.emoji ?? "🏆"} {t.name}</option>
+                          ))}
                       </select>
                       {reassignTarget[m.id] && (
                         <button
@@ -353,6 +367,13 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
                           {reassigning === m.id ? "Moving…" : "Move"}
                         </button>
                       )}
+                      <button
+                        disabled={kicking === m.id}
+                        onClick={() => handleKick(m.id)}
+                        className="ml-auto text-xs bg-zinc-800 hover:bg-red-900 disabled:opacity-50 text-zinc-500 hover:text-red-300 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        {kicking === m.id ? "Kicking…" : "Kick"}
+                      </button>
                     </div>
                   ))}
                 </div>

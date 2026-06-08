@@ -30,16 +30,38 @@ export async function POST(req: NextRequest) {
 
   const supabase = createServerClient();
 
-  // Update students.team_id
-  await supabase.from("students").update({ team_id: new_team_id }).eq("id", student_id);
+  // Reject if destination team is already full
+  const { count } = await supabase
+    .from("team_members")
+    .select("*", { count: "exact", head: true })
+    .eq("team_id", new_team_id);
 
-  // Remove from old team_members record
+  if ((count ?? 0) >= 3) {
+    return NextResponse.json({ error: "That team is already full (3/3)." }, { status: 409 });
+  }
+
+  await supabase.from("students").update({ team_id: new_team_id }).eq("id", student_id);
   await supabase.from("team_members").delete().eq("student_id", student_id);
 
-  // Insert into new team
   const { error } = await supabase
     .from("team_members")
     .insert({ student_id, team_id: new_team_id });
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}
+
+// DELETE /api/instructor/teams — kick a student out of their team
+export async function DELETE(req: NextRequest) {
+  await requireInstructor();
+  const { student_id } = await req.json();
+  if (!student_id) {
+    return NextResponse.json({ error: "student_id is required" }, { status: 400 });
+  }
+
+  const supabase = createServerClient();
+  await supabase.from("team_members").delete().eq("student_id", student_id);
+  const { error } = await supabase.from("students").update({ team_id: null }).eq("id", student_id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
