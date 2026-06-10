@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Suspense } from "react";
 import SecretUnlockedToast from "@/components/SecretUnlockedToast";
 import PendingPoller from "@/components/PendingPoller";
-import LeaveTeamButton from "@/components/LeaveTeamButton";
 import DarkBackground from "@/components/DarkBackground";
 import UnlockPoller from "@/components/UnlockPoller";
 import Image from "next/image";
@@ -369,15 +368,14 @@ export default async function DashboardPage() {
         )}
 
         {/* ── Footer ── */}
-        <div className="flex items-center justify-between pb-6">
+        <div className="pb-6">
           <Link
             href="/"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200 w-fit"
             style={{ background: "rgba(255,255,255,0.08)" }}
           >
             ← Home
           </Link>
-          <LeaveTeamButton teamName={team.name} />
         </div>
 
       </div>
