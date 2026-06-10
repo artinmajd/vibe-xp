@@ -37,6 +37,13 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
       style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #2e1065 40%, #1e3a8a 100%)" }}>
       <DarkBackground />
+      <div style={{ position: "fixed", top: 18, left: 8, zIndex: 50, transform: "scale(0.55)", transformOrigin: "top left" }}>
+        <img
+          src="/assets/Future_Wrights.png"
+          alt="Future Wrights"
+          style={{ display: "block", width: "340px", height: "60px", objectFit: "none", objectPosition: "-55px -218px", mixBlendMode: "screen" }}
+        />
+      </div>
 
       <div className="relative z-10 w-full max-w-sm">
         <div className="text-center mb-8">
