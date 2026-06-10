@@ -33,6 +33,7 @@ type SessionInfo = {
   id: number;
   title: string;
   is_active: boolean;
+  unlocked_through: number;
 };
 
 type Props = {
@@ -40,11 +41,12 @@ type Props = {
   teams: TeamInfo[];
   sessions: SessionInfo[];
   activeSession: SessionInfo | null;
+  sessionBlocks: number[];
 };
 
 type Tab = "pending" | "teams" | "session" | "leaderboard";
 
-export default function InstructorDashboard({ pending, teams, sessions, activeSession }: Props) {
+export default function InstructorDashboard({ pending, teams, sessions, activeSession, sessionBlocks }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("pending");
 
@@ -54,6 +56,8 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
   }, [router]);
 
   const [busy, setBusy] = useState<string | null>(null);
+  const [unlockMenuOpen, setUnlockMenuOpen] = useState(false);
+  const [unlockedThrough, setUnlockedThrough] = useState<number>(activeSession?.unlocked_through ?? 0);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [xpOverrides, setXpOverrides] = useState<Record<string, number>>({});
   const [grantAmounts, setGrantAmounts] = useState<Record<string, string>>({});
@@ -156,6 +160,22 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
     router.push("/instructor/login");
   }
 
+  async function handleUnlock(action: "release" | "retract") {
+    setUnlockMenuOpen(false);
+    setBusy(`unlock-${action}`);
+    const res = await fetch("/api/instructor/unlock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
+    if (res.ok) {
+      const { unlocked_through } = await res.json();
+      setUnlockedThrough(unlocked_through);
+    }
+    setBusy(null);
+    router.refresh();
+  }
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       {/* Header */}
@@ -166,12 +186,70 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
             <p className="text-xs text-zinc-500">Active: Session {activeSession.id} — {activeSession.title}</p>
           )}
         </div>
-        <button
-          onClick={handleLogout}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-        >
-          Log out
-        </button>
+
+        <div className="flex items-center gap-3">
+          {/* Unlock controls */}
+          {activeSession && (
+            <div className="relative">
+              <button
+                onClick={() => setUnlockMenuOpen((o) => !o)}
+                className="cursor-pointer flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900 hover:border-zinc-500 hover:bg-zinc-800 transition-all"
+              >
+                <span className="text-zinc-400">🔓</span>
+                <span className="text-zinc-200">
+                  {unlockedThrough === 0
+                    ? "All locked"
+                    : `Block ${unlockedThrough} unlocked`}
+                </span>
+                <span className="text-zinc-500 text-xs">▾</span>
+              </button>
+
+              {unlockMenuOpen && (
+                <>
+                  {/* backdrop to close on outside click */}
+                  <div className="fixed inset-0 z-10" onClick={() => setUnlockMenuOpen(false)} />
+                  <div className="absolute right-0 mt-1 w-52 rounded-xl border border-zinc-700 bg-zinc-900 shadow-xl z-20 overflow-hidden">
+                    <button
+                      onClick={() => handleUnlock("release")}
+                      disabled={
+                        busy === "unlock-release" ||
+                        sessionBlocks.length === 0 ||
+                        unlockedThrough >= Math.max(...sessionBlocks)
+                      }
+                      className="cursor-pointer w-full text-left px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border-b border-zinc-800"
+                    >
+                      <div className="font-medium">Release Next</div>
+                      <div className="text-xs text-zinc-500 mt-0.5">
+                        {sessionBlocks.find((b) => b > unlockedThrough) != null
+                          ? `→ Block ${sessionBlocks.find((b) => b > unlockedThrough)}`
+                          : "Nothing left to unlock"}
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleUnlock("retract")}
+                      disabled={busy === "unlock-retract" || unlockedThrough === 0}
+                      className="cursor-pointer w-full text-left px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <div className="font-medium">Retract Last</div>
+                      <div className="text-xs text-zinc-500 mt-0.5">
+                        {unlockedThrough > 0
+                          ? `← Back to block ${sessionBlocks.filter((b) => b < unlockedThrough).at(-1) ?? 0}`
+                          : "Nothing to retract"}
+                      </div>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          <button
+            onClick={handleLogout}
+            className="cursor-pointer text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+          >
+            Log out
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}

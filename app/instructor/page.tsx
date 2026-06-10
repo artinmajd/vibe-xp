@@ -95,16 +95,29 @@ export default async function InstructorPage() {
   // All sessions
   const { data: sessionsRaw } = await supabase
     .from("sessions")
-    .select("id, title, is_active")
+    .select("id, title, is_active, unlocked_through")
     .order("id");
 
   const sessions = (sessionsRaw ?? []).map((s) => ({
     id: s.id,
     title: s.title,
     is_active: s.is_active,
+    unlocked_through: s.unlocked_through ?? 0,
   }));
 
   const activeSession = sessions.find((s) => s.is_active) ?? null;
+
+  // Distinct block numbers for the active session
+  const { data: blockRows } = activeSession
+    ? await supabase
+        .from("achievements")
+        .select("block_number")
+        .eq("session_number", activeSession.id)
+        .eq("is_secret", false)
+        .order("block_number")
+    : { data: [] };
+
+  const sessionBlocks = [...new Set((blockRows ?? []).map((r) => r.block_number))];
 
   return (
     <InstructorDashboard
@@ -112,6 +125,7 @@ export default async function InstructorPage() {
       teams={teams}
       sessions={sessions}
       activeSession={activeSession}
+      sessionBlocks={sessionBlocks}
     />
   );
 }

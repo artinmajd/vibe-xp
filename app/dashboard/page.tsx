@@ -50,17 +50,23 @@ export default async function DashboardPage() {
 
   const { data: session } = await supabase
     .from("sessions")
-    .select("*")
+    .select("id, title, is_active, unlocked_through")
     .eq("is_active", true)
     .maybeSingle();
 
-  const { data: achievements } = await supabase
+  const unlockedThrough: number = (session as { unlocked_through?: number } | null)?.unlocked_through ?? 0;
+
+  const achievementsQuery = supabase
     .from("achievements")
     .select("*")
     .eq("session_number", session?.id ?? 1)
     .eq("is_secret", false)
     .eq("is_active", true)
     .order("block_number");
+
+  const { data: achievements } = unlockedThrough > 0
+    ? await achievementsQuery.lte("block_number", unlockedThrough)
+    : { data: [] };
 
   const achievementIds = (achievements ?? []).map((a) => a.id);
   const { data: allTeamSubs } = achievementIds.length
@@ -212,7 +218,7 @@ export default async function DashboardPage() {
               Level {levelInfo.level} · {levelInfo.name}
             </span>
             <span className="text-xs text-white/50 font-medium">
-              {doneCount} / {(achievements ?? []).length} done
+              {unlockedThrough === 0 ? "🔒 locked" : `${doneCount} / ${(achievements ?? []).length} done`}
             </span>
           </div>
         </div>
@@ -233,6 +239,16 @@ export default async function DashboardPage() {
         {/* ── Achievements ── */}
         <div className="animate-fade-up" style={{ animationDelay: "0.1s" }}>
           <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3 px-1">Achievements</h2>
+          {unlockedThrough === 0 ? (
+            <div
+              className="rounded-2xl px-5 py-6 text-center border border-white/10"
+              style={{ background: "rgba(30,27,75,0.75)" }}
+            >
+              <p className="text-3xl mb-3">🔒</p>
+              <p className="text-white/70 font-semibold text-sm">Waiting for the instructor to unlock achievements</p>
+              <p className="text-white/35 text-xs mt-1">Check back when the session gets started</p>
+            </div>
+          ) : (
           <div className="flex flex-col gap-2">
             {(achievements ?? []).map((achievement, i) => {
               const mySub = mySubsMap.get(achievement.id);
@@ -302,6 +318,7 @@ export default async function DashboardPage() {
               );
             })}
           </div>
+          )}
         </div>
 
         {/* ── Secret achievements ── */}

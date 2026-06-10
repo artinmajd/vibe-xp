@@ -40,6 +40,16 @@ export default async function AchievementPage({
 
   if (!achievement) notFound();
 
+  // Block access if the instructor hasn't unlocked this achievement's block yet
+  const { data: activeSession } = await supabase
+    .from("sessions")
+    .select("unlocked_through")
+    .eq("is_active", true)
+    .maybeSingle();
+
+  const unlockedThrough = (activeSession as { unlocked_through?: number } | null)?.unlocked_through ?? 0;
+  if (achievement.block_number > unlockedThrough) redirect("/dashboard");
+
   const { data: submission } = await supabase
     .from("submissions")
     .select("*")
