@@ -2,6 +2,7 @@ import { createServerClient } from "@/lib/supabase-server";
 import { createAuthClient } from "@/lib/supabase-auth";
 import { runValidator } from "@/lib/dispatch-validator";
 import { checkSecretAchievements } from "@/lib/check-secrets";
+import { applyTeamMultiplier } from "@/lib/team-xp";
 import { Achievement } from "@/lib/types";
 import { calcTotalQuizXP, QuizQuestion, QuizAnswer } from "@/lib/quiz-xp";
 import { NextResponse } from "next/server";
@@ -34,6 +35,12 @@ export async function POST(request: Request) {
   }
 
   const teamId = student.team_id;
+
+  // Team size at this moment — used for fairness multiplier
+  const { count: memberCount } = await supabase
+    .from("team_members")
+    .select("*", { count: "exact", head: true })
+    .eq("team_id", teamId);
 
   // Load achievement
   const { data: achievement } = await supabase
@@ -89,6 +96,7 @@ export async function POST(request: Request) {
     } else {
       xpAwarded = achievement.xp;
     }
+    xpAwarded = applyTeamMultiplier(xpAwarded, memberCount ?? 1);
   } else {
     return NextResponse.json({ error: validationResult.reason }, { status: 422 });
   }

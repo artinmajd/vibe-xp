@@ -2,17 +2,14 @@ import { createServerClient } from "@/lib/supabase-server";
 import { xpToLevel, LevelInfo } from "@/lib/levels";
 
 export type TeamXP = {
-  rawXp: number;
-  adjustedXp: number;
+  totalXp: number;
   memberCount: number;
-  totalXp: number; // alias for adjustedXp — kept for backwards compat
   levelInfo: LevelInfo;
 };
 
 // Total XP is always computed — never stored.
-// Sums approved submissions + manual grants, then applies a fairness
-// multiplier of 3/memberCount so smaller teams compete on equal footing.
-// Level progression uses raw XP so leveling isn't inflated.
+// The fairness multiplier (3/memberCount) is baked into xp_awarded at
+// approval time, so this function just sums what's already stored.
 export async function getTeamXP(teamId: string, memberCount?: number): Promise<TeamXP> {
   const supabase = createServerClient();
 
@@ -34,20 +31,16 @@ export async function getTeamXP(teamId: string, memberCount?: number): Promise<T
   const resolvedMemberCount =
     memberCount ?? (members as { student_id: string }[] | null)?.length ?? 1;
 
-  const rawXp =
+  const totalXp =
     (submissions ?? []).reduce((sum, s) => sum + s.xp_awarded, 0) +
     (grants ?? []).reduce((sum, g) => sum + g.xp, 0);
 
-  const adjustedXp =
-    resolvedMemberCount < 3
-      ? Math.round((rawXp * 3) / resolvedMemberCount)
-      : rawXp;
+  return { totalXp, memberCount: resolvedMemberCount, levelInfo: xpToLevel(totalXp) };
+}
 
-  return {
-    rawXp,
-    adjustedXp,
-    memberCount: resolvedMemberCount,
-    totalXp: adjustedXp,
-    levelInfo: xpToLevel(rawXp),
-  };
+// Apply the fairness multiplier for a given team size.
+// Call this when xp_awarded is being set, not when reading it back.
+export function applyTeamMultiplier(baseXp: number, memberCount: number): number {
+  if (memberCount >= 3) return baseXp;
+  return Math.round((baseXp * 3) / memberCount);
 }

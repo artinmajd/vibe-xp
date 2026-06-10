@@ -1,4 +1,5 @@
 import { createServerClient } from "@/lib/supabase-server";
+import { applyTeamMultiplier } from "@/lib/team-xp";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -27,7 +28,17 @@ export async function POST(request: Request) {
   }
 
   const defaultXp = (submission.achievements as unknown as { xp: number } | null)?.xp ?? 0;
-  const xpAwarded = action === "approve" ? (xp_override ?? defaultXp) : 0;
+  const baseXp = action === "approve" ? (xp_override ?? defaultXp) : 0;
+
+  let xpAwarded = baseXp;
+  if (action === "approve" && baseXp > 0) {
+    const { count: memberCount } = await supabase
+      .from("team_members")
+      .select("*", { count: "exact", head: true })
+      .eq("team_id", submission.team_id);
+    xpAwarded = applyTeamMultiplier(baseXp, memberCount ?? 1);
+  }
+
   const status = action === "approve" ? "approved" : "rejected";
 
   const { error: updateError } = await supabase

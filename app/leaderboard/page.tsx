@@ -174,10 +174,10 @@ function LeaderboardInner() {
                       <p className="text-sm text-white/40">XP</p>
                       {team.memberCount < 3 && (
                         <p className="text-xs text-amber-400/80 mt-1">
-                          ×{team.memberCount === 1 ? "3" : "3/2"} small team boost
+                          earning ×{team.memberCount === 1 ? "3" : "3/2"} XP
                         </p>
                       )}
-                      {view === "total" && team.memberCount === 3 && (
+                      {view === "total" && (
                         <p className="text-xs text-white/25 mt-1">{team.sessionXp} this session</p>
                       )}
                     </div>

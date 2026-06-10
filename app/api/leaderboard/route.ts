@@ -70,20 +70,15 @@ export async function GET(request: NextRequest) {
     const teamSubmissions = (submissions ?? []).filter((s) => s.team_id === team.id);
     const teamGrants = (grants ?? []).filter((g) => g.team_id === team.id);
 
-    const rawXp =
+    const totalXp =
       teamSubmissions.reduce((sum, s) => sum + s.xp_awarded, 0) +
       teamGrants.reduce((sum, g) => sum + g.xp, 0);
 
-    const adjustedXp = memberCount < 3 ? Math.round((rawXp * 3) / memberCount) : rawXp;
-
-    const rawSessionXp = teamSubmissions
+    const sessionXp = teamSubmissions
       .filter((s) => sessionAchievementIds.has(s.achievement_id))
       .reduce((sum, s) => sum + s.xp_awarded, 0);
 
-    const adjustedSessionXp =
-      memberCount < 3 ? Math.round((rawSessionXp * 3) / memberCount) : rawSessionXp;
-
-    const levelInfo = xpToLevel(rawXp);
+    const levelInfo = xpToLevel(totalXp);
 
     return {
       teamId: team.id,
@@ -91,8 +86,8 @@ export async function GET(request: NextRequest) {
       emoji: team.emoji,
       members: teamMembers,
       memberCount,
-      sessionXp: adjustedSessionXp,
-      totalXp: adjustedXp,
+      sessionXp,
+      totalXp,
       level: levelInfo.level,
       levelName: levelInfo.name,
       xpToNext: levelInfo.xpToNext,
