@@ -107,6 +107,15 @@ export default async function InstructorPage() {
 
   const activeSession = sessions.find((s) => s.is_active) ?? null;
 
+  // Students without a team
+  const { data: teamlessRaw } = await supabase
+    .from("students")
+    .select("id, display_name")
+    .is("team_id", null)
+    .order("display_name");
+
+  const teamlessStudents = (teamlessRaw ?? []).map((s) => ({ id: s.id, name: s.display_name }));
+
   // Achievement unlock preview for the instructor dropdown
   const { data: achievementRows } = activeSession
     ? await supabase
@@ -128,6 +137,7 @@ export default async function InstructorPage() {
     <InstructorDashboard
       pending={pending}
       teams={teams}
+      teamlessStudents={teamlessStudents}
       sessions={sessions}
       activeSession={activeSession}
       nextAchievement={nextAchievement}

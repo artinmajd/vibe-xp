@@ -41,6 +41,7 @@ type AchievementPreview = { id: string; title: string };
 type Props = {
   pending: PendingSubmission[];
   teams: TeamInfo[];
+  teamlessStudents: Member[];
   sessions: SessionInfo[];
   activeSession: SessionInfo | null;
   nextAchievement: AchievementPreview | null;
@@ -49,7 +50,7 @@ type Props = {
 
 type Tab = "pending" | "teams" | "session" | "leaderboard";
 
-export default function InstructorDashboard({ pending, teams, sessions, activeSession, nextAchievement, lastUnlockedAchievement }: Props) {
+export default function InstructorDashboard({ pending, teams, teamlessStudents, sessions, activeSession, nextAchievement, lastUnlockedAchievement }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("pending");
 
@@ -482,6 +483,47 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
 
               </div>
             ))}
+
+            {/* ── Students without a team ── */}
+            {teamlessStudents.length > 0 && (
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-lg">👤</span>
+                  <div>
+                    <p className="font-semibold">No Team</p>
+                    <p className="text-xs text-zinc-500">{teamlessStudents.length} student{teamlessStudents.length !== 1 ? "s" : ""} unassigned</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {teamlessStudents.map((m) => (
+                    <div key={m.id} className="flex items-center gap-2">
+                      <span className="text-xs bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg min-w-24">{m.name}</span>
+                      <select
+                        value={reassignTarget[m.id] ?? ""}
+                        onChange={(e) => setReassignTarget((prev) => ({ ...prev, [m.id]: e.target.value }))}
+                        className="bg-zinc-800 text-zinc-400 text-xs rounded px-2 py-1.5 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                      >
+                        <option value="">Assign to…</option>
+                        {teams
+                          .filter((t) => t.members.length < 3)
+                          .map((t) => (
+                            <option key={t.id} value={t.id}>{t.emoji ?? "🏆"} {t.name}</option>
+                          ))}
+                      </select>
+                      {reassignTarget[m.id] && (
+                        <button
+                          disabled={reassigning === m.id}
+                          onClick={() => handleReassign(m.id)}
+                          className="bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          {reassigning === m.id ? "Assigning…" : "Assign"}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
