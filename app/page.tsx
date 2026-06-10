@@ -8,9 +8,20 @@ export default function Home() {
       style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #2e1065 40%, #1e3a8a 100%)" }}>
       <DarkBackground />
 
-      {/* Future Wrights logo — top left */}
-      <div className="absolute top-5 left-5 z-10">
-        <Image src="/assets/Future_Wrights.png" alt="Future Wrights" width={120} height={40} className="object-contain" style={{ mixBlendMode: "screen" }} />
+      {/* Crop the 500x500 PNG to its actual content region (y=218–270, x=55–374) */}
+      <div className="absolute top-0 left-2 z-10" style={{ width: "280px", height: "50px", overflow: "hidden" }}>
+        <img
+          src="/assets/Future_Wrights.png"
+          alt="Future Wrights"
+          style={{
+            position: "absolute",
+            width: "420px",
+            top: "-176px",
+            left: "-39px",
+            mixBlendMode: "screen",
+            display: "block",
+          }}
+        />
       </div>
 
       <div className="relative z-10 max-w-md w-full flex flex-col items-center gap-10">
