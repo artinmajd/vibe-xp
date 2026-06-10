@@ -8,6 +8,7 @@ import SecretUnlockedToast from "@/components/SecretUnlockedToast";
 import PendingPoller from "@/components/PendingPoller";
 import LeaveTeamButton from "@/components/LeaveTeamButton";
 import DarkBackground from "@/components/DarkBackground";
+import UnlockPoller from "@/components/UnlockPoller";
 
 const LEVEL_GRADIENTS: Record<string, string> = {
   "Builder":          "from-slate-400 to-slate-500",
@@ -50,23 +51,18 @@ export default async function DashboardPage() {
 
   const { data: session } = await supabase
     .from("sessions")
-    .select("id, title, is_active, unlocked_through")
+    .select("id, title, is_active")
     .eq("is_active", true)
     .maybeSingle();
 
-  const unlockedThrough: number = (session as { unlocked_through?: number } | null)?.unlocked_through ?? 0;
-
-  const achievementsQuery = supabase
+  const { data: achievements } = await supabase
     .from("achievements")
     .select("*")
     .eq("session_number", session?.id ?? 1)
     .eq("is_secret", false)
     .eq("is_active", true)
-    .order("block_number");
-
-  const { data: achievements } = unlockedThrough > 0
-    ? await achievementsQuery.lte("block_number", unlockedThrough)
-    : { data: [] };
+    .order("block_number")
+    .order("id");
 
   const achievementIds = (achievements ?? []).map((a) => a.id);
   const { data: allTeamSubs } = achievementIds.length
@@ -115,7 +111,8 @@ export default async function DashboardPage() {
     : 100;
 
   const levelGradient = LEVEL_GRADIENTS[levelInfo.name] ?? "from-indigo-500 to-violet-600";
-  const doneCount = (achievements ?? []).filter((a) => {
+  const unlockedAchievements = (achievements ?? []).filter((a) => a.is_unlocked);
+  const doneCount = unlockedAchievements.filter((a) => {
     const s = mySubsMap.get(a.id);
     return s?.status === "auto_approved" || s?.status === "approved";
   }).length;
@@ -130,6 +127,7 @@ export default async function DashboardPage() {
         <SecretUnlockedToast />
       </Suspense>
       {hasPending && <PendingPoller />}
+      <UnlockPoller />
 
       <div className="relative z-10 max-w-2xl mx-auto flex flex-col gap-5">
 
@@ -218,7 +216,7 @@ export default async function DashboardPage() {
               Level {levelInfo.level} · {levelInfo.name}
             </span>
             <span className="text-xs text-white/50 font-medium">
-              {unlockedThrough === 0 ? "🔒 locked" : `${doneCount} / ${(achievements ?? []).length} done`}
+              {unlockedAchievements.length === 0 ? "🔒 locked" : `${doneCount} / ${unlockedAchievements.length} done`}
             </span>
           </div>
         </div>
@@ -239,56 +237,50 @@ export default async function DashboardPage() {
         {/* ── Achievements ── */}
         <div className="animate-fade-up" style={{ animationDelay: "0.1s" }}>
           <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3 px-1">Achievements</h2>
-          {unlockedThrough === 0 ? (
-            <div
-              className="rounded-2xl px-5 py-6 text-center border border-white/10"
-              style={{ background: "rgba(30,27,75,0.75)" }}
-            >
-              <p className="text-3xl mb-3">🔒</p>
-              <p className="text-white/70 font-semibold text-sm">Waiting for the instructor to unlock achievements</p>
-              <p className="text-white/35 text-xs mt-1">Check back when the session gets started</p>
-            </div>
-          ) : (
           <div className="flex flex-col gap-2">
             {(achievements ?? []).map((achievement, i) => {
-              const mySub = mySubsMap.get(achievement.id);
+              const isLocked = !achievement.is_unlocked;
+              const mySub = isLocked ? undefined : mySubsMap.get(achievement.id);
               const isApproved = mySub?.status === "auto_approved" || mySub?.status === "approved";
               const isPending = mySub?.status === "pending";
               const teamDone = teamDoneMap.get(achievement.id) ?? 0;
 
-              return (
-                <Link
-                  key={achievement.id}
-                  href={`/dashboard/achievement/${achievement.slug}`}
+              const card = (
+                <div
                   style={{
                     animationDelay: `${0.12 + i * 0.03}s`,
-                    background: isApproved
+                    background: isLocked
+                      ? "rgba(20,18,55,0.5)"
+                      : isApproved
                       ? "rgba(30,27,75,0.55)"
                       : isPending
                       ? "rgba(46,28,15,0.75)"
                       : "rgba(30,27,75,0.75)",
                   }}
-                  className={`animate-fade-up group flex items-center justify-between rounded-2xl px-4 py-4 border transition-all duration-200 ${
-                    isApproved
+                  className={`animate-fade-up flex items-center justify-between rounded-2xl px-4 py-4 border transition-all duration-200 ${
+                    isLocked
+                      ? "border-white/5 opacity-40 cursor-not-allowed select-none"
+                      : isApproved
                       ? "border-green-500/25 opacity-70"
                       : isPending
                       ? "border-amber-500/40"
-                      : "border-indigo-400/20 hover:-translate-y-0.5 hover:shadow-lg hover:border-indigo-400/40"
+                      : "group border-indigo-400/20 hover:-translate-y-0.5 hover:shadow-lg hover:border-indigo-400/40 cursor-pointer"
                   }`}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className={`text-sm font-semibold truncate ${isApproved ? "text-white/40 line-through" : "text-white"}`}>
+                      {isLocked && <span className="text-xs">🔒</span>}
+                      <p className={`text-sm font-semibold truncate ${isApproved ? "text-white/40 line-through" : isLocked ? "text-white/40" : "text-white"}`}>
                         {achievement.title}
                       </p>
-                      {achievement.proof_type === "quiz" && (
+                      {!isLocked && achievement.proof_type === "quiz" && (
                         <span className="text-xs bg-violet-500/30 text-violet-200 border border-violet-400/30 px-2 py-0.5 rounded-full font-semibold shrink-0">
                           Quiz
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-white/40 mt-0.5 truncate">{achievement.description}</p>
-                    {teamDone > 0 && !isApproved && (
+                    {!isLocked && <p className="text-xs text-white/40 mt-0.5 truncate">{achievement.description}</p>}
+                    {!isLocked && teamDone > 0 && !isApproved && (
                       <div className="flex items-center gap-1 mt-1.5">
                         {[...Array(3)].map((_, j) => (
                           <div key={j} className={`w-1.5 h-1.5 rounded-full ${j < teamDone ? "bg-indigo-300" : "bg-white/15"}`} />
@@ -299,7 +291,9 @@ export default async function DashboardPage() {
                   </div>
 
                   <div className="ml-3 shrink-0 text-right">
-                    {isApproved ? (
+                    {isLocked ? (
+                      <span className="text-white/20 text-xs">+{achievement.xp} XP</span>
+                    ) : isApproved ? (
                       <span className="inline-flex items-center gap-1 bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-bold px-2.5 py-1 rounded-full">
                         ✓ +{mySub?.xp_awarded} XP
                       </span>
@@ -314,11 +308,18 @@ export default async function DashboardPage() {
                       </span>
                     )}
                   </div>
+                </div>
+              );
+
+              return isLocked ? (
+                <div key={achievement.id}>{card}</div>
+              ) : (
+                <Link key={achievement.id} href={`/dashboard/achievement/${achievement.slug}`}>
+                  {card}
                 </Link>
               );
             })}
           </div>
-          )}
         </div>
 
         {/* ── Secret achievements ── */}

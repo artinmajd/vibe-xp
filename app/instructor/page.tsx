@@ -107,17 +107,22 @@ export default async function InstructorPage() {
 
   const activeSession = sessions.find((s) => s.is_active) ?? null;
 
-  // Distinct block numbers for the active session
-  const { data: blockRows } = activeSession
+  // Achievement unlock preview for the instructor dropdown
+  const { data: achievementRows } = activeSession
     ? await supabase
         .from("achievements")
-        .select("block_number")
+        .select("id, title, is_unlocked")
         .eq("session_number", activeSession.id)
         .eq("is_secret", false)
+        .eq("is_active", true)
         .order("block_number")
+        .order("id")
     : { data: [] };
 
-  const sessionBlocks = [...new Set((blockRows ?? []).map((r) => r.block_number))];
+  const achievementList = achievementRows ?? [];
+  const nextAchievement = achievementList.find((a) => !a.is_unlocked) ?? null;
+  const unlockedList = achievementList.filter((a) => a.is_unlocked);
+  const lastUnlockedAchievement = unlockedList[unlockedList.length - 1] ?? null;
 
   return (
     <InstructorDashboard
@@ -125,7 +130,8 @@ export default async function InstructorPage() {
       teams={teams}
       sessions={sessions}
       activeSession={activeSession}
-      sessionBlocks={sessionBlocks}
+      nextAchievement={nextAchievement}
+      lastUnlockedAchievement={lastUnlockedAchievement}
     />
   );
 }

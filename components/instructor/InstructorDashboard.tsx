@@ -36,17 +36,20 @@ type SessionInfo = {
   unlocked_through: number;
 };
 
+type AchievementPreview = { id: string; title: string };
+
 type Props = {
   pending: PendingSubmission[];
   teams: TeamInfo[];
   sessions: SessionInfo[];
   activeSession: SessionInfo | null;
-  sessionBlocks: number[];
+  nextAchievement: AchievementPreview | null;
+  lastUnlockedAchievement: AchievementPreview | null;
 };
 
 type Tab = "pending" | "teams" | "session" | "leaderboard";
 
-export default function InstructorDashboard({ pending, teams, sessions, activeSession, sessionBlocks }: Props) {
+export default function InstructorDashboard({ pending, teams, sessions, activeSession, nextAchievement, lastUnlockedAchievement }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("pending");
 
@@ -57,7 +60,6 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
 
   const [busy, setBusy] = useState<string | null>(null);
   const [unlockMenuOpen, setUnlockMenuOpen] = useState(false);
-  const [unlockedThrough, setUnlockedThrough] = useState<number>(activeSession?.unlocked_through ?? 0);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [xpOverrides, setXpOverrides] = useState<Record<string, number>>({});
   const [grantAmounts, setGrantAmounts] = useState<Record<string, string>>({});
@@ -163,15 +165,11 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
   async function handleUnlock(action: "release" | "retract") {
     setUnlockMenuOpen(false);
     setBusy(`unlock-${action}`);
-    const res = await fetch("/api/instructor/unlock", {
+    await fetch("/api/instructor/unlock", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action }),
     });
-    if (res.ok) {
-      const { unlocked_through } = await res.json();
-      setUnlockedThrough(unlocked_through);
-    }
     setBusy(null);
     router.refresh();
   }
@@ -195,46 +193,45 @@ export default function InstructorDashboard({ pending, teams, sessions, activeSe
                 onClick={() => setUnlockMenuOpen((o) => !o)}
                 className="cursor-pointer flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900 hover:border-zinc-500 hover:bg-zinc-800 transition-all"
               >
-                <span className="text-zinc-400">🔓</span>
-                <span className="text-zinc-200">
-                  {unlockedThrough === 0
-                    ? "All locked"
-                    : `Block ${unlockedThrough} unlocked`}
+                <span>{lastUnlockedAchievement ? "🔓" : "🔒"}</span>
+                <span className="text-zinc-200 max-w-[160px] truncate">
+                  {lastUnlockedAchievement
+                    ? lastUnlockedAchievement.title
+                    : "All locked"}
                 </span>
                 <span className="text-zinc-500 text-xs">▾</span>
               </button>
 
               {unlockMenuOpen && (
                 <>
-                  {/* backdrop to close on outside click */}
                   <div className="fixed inset-0 z-10" onClick={() => setUnlockMenuOpen(false)} />
-                  <div className="absolute right-0 mt-1 w-52 rounded-xl border border-zinc-700 bg-zinc-900 shadow-xl z-20 overflow-hidden">
+                  <div className="absolute right-0 mt-1 w-72 rounded-xl border border-zinc-700 bg-zinc-900 shadow-xl z-20 overflow-hidden">
+                    {/* Release Next */}
                     <button
                       onClick={() => handleUnlock("release")}
-                      disabled={
-                        busy === "unlock-release" ||
-                        sessionBlocks.length === 0 ||
-                        unlockedThrough >= Math.max(...sessionBlocks)
-                      }
-                      className="cursor-pointer w-full text-left px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border-b border-zinc-800"
+                      disabled={busy === "unlock-release" || !nextAchievement}
+                      className="cursor-pointer w-full text-left px-4 py-3.5 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border-b border-zinc-800"
                     >
-                      <div className="font-medium">Release Next</div>
-                      <div className="text-xs text-zinc-500 mt-0.5">
-                        {sessionBlocks.find((b) => b > unlockedThrough) != null
-                          ? `→ Block ${sessionBlocks.find((b) => b > unlockedThrough)}`
-                          : "Nothing left to unlock"}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold text-emerald-400">Release Next</span>
+                        <span className="text-xs text-zinc-500">unlock →</span>
+                      </div>
+                      <div className="mt-1 text-sm text-zinc-200 truncate">
+                        {nextAchievement ? nextAchievement.title : "Nothing left to unlock"}
                       </div>
                     </button>
+                    {/* Retract Last */}
                     <button
                       onClick={() => handleUnlock("retract")}
-                      disabled={busy === "unlock-retract" || unlockedThrough === 0}
-                      className="cursor-pointer w-full text-left px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      disabled={busy === "unlock-retract" || !lastUnlockedAchievement}
+                      className="cursor-pointer w-full text-left px-4 py-3.5 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
-                      <div className="font-medium">Retract Last</div>
-                      <div className="text-xs text-zinc-500 mt-0.5">
-                        {unlockedThrough > 0
-                          ? `← Back to block ${sessionBlocks.filter((b) => b < unlockedThrough).at(-1) ?? 0}`
-                          : "Nothing to retract"}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold text-rose-400">Retract Last</span>
+                        <span className="text-xs text-zinc-500">← lock</span>
+                      </div>
+                      <div className="mt-1 text-sm text-zinc-200 truncate">
+                        {lastUnlockedAchievement ? lastUnlockedAchievement.title : "Nothing to retract"}
                       </div>
                     </button>
                   </div>

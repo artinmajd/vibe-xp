@@ -12,37 +12,35 @@ export async function POST(req: NextRequest) {
 
   const { data: session } = await supabase
     .from("sessions")
-    .select("id, unlocked_through")
+    .select("id")
     .eq("is_active", true)
     .maybeSingle();
 
   if (!session) return NextResponse.json({ error: "No active session" }, { status: 404 });
 
-  const { data: blocks } = await supabase
+  const { data: achievements } = await supabase
     .from("achievements")
-    .select("block_number")
+    .select("id, title, is_unlocked")
     .eq("session_number", session.id)
     .eq("is_secret", false)
-    .order("block_number");
+    .eq("is_active", true)
+    .order("block_number")
+    .order("id");
 
-  const distinctBlocks = [...new Set((blocks ?? []).map((a) => a.block_number))];
-  const current = session.unlocked_through ?? 0;
-
-  let next: number;
+  const list = achievements ?? [];
 
   if (action === "release") {
-    const nextBlock = distinctBlocks.find((b) => b > current);
-    if (nextBlock === undefined) return NextResponse.json({ error: "All blocks already unlocked" }, { status: 400 });
-    next = nextBlock;
+    const next = list.find((a) => !a.is_unlocked);
+    if (!next) return NextResponse.json({ error: "All achievements already unlocked" }, { status: 400 });
+    await supabase.from("achievements").update({ is_unlocked: true }).eq("id", next.id);
+    return NextResponse.json({ achievement_id: next.id, title: next.title });
   } else if (action === "retract") {
-    const prevBlocks = distinctBlocks.filter((b) => b <= current);
-    prevBlocks.pop(); // remove the current highest
-    next = prevBlocks.length > 0 ? prevBlocks[prevBlocks.length - 1] : 0;
+    const unlocked = list.filter((a) => a.is_unlocked);
+    const last = unlocked[unlocked.length - 1];
+    if (!last) return NextResponse.json({ error: "Nothing to retract" }, { status: 400 });
+    await supabase.from("achievements").update({ is_unlocked: false }).eq("id", last.id);
+    return NextResponse.json({ achievement_id: last.id, title: last.title });
   } else {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
-
-  await supabase.from("sessions").update({ unlocked_through: next }).eq("id", session.id);
-
-  return NextResponse.json({ unlocked_through: next });
 }
