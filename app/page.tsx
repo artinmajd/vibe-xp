@@ -8,22 +8,20 @@ export default function Home() {
       style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #2e1065 40%, #1e3a8a 100%)" }}>
       <DarkBackground />
 
-      {/* Crop the 500x500 PNG to its actual content region (y=218–270, x=55–374) */}
+      {/* Logo: object-fit:none crops the 500×500 canvas to just the content at (55,218)–(374,270) */}
       <div className="absolute top-0 left-2 z-10">
-        <div style={{ position: "relative", width: "280px", height: "44px", overflow: "hidden" }}>
-          <img
-            src="/assets/Future_Wrights.png"
-            alt="Future Wrights"
-            style={{
-              position: "absolute",
-              width: "420px",
-              top: "-176px",
-              left: "-39px",
-              mixBlendMode: "screen",
-              display: "block",
-            }}
-          />
-        </div>
+        <img
+          src="/assets/Future_Wrights.png"
+          alt="Future Wrights"
+          style={{
+            display: "block",
+            width: "280px",
+            height: "50px",
+            objectFit: "none",
+            objectPosition: "-55px -218px",
+            mixBlendMode: "screen",
+          }}
+        />
       </div>
 
       <div className="relative z-10 max-w-md w-full flex flex-col items-center gap-10">
