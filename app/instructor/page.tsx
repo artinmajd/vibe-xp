@@ -51,7 +51,7 @@ export default async function InstructorPage() {
         name: (m.students as unknown as { display_name: string } | null)?.display_name ?? "Unknown",
       }));
 
-      const { totalXp, levelInfo } = await getTeamXP(t.id);
+      const { totalXp, levelInfo } = await getTeamXP(t.id, members.length);
 
       // Session XP: submissions tied to the active session's achievements
       const { data: activeSession } = await supabase

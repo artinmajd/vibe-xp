@@ -101,8 +101,8 @@ export default async function DashboardPage() {
     return !!a;
   });
 
-  const { totalXp, levelInfo } = await getTeamXP(team.id);
-  const xpInCurrentLevel = totalXp - levelInfo.currentThreshold;
+  const { totalXp, rawXp, memberCount, levelInfo } = await getTeamXP(team.id, members.length);
+  const xpInCurrentLevel = rawXp - levelInfo.currentThreshold;
   const xpNeededForLevel = levelInfo.nextThreshold
     ? levelInfo.nextThreshold - levelInfo.currentThreshold
     : 1;
@@ -170,6 +170,11 @@ export default async function DashboardPage() {
               <div className="text-right">
                 <p className="text-4xl font-black text-white tabular-nums">{totalXp}</p>
                 <p className="text-white/60 text-xs font-semibold uppercase tracking-wide">XP</p>
+                {memberCount < 3 && (
+                  <p className="text-xs text-amber-400/80 mt-1">
+                    ×{memberCount === 1 ? "3" : "3/2"} small team boost
+                  </p>
+                )}
               </div>
             </div>
 

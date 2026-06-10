@@ -10,6 +10,7 @@ type TeamRow = {
   name: string;
   emoji: string | null;
   members: string[];
+  memberCount: number;
   sessionXp: number;
   totalXp: number;
   level: number;
@@ -171,7 +172,12 @@ function LeaderboardInner() {
                     <div className="text-right shrink-0">
                       <p className="text-4xl font-black text-white">{xp}</p>
                       <p className="text-sm text-white/40">XP</p>
-                      {view === "total" && (
+                      {team.memberCount < 3 && (
+                        <p className="text-xs text-amber-400/80 mt-1">
+                          ×{team.memberCount === 1 ? "3" : "3/2"} small team boost
+                        </p>
+                      )}
+                      {view === "total" && team.memberCount === 3 && (
                         <p className="text-xs text-white/25 mt-1">{team.sessionXp} this session</p>
                       )}
                     </div>

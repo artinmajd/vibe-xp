@@ -65,26 +65,34 @@ export async function GET(request: NextRequest) {
 
   // Build leaderboard rows
   const rows = teams.map((team) => {
+    const teamMembers = membersByTeam.get(team.id) ?? [];
+    const memberCount = teamMembers.length || 1;
     const teamSubmissions = (submissions ?? []).filter((s) => s.team_id === team.id);
     const teamGrants = (grants ?? []).filter((g) => g.team_id === team.id);
 
-    const totalXp =
+    const rawXp =
       teamSubmissions.reduce((sum, s) => sum + s.xp_awarded, 0) +
       teamGrants.reduce((sum, g) => sum + g.xp, 0);
 
-    const sessionXp = teamSubmissions
+    const adjustedXp = memberCount < 3 ? Math.round((rawXp * 3) / memberCount) : rawXp;
+
+    const rawSessionXp = teamSubmissions
       .filter((s) => sessionAchievementIds.has(s.achievement_id))
       .reduce((sum, s) => sum + s.xp_awarded, 0);
 
-    const levelInfo = xpToLevel(totalXp);
+    const adjustedSessionXp =
+      memberCount < 3 ? Math.round((rawSessionXp * 3) / memberCount) : rawSessionXp;
+
+    const levelInfo = xpToLevel(rawXp);
 
     return {
       teamId: team.id,
       name: team.name,
       emoji: team.emoji,
-      members: membersByTeam.get(team.id) ?? [],
-      sessionXp,
-      totalXp,
+      members: teamMembers,
+      memberCount,
+      sessionXp: adjustedSessionXp,
+      totalXp: adjustedXp,
       level: levelInfo.level,
       levelName: levelInfo.name,
       xpToNext: levelInfo.xpToNext,
