@@ -124,6 +124,11 @@ export default async function DashboardPage() {
 
       <DarkBackground />
 
+      {/* Future Wrights logo — fixed top left */}
+      <div className="fixed top-4 left-5 z-20">
+        <Image src="/assets/Future_Wrights.png" alt="Future Wrights" width={180} height={60} className="object-contain" style={{ mixBlendMode: "screen" }} />
+      </div>
+
       <Suspense>
         <SecretUnlockedToast />
       </Suspense>
@@ -134,12 +139,9 @@ export default async function DashboardPage() {
 
         {/* ── Top bar ── */}
         <div className="animate-fade-up flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-4">
-            <Image src="/assets/Future_Wrights.png" alt="Future Wrights" width={100} height={34} className="object-contain shrink-0" style={{ mixBlendMode: "screen" }} />
-            <div>
-              <p className="text-xs text-indigo-200/70 font-medium uppercase tracking-widest">Logged in as</p>
-              <p className="text-2xl font-extrabold text-white leading-tight">{student.display_name}</p>
-            </div>
+          <div>
+            <p className="text-xs text-indigo-200/70 font-medium uppercase tracking-widest">Logged in as</p>
+            <p className="text-2xl font-extrabold text-white leading-tight">{student.display_name}</p>
           </div>
           <div className="flex items-center gap-2">
             <Link
