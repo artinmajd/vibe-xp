@@ -8,15 +8,15 @@ export default function Home() {
       style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #2e1065 40%, #1e3a8a 100%)" }}>
       <DarkBackground />
 
-      {/* Logo: object-fit:none crops the 500×500 canvas to just the content at (55,218)–(374,270) */}
-      <div className="absolute top-0 left-2 z-10">
+      {/* Logo: cropped to content region, scaled down, with a touch of top padding */}
+      <div className="absolute top-0 left-2 z-10" style={{ transform: "scale(0.55)", transformOrigin: "top left" }}>
         <img
           src="/assets/Future_Wrights.png"
           alt="Future Wrights"
           style={{
             display: "block",
-            width: "280px",
-            height: "50px",
+            width: "340px",
+            height: "60px",
             objectFit: "none",
             objectPosition: "-55px -218px",
             mixBlendMode: "screen",

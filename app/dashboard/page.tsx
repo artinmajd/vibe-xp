@@ -121,8 +121,8 @@ export default async function DashboardPage() {
   return (
     <>
     {/* Future Wrights logo — outside main so overflow-x-hidden doesn't trap fixed */}
-    {/* Logo: object-fit:none crops the 500×500 canvas to just the content at (55,218)–(374,270) */}
-    <div style={{ position: "fixed", top: 0, left: 8, zIndex: 50 }}>
+    {/* Logo: cropped to content region, scaled down, with a touch of top padding */}
+    <div style={{ position: "fixed", top: 8, left: 8, zIndex: 50, transform: "scale(0.55)", transformOrigin: "top left" }}>
       <img
         src="/assets/Future_Wrights.png"
         alt="Future Wrights"
