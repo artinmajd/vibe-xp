@@ -259,7 +259,7 @@ export default async function DashboardPage() {
                   }}
                   className={`animate-fade-up flex items-center justify-between rounded-2xl px-4 py-4 border transition-all duration-200 ${
                     isLocked
-                      ? "border-white/5 opacity-40 cursor-not-allowed select-none"
+                      ? "border-white/5 opacity-40 select-none"
                       : isApproved
                       ? "border-green-500/25 opacity-70"
                       : isPending
