@@ -59,7 +59,7 @@ const achievements = [
     session_number: 1,
     block_number: 3,
     title: "Letter Counter",
-    description: "Built a letter-counting tool using AI.",
+    description: "Got the AI to confidently give the wrong letter count — and caught it in the act.",
     xp: 5,
     proof_type: "instructor_flag",
     proof_config: { form_type: "screenshot" },
