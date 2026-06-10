@@ -119,15 +119,16 @@ export default async function DashboardPage() {
   }).length;
 
   return (
+    <>
+    {/* Future Wrights logo — outside main so overflow-x-hidden doesn't trap fixed */}
+    <div className="fixed top-0 left-3 z-20">
+      <Image src="/assets/Future_Wrights.png" alt="Future Wrights" width={260} height={88} className="object-contain" style={{ mixBlendMode: "screen" }} />
+    </div>
+
     <main className="min-h-screen text-slate-900 px-4 py-10 relative overflow-x-hidden"
       style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #2e1065 40%, #1e3a8a 100%)" }}>
 
       <DarkBackground />
-
-      {/* Future Wrights logo — fixed top left */}
-      <div className="fixed top-0 left-3 z-20">
-        <Image src="/assets/Future_Wrights.png" alt="Future Wrights" width={240} height={80} className="object-contain" style={{ mixBlendMode: "screen" }} />
-      </div>
 
       <Suspense>
         <SecretUnlockedToast />
@@ -369,5 +370,6 @@ export default async function DashboardPage() {
 
       </div>
     </main>
+    </>
   );
 }
