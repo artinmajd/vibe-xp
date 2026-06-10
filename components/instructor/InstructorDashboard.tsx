@@ -109,21 +109,38 @@ function SubmissionGroups({
                   <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded font-mono">{s.proof_type}</span>
                 </div>
                 <div className="mb-4">
-                  {s.screenshot_url && (
-                    <img
-                      src={s.screenshot_url}
-                      alt="Submission screenshot"
-                      onClick={() => onScreenshot(s.screenshot_url)}
-                      className="rounded-lg max-h-64 object-contain bg-zinc-800 w-full mb-2 cursor-zoom-in"
-                    />
-                  )}
-                  {Object.keys(s.proof_data).length > 0 && (
-                    <div className="bg-zinc-800 rounded-lg p-3 text-xs text-zinc-300 font-mono break-all">
-                      {Object.entries(s.proof_data).map(([k, v]) => (
-                        <div key={k}><span className="text-zinc-500">{k}:</span> {String(v)}</div>
-                      ))}
-                    </div>
-                  )}
+                  {(() => {
+                    const urls: string[] = Array.isArray(s.proof_data.screenshot_urls)
+                      ? (s.proof_data.screenshot_urls as string[])
+                      : s.screenshot_url
+                      ? [s.screenshot_url]
+                      : [];
+                    return urls.length > 0 ? (
+                      <div className={`grid gap-2 mb-2 ${urls.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+                        {urls.map((url, i) => (
+                          <img
+                            key={i}
+                            src={url}
+                            alt={`Screenshot ${i + 1}`}
+                            onClick={() => onScreenshot(url)}
+                            className="rounded-lg max-h-48 object-contain bg-zinc-800 w-full cursor-zoom-in"
+                          />
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
+                  {(() => {
+                    const displayData = Object.fromEntries(
+                      Object.entries(s.proof_data).filter(([k]) => k !== "screenshot_urls")
+                    );
+                    return Object.keys(displayData).length > 0 ? (
+                      <div className="bg-zinc-800 rounded-lg p-3 text-xs text-zinc-300 font-mono break-all">
+                        {Object.entries(displayData).map(([k, v]) => (
+                          <div key={k}><span className="text-zinc-500">{k}:</span> {String(v)}</div>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
                 {renderActions(s)}
               </div>
@@ -281,6 +298,17 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
   async function handleLogout() {
     await fetch("/api/instructor/logout", { method: "POST" });
     router.push("/instructor/login");
+  }
+
+  async function handleToggleLock(id: string) {
+    setAchBusy(id);
+    await fetch("/api/instructor/unlock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "toggle", achievement_id: id }),
+    });
+    setAchBusy(null);
+    router.refresh();
   }
 
   async function handleSaveAchievement(id: string) {
@@ -587,8 +615,6 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                           <span className="text-zinc-600 hover:text-zinc-400 cursor-grab active:cursor-grabbing mt-0.5 select-none text-lg leading-none">
                             ⠿
                           </span>
-                          {/* Lock badge */}
-                          <span className="text-base mt-0.5 select-none">{ach.is_unlocked ? "🔓" : "🔒"}</span>
                           {/* Content */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -600,6 +626,17 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                             </div>
                             <p className="text-xs text-zinc-500 mt-0.5 truncate">{ach.description}</p>
                           </div>
+                          <button
+                            disabled={achBusy === ach.id}
+                            onClick={() => handleToggleLock(ach.id)}
+                            className={`cursor-pointer shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
+                              ach.is_unlocked
+                                ? "bg-emerald-900/50 hover:bg-emerald-900 text-emerald-300 border border-emerald-800"
+                                : "bg-red-900/50 hover:bg-red-900 text-red-300 border border-red-800"
+                            }`}
+                          >
+                            {ach.is_unlocked ? "Unlocked" : "Locked"}
+                          </button>
                           <button
                             onClick={() => {
                               setEditingAchId(ach.id);

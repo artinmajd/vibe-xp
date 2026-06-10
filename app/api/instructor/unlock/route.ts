@@ -4,9 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 // POST /api/instructor/unlock
 // body: { action: "release" | "retract" }
+//   OR: { action: "toggle", achievement_id: string }
 export async function POST(req: NextRequest) {
   await requireInstructor();
-  const { action } = await req.json();
+  const { action, achievement_id } = await req.json();
 
   const supabase = createServerClient();
 
@@ -17,6 +18,19 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (!session) return NextResponse.json({ error: "No active session" }, { status: 404 });
+
+  // Direct per-achievement toggle — bypasses sequential logic
+  if (action === "toggle") {
+    if (!achievement_id) return NextResponse.json({ error: "Missing achievement_id" }, { status: 400 });
+    const { data: ach } = await supabase
+      .from("achievements")
+      .select("id, title, is_unlocked")
+      .eq("id", achievement_id)
+      .single();
+    if (!ach) return NextResponse.json({ error: "Achievement not found" }, { status: 404 });
+    await supabase.from("achievements").update({ is_unlocked: !ach.is_unlocked }).eq("id", achievement_id);
+    return NextResponse.json({ achievement_id: ach.id, title: ach.title, is_unlocked: !ach.is_unlocked });
+  }
 
   const { data: achievements } = await supabase
     .from("achievements")

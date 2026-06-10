@@ -14,7 +14,7 @@ export default function CompositeForm({
   items?: string[];
 }) {
   const router = useRouter();
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [checked, setChecked] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,19 +30,21 @@ export default function CompositeForm({
     setError("");
     setLoading(true);
 
-    let screenshotUrl: string | null = null;
+    const screenshotUrls: string[] = [];
 
-    if (requiredTypes.includes("screenshot") && file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-      const uploadBody = await uploadRes.json();
-      if (!uploadRes.ok) {
-        setError(uploadBody.error ?? "Upload failed.");
-        setLoading(false);
-        return;
+    if (requiredTypes.includes("screenshot") && files.length > 0) {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+        const uploadBody = await uploadRes.json();
+        if (!uploadRes.ok) {
+          setError(uploadBody.error ?? "Upload failed.");
+          setLoading(false);
+          return;
+        }
+        screenshotUrls.push(uploadBody.url);
       }
-      screenshotUrl = uploadBody.url;
     }
 
     const res = await fetch("/api/submit", {
@@ -50,8 +52,8 @@ export default function CompositeForm({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         achievement_slug: achievementSlug,
-        proof_data: { checked },
-        screenshot_url: screenshotUrl,
+        proof_data: { checked, ...(screenshotUrls.length > 0 && { screenshot_urls: screenshotUrls }) },
+        screenshot_url: screenshotUrls[0] ?? null,
       }),
     });
     const body = await res.json();
@@ -74,15 +76,28 @@ export default function CompositeForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       {requiredTypes.includes("screenshot") && (
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-white/70">Screenshot</label>
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-white/70">
+            Screenshots <span className="text-white/40 font-normal">(up to 3)</span>
+          </label>
           <input
             type="file"
             accept="image/png,image/jpeg,image/webp"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            multiple
+            onChange={(e) => setFiles(Array.from(e.target.files ?? []).slice(0, 3))}
             required
             className="text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-500/30 file:text-indigo-200 file:font-medium hover:file:bg-indigo-500/50 cursor-pointer"
           />
+          {files.length > 0 && (
+            <div className="flex flex-col gap-1">
+              {files.map((f, i) => (
+                <p key={i} className="text-xs text-white/40 truncate">{i + 1}. {f.name}</p>
+              ))}
+              {files.length === 3 && (
+                <p className="text-xs text-amber-400/70">Maximum 3 photos selected.</p>
+              )}
+            </div>
+          )}
         </div>
       )}
 
