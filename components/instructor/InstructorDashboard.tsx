@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 type Member = { id: string; name: string };
@@ -38,21 +38,130 @@ type SessionInfo = {
 
 type AchievementPreview = { id: string; title: string };
 
+type AchievementRow = {
+  id: string;
+  title: string;
+  description: string;
+  xp: number;
+  is_unlocked: boolean;
+  is_secret: boolean;
+  sort_order: number;
+};
+
 type Props = {
   pending: PendingSubmission[];
+  approved: PendingSubmission[];
   teams: TeamInfo[];
   teamlessStudents: Member[];
   sessions: SessionInfo[];
   activeSession: SessionInfo | null;
   nextAchievement: AchievementPreview | null;
   lastUnlockedAchievement: AchievementPreview | null;
+  sessionAchievements: AchievementRow[];
 };
 
-type Tab = "pending" | "teams" | "session" | "leaderboard";
+type Tab = "submissions" | "teams" | "achievements" | "session" | "leaderboard";
+type GroupBy = "team" | "student" | "achievement";
 
-export default function InstructorDashboard({ pending, teams, teamlessStudents, sessions, activeSession, nextAchievement, lastUnlockedAchievement }: Props) {
+function groupSubmissions(submissions: PendingSubmission[], groupBy: GroupBy): [string, PendingSubmission[]][] {
+  const map = new Map<string, PendingSubmission[]>();
+  for (const s of submissions) {
+    const key = groupBy === "team" ? s.team_name : groupBy === "student" ? s.student_name : s.achievement_title;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(s);
+  }
+  return Array.from(map.entries());
+}
+
+function SubmissionGroups({
+  submissions,
+  groupBy,
+  renderActions,
+  onScreenshot,
+  busy,
+}: {
+  submissions: PendingSubmission[];
+  groupBy: GroupBy;
+  renderActions: (s: PendingSubmission) => React.ReactNode;
+  onScreenshot: (url: string | null) => void;
+  busy: string | null;
+}) {
+  const groups = groupSubmissions(submissions, groupBy);
+  return (
+    <div className="flex flex-col gap-6">
+      {groups.map(([label, subs]) => (
+        <div key={label}>
+          <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2 px-1">
+            {label} · {subs.length}
+          </p>
+          <div className="flex flex-col gap-3">
+            {subs.map((s) => (
+              <div key={s.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="font-semibold text-sm">{s.achievement_title}</p>
+                    <p className="text-xs text-zinc-500 mt-0.5">
+                      {groupBy !== "student" && <>{s.student_name} · </>}
+                      {groupBy !== "team" && <>{s.team_name} · </>}
+                      {new Date(s.submitted_at).toLocaleTimeString()}
+                    </p>
+                  </div>
+                  <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded font-mono">{s.proof_type}</span>
+                </div>
+                <div className="mb-4">
+                  {s.screenshot_url && (
+                    <img
+                      src={s.screenshot_url}
+                      alt="Submission screenshot"
+                      onClick={() => onScreenshot(s.screenshot_url)}
+                      className="rounded-lg max-h-64 object-contain bg-zinc-800 w-full mb-2 cursor-zoom-in"
+                    />
+                  )}
+                  {Object.keys(s.proof_data).length > 0 && (
+                    <div className="bg-zinc-800 rounded-lg p-3 text-xs text-zinc-300 font-mono break-all">
+                      {Object.entries(s.proof_data).map(([k, v]) => (
+                        <div key={k}><span className="text-zinc-500">{k}:</span> {String(v)}</div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {renderActions(s)}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function InstructorDashboard({ pending, approved, teams, teamlessStudents, sessions, activeSession, nextAchievement, lastUnlockedAchievement, sessionAchievements }: Props) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("pending");
+  const [tab, setTab] = useState<Tab>("submissions");
+  const [groupBy, setGroupBy] = useState<GroupBy>("team");
+
+  // Achievements tab state
+  const [localAchievements, setLocalAchievements] = useState<AchievementRow[]>(sessionAchievements);
+  const [editingAchId, setEditingAchId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [achBusy, setAchBusy] = useState<string | null>(null);
+  const [dragSrcIdx, setDragSrcIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  // Sync metadata (title, description, lock state) from server without clobbering local drag order
+  React.useEffect(() => {
+    setLocalAchievements((prev) => {
+      if (prev.length === 0) return sessionAchievements;
+      const serverMap = new Map(sessionAchievements.map((a) => [a.id, a]));
+      const updated = prev
+        .filter((a) => serverMap.has(a.id))
+        .map((a) => ({ ...serverMap.get(a.id)!, sort_order: a.sort_order }));
+      // Append any brand-new achievements the server added
+      const newOnes = sessionAchievements.filter((a) => !prev.some((p) => p.id === a.id));
+      return [...updated, ...newOnes];
+    });
+  }, [sessionAchievements]);
 
   useEffect(() => {
     const id = setInterval(() => router.refresh(), 5000);
@@ -91,6 +200,17 @@ export default function InstructorDashboard({ pending, teams, teamlessStudents, 
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ submission_id: id, action: "reject" }),
+    });
+    setBusy(null);
+    router.refresh();
+  }
+
+  async function handleRetract(id: string) {
+    setBusy(id);
+    await fetch("/api/instructor/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ submission_id: id, action: "retract" }),
     });
     setBusy(null);
     router.refresh();
@@ -163,8 +283,29 @@ export default function InstructorDashboard({ pending, teams, teamlessStudents, 
     router.push("/instructor/login");
   }
 
+  async function handleSaveAchievement(id: string) {
+    setAchBusy(id);
+    await fetch("/api/instructor/achievements", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, title: editTitle, description: editDesc }),
+    });
+    setAchBusy(null);
+    setEditingAchId(null);
+    router.refresh();
+  }
+
+  async function handleReorder(newList: AchievementRow[]) {
+    const updates = newList.map((a, i) => ({ id: a.id, sort_order: i + 1 }));
+    await fetch("/api/instructor/achievements", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ updates }),
+    });
+    router.refresh();
+  }
+
   async function handleUnlock(action: "release" | "retract") {
-    setUnlockMenuOpen(false);
     setBusy(`unlock-${action}`);
     await fetch("/api/instructor/unlock", {
       method: "POST",
@@ -195,11 +336,7 @@ export default function InstructorDashboard({ pending, teams, teamlessStudents, 
                 className="cursor-pointer flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900 hover:border-zinc-500 hover:bg-zinc-800 transition-all"
               >
                 <span>{lastUnlockedAchievement ? "🔓" : "🔒"}</span>
-                <span className="text-zinc-200 max-w-[160px] truncate">
-                  {lastUnlockedAchievement
-                    ? lastUnlockedAchievement.title
-                    : "All locked"}
-                </span>
+                <span className="text-zinc-200">Achievements</span>
                 <span className="text-zinc-500 text-xs">▾</span>
               </button>
 
@@ -252,7 +389,7 @@ export default function InstructorDashboard({ pending, teams, teamlessStudents, 
 
       {/* Tabs */}
       <div className="border-b border-zinc-800 px-6 flex gap-1">
-        {(["pending", "teams", "session", "leaderboard"] as Tab[]).map((t) => (
+        {(["submissions", "teams", "achievements", "session", "leaderboard"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -262,95 +399,223 @@ export default function InstructorDashboard({ pending, teams, teamlessStudents, 
                 : "border-transparent text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            {t === "pending" ? `Pending (${pending.length})` : t === "leaderboard" ? "Leaderboard" : t.charAt(0).toUpperCase() + t.slice(1)}
+            {t === "submissions"
+              ? `Submissions${pending.length > 0 ? ` (${pending.length} pending)` : ""}`
+              : t === "leaderboard"
+              ? "Leaderboard"
+              : t === "achievements"
+              ? "Achievements"
+              : t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
       </div>
 
       <div className="px-6 py-6 max-w-5xl mx-auto">
 
-        {/* ── Pending submissions ── */}
-        {tab === "pending" && (
+        {/* ── Submissions tab ── */}
+        {tab === "submissions" && (
           <div>
-            {pending.length === 0 ? (
-              <p className="text-zinc-500 text-sm">No pending submissions. You're all caught up.</p>
+            {/* Grouping dropdown */}
+            <div className="flex items-center gap-2 mb-6">
+              <span className="text-xs text-zinc-500">Group by:</span>
+              <select
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value as GroupBy)}
+                className="bg-zinc-800 text-zinc-200 text-xs rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer border border-zinc-700"
+              >
+                <option value="team">Team</option>
+                <option value="student">Student</option>
+                <option value="achievement">Achievement</option>
+              </select>
+            </div>
+
+            {/* ── Pending section ── */}
+            <div className="mb-8">
+              <h2 className="text-sm font-bold text-amber-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
+                Pending · {pending.length}
+              </h2>
+              {pending.length === 0 ? (
+                <p className="text-zinc-600 text-sm">Nothing pending. All caught up.</p>
+              ) : (
+                <SubmissionGroups
+                  submissions={pending}
+                  groupBy={groupBy}
+                  renderActions={(s) => (
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-zinc-500">XP:</span>
+                        <input
+                          type="number"
+                          value={xpOverrides[s.id] ?? s.achievement_xp}
+                          onChange={(e) =>
+                            setXpOverrides((prev) => ({ ...prev, [s.id]: parseInt(e.target.value) || 0 }))
+                          }
+                          className="w-16 bg-zinc-800 text-white rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+                      <button
+                        disabled={busy === s.id}
+                        onClick={() => handleApprove(s.id, xpOverrides[s.id] ?? s.achievement_xp)}
+                        className="cursor-pointer bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        disabled={busy === s.id}
+                        onClick={() => handleReject(s.id)}
+                        className="cursor-pointer bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                  onScreenshot={setLightbox}
+                  busy={busy}
+                />
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-zinc-800 mb-8" />
+
+            {/* ── Approved section ── */}
+            <div>
+              <h2 className="text-sm font-bold text-emerald-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+                Approved · {approved.length}
+              </h2>
+              {approved.length === 0 ? (
+                <p className="text-zinc-600 text-sm">No approved submissions yet.</p>
+              ) : (
+                <SubmissionGroups
+                  submissions={approved}
+                  groupBy={groupBy}
+                  renderActions={(s) => (
+                    <button
+                      disabled={busy === s.id}
+                      onClick={() => handleRetract(s.id)}
+                      className="cursor-pointer bg-zinc-800 hover:bg-rose-900 disabled:opacity-50 text-zinc-400 hover:text-rose-300 text-xs font-semibold px-4 py-2 rounded-lg transition-colors border border-zinc-700 hover:border-rose-800"
+                    >
+                      {busy === s.id ? "Retracting…" : "Retract"}
+                    </button>
+                  )}
+                  onScreenshot={setLightbox}
+                  busy={busy}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Achievements ── */}
+        {tab === "achievements" && (
+          <div>
+            {!activeSession ? (
+              <p className="text-zinc-500 text-sm">No active session.</p>
+            ) : localAchievements.length === 0 ? (
+              <p className="text-zinc-500 text-sm">No achievements for this session.</p>
             ) : (
-              <div className="flex flex-col gap-6">
-                {Array.from(
-                  pending.reduce((map, s) => {
-                    if (!map.has(s.team_id)) map.set(s.team_id, { team_name: s.team_name, submissions: [] });
-                    map.get(s.team_id)!.submissions.push(s);
-                    return map;
-                  }, new Map<string, { team_name: string; submissions: PendingSubmission[] }>())
-                ).map(([teamId, { team_name, submissions }]) => (
-                  <div key={teamId}>
-                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2 px-1">
-                      {team_name} · {submissions.length} pending
-                    </p>
-                    <div className="flex flex-col gap-3">
-                      {submissions.map((s) => (
-                        <div key={s.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <p className="font-semibold text-sm">{s.achievement_title}</p>
-                              <p className="text-xs text-zinc-500 mt-0.5">
-                                {s.student_name} · {new Date(s.submitted_at).toLocaleTimeString()}
-                              </p>
-                            </div>
-                            <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded font-mono">{s.proof_type}</span>
-                          </div>
-
-                          <div className="mb-4">
-                            {s.screenshot_url && (
-                              <img
-                                src={s.screenshot_url}
-                                alt="Submission screenshot"
-                                onClick={() => setLightbox(s.screenshot_url)}
-                                className="rounded-lg max-h-64 object-contain bg-zinc-800 w-full mb-2 cursor-zoom-in"
-                              />
-                            )}
-                            {Object.keys(s.proof_data).length > 0 && (
-                              <div className="bg-zinc-800 rounded-lg p-3 text-xs text-zinc-300 font-mono break-all">
-                                {Object.entries(s.proof_data).map(([k, v]) => (
-                                  <div key={k}><span className="text-zinc-500">{k}:</span> {String(v)}</div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-zinc-500">XP:</span>
-                              <input
-                                type="number"
-                                value={xpOverrides[s.id] ?? s.achievement_xp}
-                                onChange={(e) =>
-                                  setXpOverrides((prev) => ({ ...prev, [s.id]: parseInt(e.target.value) || 0 }))
-                                }
-                                className="w-16 bg-zinc-800 text-white rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
-                              />
-                            </div>
+              <>
+                <p className="text-xs text-zinc-500 mb-4">
+                  Drag rows to reorder. Click <span className="text-zinc-300">Edit</span> to change a title or description — students see changes within 5 seconds.
+                </p>
+                <div className="flex flex-col gap-2">
+                  {localAchievements.map((ach, idx) => (
+                    <div
+                      key={ach.id}
+                      draggable
+                      onDragStart={() => setDragSrcIdx(idx)}
+                      onDragOver={(e) => { e.preventDefault(); setDragOverIdx(idx); }}
+                      onDragLeave={() => setDragOverIdx(null)}
+                      onDrop={() => {
+                        setDragOverIdx(null);
+                        if (dragSrcIdx === null || dragSrcIdx === idx) { setDragSrcIdx(null); return; }
+                        const next = [...localAchievements];
+                        const [moved] = next.splice(dragSrcIdx, 1);
+                        next.splice(idx, 0, moved);
+                        setLocalAchievements(next);
+                        setDragSrcIdx(null);
+                        handleReorder(next);
+                      }}
+                      onDragEnd={() => { setDragSrcIdx(null); setDragOverIdx(null); }}
+                      className={`bg-zinc-900 border rounded-xl p-4 transition-all ${
+                        dragOverIdx === idx && dragSrcIdx !== idx
+                          ? "border-indigo-500 scale-[1.01]"
+                          : dragSrcIdx === idx
+                          ? "border-zinc-600 opacity-50"
+                          : "border-zinc-800"
+                      }`}
+                    >
+                      {editingAchId === ach.id ? (
+                        /* ── Edit mode ── */
+                        <div className="flex flex-col gap-3">
+                          <input
+                            type="text"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            placeholder="Title"
+                            className="bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 w-full"
+                          />
+                          <textarea
+                            value={editDesc}
+                            onChange={(e) => setEditDesc(e.target.value)}
+                            placeholder="Description"
+                            rows={2}
+                            className="bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 w-full resize-none"
+                          />
+                          <div className="flex items-center gap-2">
                             <button
-                              disabled={busy === s.id}
-                              onClick={() => handleApprove(s.id, xpOverrides[s.id] ?? s.achievement_xp)}
-                              className="bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                              disabled={achBusy === ach.id || !editTitle.trim()}
+                              onClick={() => handleSaveAchievement(ach.id)}
+                              className="cursor-pointer bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
                             >
-                              Approve
+                              {achBusy === ach.id ? "Saving…" : "Save"}
                             </button>
                             <button
-                              disabled={busy === s.id}
-                              onClick={() => handleReject(s.id)}
-                              className="bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                              onClick={() => setEditingAchId(null)}
+                              className="cursor-pointer text-zinc-500 hover:text-zinc-300 text-xs px-3 py-2 transition-colors"
                             >
-                              Reject
+                              Cancel
                             </button>
                           </div>
                         </div>
-                      ))}
+                      ) : (
+                        /* ── View mode ── */
+                        <div className="flex items-start gap-3">
+                          {/* Drag handle */}
+                          <span className="text-zinc-600 hover:text-zinc-400 cursor-grab active:cursor-grabbing mt-0.5 select-none text-lg leading-none">
+                            ⠿
+                          </span>
+                          {/* Lock badge */}
+                          <span className="text-base mt-0.5 select-none">{ach.is_unlocked ? "🔓" : "🔒"}</span>
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-semibold text-white">{ach.title}</p>
+                              {ach.is_secret && (
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium">secret</span>
+                              )}
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-medium">+{ach.xp} XP</span>
+                            </div>
+                            <p className="text-xs text-zinc-500 mt-0.5 truncate">{ach.description}</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setEditingAchId(ach.id);
+                              setEditTitle(ach.title);
+                              setEditDesc(ach.description);
+                            }}
+                            className="cursor-pointer shrink-0 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors"
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )}

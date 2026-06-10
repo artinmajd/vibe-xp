@@ -61,8 +61,7 @@ export default async function DashboardPage() {
     .eq("session_number", session?.id ?? 1)
     .eq("is_secret", false)
     .eq("is_active", true)
-    .order("block_number")
-    .order("id");
+    .order("sort_order");
 
   const achievementIds = (achievements ?? []).map((a) => a.id);
   const { data: allTeamSubs } = achievementIds.length

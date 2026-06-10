@@ -102,7 +102,6 @@ export default function QuizForm({
       return;
     }
 
-    setTotalXP(body.xp_awarded ?? xp);
     setPhase("review");
 
     if ((body.newly_unlocked ?? []).length > 0) {

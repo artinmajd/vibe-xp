@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
   const { submission_id, action, xp_override, note } = await request.json();
 
-  if (!submission_id || !["approve", "reject"].includes(action)) {
+  if (!submission_id || !["approve", "reject", "retract"].includes(action)) {
     return NextResponse.json({ error: "Missing or invalid fields." }, { status: 400 });
   }
 
@@ -25,6 +25,17 @@ export async function POST(request: Request) {
 
   if (!submission) {
     return NextResponse.json({ error: "Submission not found." }, { status: 404 });
+  }
+
+  if (action === "retract") {
+    const { error: deleteError } = await supabase
+      .from("submissions")
+      .delete()
+      .eq("id", submission_id);
+    if (deleteError) {
+      return NextResponse.json({ error: deleteError.message }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true, status: "retracted" });
   }
 
   const defaultXp = (submission.achievements as unknown as { xp: number } | null)?.xp ?? 0;

@@ -20,18 +20,36 @@ export default async function InstructorPage() {
     .eq("status", "pending")
     .order("submitted_at", { ascending: true });
 
-  const pending = (pendingRaw ?? []).map((s) => ({
-    id: s.id,
-    team_id: s.team_id,
-    team_name: (s.teams as unknown as { name: string } | null)?.name ?? "Unknown",
-    student_name: (s.students as unknown as { display_name: string } | null)?.display_name ?? "Unknown",
-    achievement_title: (s.achievements as unknown as { title: string; xp: number; proof_type: string } | null)?.title ?? "Unknown",
-    achievement_xp: (s.achievements as unknown as { title: string; xp: number; proof_type: string } | null)?.xp ?? 0,
-    proof_type: (s.achievements as unknown as { title: string; xp: number; proof_type: string } | null)?.proof_type ?? "",
-    proof_data: s.proof_data as Record<string, unknown>,
-    screenshot_url: s.screenshot_url,
-    submitted_at: s.submitted_at,
-  }));
+  function mapSubmission(s: typeof pendingRaw extends (infer T)[] | null ? T : never) {
+    return {
+      id: s.id,
+      team_id: s.team_id,
+      team_name: (s.teams as unknown as { name: string } | null)?.name ?? "Unknown",
+      student_name: (s.students as unknown as { display_name: string } | null)?.display_name ?? "Unknown",
+      achievement_title: (s.achievements as unknown as { title: string; xp: number; proof_type: string } | null)?.title ?? "Unknown",
+      achievement_xp: (s.achievements as unknown as { title: string; xp: number; proof_type: string } | null)?.xp ?? 0,
+      proof_type: (s.achievements as unknown as { title: string; xp: number; proof_type: string } | null)?.proof_type ?? "",
+      proof_data: s.proof_data as Record<string, unknown>,
+      screenshot_url: s.screenshot_url,
+      submitted_at: s.submitted_at,
+    };
+  }
+
+  const pending = (pendingRaw ?? []).map(mapSubmission);
+
+  // Approved submissions
+  const { data: approvedRaw } = await supabase
+    .from("submissions")
+    .select(`
+      id, team_id, student_id, proof_data, screenshot_url, submitted_at,
+      teams(name),
+      students(display_name),
+      achievements(title, xp, proof_type)
+    `)
+    .in("status", ["approved", "auto_approved"])
+    .order("submitted_at", { ascending: false });
+
+  const approved = (approvedRaw ?? []).map(mapSubmission);
 
   // All teams
   const { data: teamsRaw } = await supabase
@@ -116,32 +134,45 @@ export default async function InstructorPage() {
 
   const teamlessStudents = (teamlessRaw ?? []).map((s) => ({ id: s.id, name: s.display_name }));
 
-  // Achievement unlock preview for the instructor dropdown
+  // Achievements for the active session (used for both unlock preview and achievements tab)
   const { data: achievementRows } = activeSession
     ? await supabase
         .from("achievements")
-        .select("id, title, is_unlocked")
+        .select("id, title, description, xp, is_unlocked, is_secret, sort_order")
         .eq("session_number", activeSession.id)
-        .eq("is_secret", false)
         .eq("is_active", true)
-        .order("block_number")
-        .order("id")
+        .order("sort_order")
     : { data: [] };
 
-  const achievementList = achievementRows ?? [];
-  const nextAchievement = achievementList.find((a) => !a.is_unlocked) ?? null;
-  const unlockedList = achievementList.filter((a) => a.is_unlocked);
+  const allAchievements = achievementRows ?? [];
+
+  // Unlock preview uses non-secret achievements in order
+  const nonSecretList = allAchievements.filter((a) => !a.is_secret);
+  const nextAchievement = nonSecretList.find((a) => !a.is_unlocked) ?? null;
+  const unlockedList = nonSecretList.filter((a) => a.is_unlocked);
   const lastUnlockedAchievement = unlockedList[unlockedList.length - 1] ?? null;
+
+  const sessionAchievements = allAchievements.map((a) => ({
+    id: a.id,
+    title: a.title,
+    description: a.description ?? "",
+    xp: a.xp,
+    is_unlocked: a.is_unlocked,
+    is_secret: a.is_secret,
+    sort_order: a.sort_order ?? 0,
+  }));
 
   return (
     <InstructorDashboard
       pending={pending}
+      approved={approved}
       teams={teams}
       teamlessStudents={teamlessStudents}
       sessions={sessions}
       activeSession={activeSession}
       nextAchievement={nextAchievement}
       lastUnlockedAchievement={lastUnlockedAchievement}
+      sessionAchievements={sessionAchievements}
     />
   );
 }
