@@ -259,8 +259,14 @@ export default async function DashboardPage() {
 
         {/* ── Achievements ── */}
         <div className="animate-fade-up" style={{ animationDelay: "0.1s" }}>
-          <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3 px-1">Achievements</h2>
-          <div className="flex flex-col gap-2">
+          <div
+            className="rounded-2xl border border-indigo-400/20 overflow-hidden"
+            style={{ background: "rgba(15,13,40,0.85)" }}
+          >
+            <div className="px-4 pt-4 pb-2 border-b border-white/5">
+              <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest">Achievements</h2>
+            </div>
+          <div className="flex flex-col divide-y divide-white/5">
             {(achievements ?? []).map((achievement, i) => {
               const isLocked = !achievement.is_unlocked;
               const mySub = isLocked ? undefined : mySubsMap.get(achievement.id);
@@ -272,22 +278,20 @@ export default async function DashboardPage() {
                 <div
                   style={{
                     animationDelay: `${0.12 + i * 0.03}s`,
-                    background: isLocked
-                      ? "rgba(20,18,55,0.5)"
-                      : isApproved
-                      ? "rgba(30,27,75,0.55)"
+                    background: isApproved
+                      ? "rgba(20,40,20,0.3)"
                       : isPending
-                      ? "rgba(46,28,15,0.75)"
-                      : "rgba(30,27,75,0.75)",
+                      ? "rgba(46,28,15,0.5)"
+                      : "transparent",
                   }}
-                  className={`animate-fade-up flex items-center justify-between rounded-2xl px-4 py-4 border transition-all duration-200 ${
+                  className={`animate-fade-up flex items-center justify-between px-4 py-3.5 transition-all duration-200 ${
                     isLocked
-                      ? "border-white/5 opacity-40 select-none"
+                      ? "opacity-35 select-none"
                       : isApproved
-                      ? "border-green-500/25 opacity-70"
+                      ? ""
                       : isPending
-                      ? "border-amber-500/40"
-                      : "group border-indigo-400/20 hover:-translate-y-0.5 hover:shadow-lg hover:border-indigo-400/40 cursor-pointer"
+                      ? ""
+                      : "group hover:bg-indigo-500/10 cursor-pointer"
                   }`}
                 >
                   <div className="flex-1 min-w-0">
@@ -342,6 +346,7 @@ export default async function DashboardPage() {
                 </Link>
               );
             })}
+          </div>
           </div>
         </div>
 
