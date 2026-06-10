@@ -9,7 +9,7 @@ export default function Home() {
       <DarkBackground />
 
       {/* Logo: cropped to content region, scaled down, with a touch of top padding */}
-      <div className="absolute top-0 left-2 z-10" style={{ transform: "scale(0.55)", transformOrigin: "top left" }}>
+      <div style={{ position: "fixed", top: 18, left: 8, zIndex: 50, transform: "scale(0.55)", transformOrigin: "top left" }}>
         <img
           src="/assets/Future_Wrights.png"
           alt="Future Wrights"
