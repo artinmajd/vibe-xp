@@ -403,21 +403,21 @@ const achievements = [
     proof_config: {
       questions: [
         {
-          question: "What does AI stand for?",
-          options: ["Automatic Internet", "Artificial Intelligence", "Advanced Input", "Animated Interaction"],
+          question: "An LLM is searching the live internet for your answer.",
+          options: ["Myth", "Fact"],
+          correct_index: 0,
+          xp: 5,
+        },
+        {
+          question: "The model predicts the next word based on patterns it learned.",
+          options: ["Myth", "Fact"],
           correct_index: 1,
           xp: 5,
         },
         {
-          question: "Which of these is a popular AI chat tool?",
-          options: ["Minecraft", "ChatGPT", "Google Maps", "Spotify"],
-          correct_index: 1,
-          xp: 5,
-        },
-        {
-          question: "What do you call the instructions you give to an AI?",
-          options: ["A query", "A command", "A prompt", "A request"],
-          correct_index: 2,
+          question: "When it doesn't know something, it usually admits it doesn't have the knowledge.",
+          options: ["Myth", "Fact"],
+          correct_index: 0,
           xp: 5,
         },
       ],
