@@ -322,7 +322,7 @@ export default async function DashboardPage() {
                       <span className="text-white/20 text-xs">+{achievement.xp} XP</span>
                     ) : isApproved ? (
                       <span className="inline-flex items-center gap-1 bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-bold px-2.5 py-1 rounded-full">
-                        ✓ +{mySub?.xp_awarded} XP
+                        ✓ +{achievement.xp} XP
                       </span>
                     ) : isPending ? (
                       <span className="inline-flex items-center gap-1.5 text-amber-300 text-xs font-semibold">

@@ -154,7 +154,7 @@ export default async function AchievementPage({
         {submission?.status === "auto_approved" || submission?.status === "approved" ? (
           <div className="rounded-2xl p-6 border border-green-500/30"
             style={{ background: "rgba(30,27,75,0.75)" }}>
-            <p className="text-green-300 font-bold text-lg mb-1">Nice — +{submission.xp_awarded} XP 🎉</p>
+            <p className="text-green-300 font-bold text-lg mb-1">Nice — +{achievement.xp} XP 🎉</p>
             <p className="text-white/40 text-sm">
               Submitted {new Date(submission.submitted_at).toLocaleDateString()}
             </p>
