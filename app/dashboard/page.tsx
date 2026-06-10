@@ -266,7 +266,7 @@ export default async function DashboardPage() {
             <div className="px-4 pt-4 pb-2 border-b border-white/5">
               <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest">Achievements</h2>
             </div>
-          <div className="flex flex-col divide-y divide-white/5">
+          <div className="flex flex-col divide-y divide-white/15">
             {(achievements ?? []).map((achievement, i) => {
               const isLocked = !achievement.is_unlocked;
               const mySub = isLocked ? undefined : mySubsMap.get(achievement.id);
