@@ -98,6 +98,28 @@ const achievements = [
     proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
+  {
+    slug: "made-it-cave",
+    session_number: 1,
+    block_number: 3,
+    title: "Made It Cave",
+    description: "Got the AI to abandon a correct answer after you pushed back with fake authority.",
+    xp: 5,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+  {
+    slug: "past-the-cutoff",
+    session_number: 1,
+    block_number: 3,
+    title: "Past the Cutoff",
+    description: "Caught the AI hitting its knowledge cutoff — it guessed, made something up, or had to search.",
+    xp: 5,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
 
   // Block 4 — Context and prompting
   {
@@ -144,6 +166,17 @@ const achievements = [
     proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
+  {
+    slug: "expert-witness",
+    session_number: 1,
+    block_number: 4,
+    title: "Expert Witness",
+    description: "Caught the AI stating something confidently wrong about a topic you actually know well.",
+    xp: 5,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
 
   // Block 5 — Cursor setup
   {
@@ -163,17 +196,6 @@ const achievements = [
         "Folder opened in Cursor",
       ],
     },
-    is_secret: false,
-  },
-  {
-    slug: "neighbor-assist",
-    session_number: 1,
-    block_number: 5,
-    title: "Neighbor Assist",
-    description: "Helped another team by sharing your team code with them.",
-    xp: 5,
-    proof_type: "code_entry", // DB-validated — auto-submit makes sense
-    proof_config: {},
     is_secret: false,
   },
 
@@ -346,51 +368,6 @@ const achievements = [
     is_secret: false,
   },
 
-  // Secrets
-  {
-    slug: "skeptic",
-    session_number: 1,
-    block_number: 3,
-    title: "The Skeptic",
-    description: "Questioned AI on multiple challenges and proved it wrong.",
-    xp: 5,
-    proof_type: "instructor_flag",
-    proof_config: { description: "Auto-awarded when a team completes 3+ of: letter-counter, double-down, hallucination-hunter, contradiction-machine." },
-    is_secret: true,
-  },
-  {
-    slug: "persistence",
-    session_number: 1,
-    block_number: 7,
-    title: "The Grind",
-    description: "Kept building even when things got hard.",
-    xp: 10,
-    proof_type: "instructor_flag",
-    proof_config: { description: "Awarded manually by an instructor." },
-    is_secret: true,
-  },
-  {
-    slug: "collaborator",
-    session_number: 1,
-    block_number: 5,
-    title: "The Collaborator",
-    description: "Your team code was used by 2+ other teams.",
-    xp: 5,
-    proof_type: "instructor_flag",
-    proof_config: { description: "Auto-awarded when this team's code appears in 2+ neighbor-assist submissions from other teams." },
-    is_secret: true,
-  },
-  {
-    slug: "builders-apprentice",
-    session_number: 1,
-    block_number: 7,
-    title: "Builder's Apprentice",
-    description: "Every member of the team submitted at least one achievement.",
-    xp: 5,
-    proof_type: "instructor_flag",
-    proof_config: { description: "Auto-awarded when all 3 team members have at least one approved submission." },
-    is_secret: true,
-  },
   // Quiz sample
   {
     slug: "ai-quiz",

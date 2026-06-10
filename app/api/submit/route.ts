@@ -1,7 +1,6 @@
 import { createServerClient } from "@/lib/supabase-server";
 import { createAuthClient } from "@/lib/supabase-auth";
 import { runValidator } from "@/lib/dispatch-validator";
-import { checkSecretAchievements } from "@/lib/check-secrets";
 import { applyTeamMultiplier } from "@/lib/team-xp";
 import { Achievement } from "@/lib/types";
 import { calcTotalQuizXP, QuizQuestion, QuizAnswer } from "@/lib/quiz-xp";
@@ -131,30 +130,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
 
-  // Check for newly unlocked secret achievements for the submitting team
-  const newlyUnlocked = await checkSecretAchievements(teamId, supabase);
-
-  // For neighbor-assist, also check the helped team immediately so collaborator
-  // fires for them without waiting for their next submission
-  if (achievement_slug === "neighbor-assist" && status === "auto_approved") {
-    const helpedCode = (proof_data ?? {}).code as string | undefined;
-    if (helpedCode) {
-      const { data: helpedTeam } = await supabase
-        .from("teams")
-        .select("id")
-        .eq("code", helpedCode)
-        .maybeSingle();
-      if (helpedTeam) {
-        await checkSecretAchievements(helpedTeam.id, supabase);
-      }
-    }
-  }
-
   return NextResponse.json({
     ok: true,
     status,
     xp_awarded: xpAwarded,
     message: xpAwarded > 0 ? `Nice — +${xpAwarded} XP.` : "Submitted! Your instructor will review it.",
-    newly_unlocked: newlyUnlocked,
+    newly_unlocked: [],
   });
 }

@@ -3,8 +3,6 @@ import { createServerClient } from "@/lib/supabase-server";
 import { getTeamXP } from "@/lib/team-xp";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Suspense } from "react";
-import SecretUnlockedToast from "@/components/SecretUnlockedToast";
 import PendingPoller from "@/components/PendingPoller";
 import DarkBackground from "@/components/DarkBackground";
 import UnlockPoller from "@/components/UnlockPoller";
@@ -89,17 +87,6 @@ export default async function DashboardPage() {
     (s) => s.student_id === user.id && s.status === "pending"
   );
 
-  const { data: secretSubmissions } = await supabase
-    .from("submissions")
-    .select("achievement_id, achievements(title, description, xp_awarded)")
-    .eq("team_id", team.id)
-    .in("status", ["auto_approved", "approved"]);
-
-  const earnedSecrets = (secretSubmissions ?? []).filter((s) => {
-    const a = s.achievements as unknown as { title: string; description: string; xp_awarded: number } | null;
-    return !!a;
-  });
-
   const { totalXp, memberCount, levelInfo } = await getTeamXP(team.id, members.length);
   const xpInCurrentLevel = totalXp - levelInfo.currentThreshold;
   const xpNeededForLevel = levelInfo.nextThreshold
@@ -140,9 +127,6 @@ export default async function DashboardPage() {
 
       <DarkBackground />
 
-      <Suspense>
-        <SecretUnlockedToast />
-      </Suspense>
       {hasPending && <PendingPoller />}
       <UnlockPoller />
 
@@ -348,28 +332,6 @@ export default async function DashboardPage() {
           </div>
           </div>
         </div>
-
-        {/* ── Secret achievements ── */}
-        {earnedSecrets.length > 0 && (
-          <div className="animate-fade-up" style={{ animationDelay: "0.2s" }}>
-            <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3 px-1">Secret Achievements</h2>
-            <div className="flex flex-col gap-2">
-              {earnedSecrets.map((s) => {
-                const a = s.achievements as unknown as { title: string; description: string } | null;
-                if (!a) return null;
-                return (
-                  <div key={s.achievement_id}
-                    className="border border-amber-500/30 rounded-2xl px-4 py-4"
-                    style={{ background: "rgba(46,28,15,0.75)" }}
-                  >
-                    <p className="text-sm font-bold text-amber-300">⭐ {a.title}</p>
-                    <p className="text-xs text-white/40 mt-0.5">{a.description}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         {/* ── Footer ── */}
         <div className="pb-6">
