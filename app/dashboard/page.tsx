@@ -122,7 +122,7 @@ export default async function DashboardPage() {
     <>
     {/* Future Wrights logo — outside main so overflow-x-hidden doesn't trap fixed */}
     {/* Logo: cropped to content region, scaled down, with a touch of top padding */}
-    <div style={{ position: "fixed", top: 8, left: 8, zIndex: 50, transform: "scale(0.55)", transformOrigin: "top left" }}>
+    <div style={{ position: "fixed", top: 18, left: 8, zIndex: 50, transform: "scale(0.55)", transformOrigin: "top left" }}>
       <img
         src="/assets/Future_Wrights.png"
         alt="Future Wrights"
