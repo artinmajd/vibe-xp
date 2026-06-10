@@ -122,19 +122,21 @@ export default async function DashboardPage() {
     <>
     {/* Future Wrights logo — outside main so overflow-x-hidden doesn't trap fixed */}
     {/* Crop the 500x500 PNG to its actual content region (y=218–270, x=55–374) */}
-    <div style={{ position: "fixed", top: 0, left: 8, zIndex: 50, width: "340px", height: "60px", overflow: "hidden" }}>
-      <img
-        src="/assets/Future_Wrights.png"
-        alt="Future Wrights"
-        style={{
-          position: "absolute",
-          width: "500px",
-          top: "-210px",
-          left: "-47px",
-          mixBlendMode: "screen",
-          display: "block",
-        }}
-      />
+    <div style={{ position: "fixed", top: 0, left: 8, zIndex: 50 }}>
+      <div style={{ position: "relative", width: "340px", height: "60px", overflow: "hidden" }}>
+        <img
+          src="/assets/Future_Wrights.png"
+          alt="Future Wrights"
+          style={{
+            position: "absolute",
+            width: "500px",
+            top: "-210px",
+            left: "-47px",
+            mixBlendMode: "screen",
+            display: "block",
+          }}
+        />
+      </div>
     </div>
 
     <main className="min-h-screen text-slate-900 px-4 py-10 relative overflow-x-hidden"
