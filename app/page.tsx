@@ -8,6 +8,11 @@ export default function Home() {
       style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #2e1065 40%, #1e3a8a 100%)" }}>
       <DarkBackground />
 
+      {/* Future Wrights logo — top left */}
+      <div className="absolute top-5 left-5 z-10">
+        <Image src="/assets/Future_Wrights.png" alt="Future Wrights" width={120} height={40} className="object-contain" style={{ mixBlendMode: "screen" }} />
+      </div>
+
       <div className="relative z-10 max-w-md w-full flex flex-col items-center gap-10">
 
         {/* Logo */}
