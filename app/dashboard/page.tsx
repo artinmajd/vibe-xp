@@ -147,7 +147,7 @@ export default async function DashboardPage() {
       {hasPending && <PendingPoller />}
       <UnlockPoller />
 
-      <div className="relative z-10 max-w-2xl mx-auto flex flex-col gap-5">
+      <div className="relative z-10 max-w-3xl mx-auto flex flex-col gap-5">
 
         {/* ── Top bar ── */}
         <div className="animate-fade-up flex items-center justify-between relative z-10">
