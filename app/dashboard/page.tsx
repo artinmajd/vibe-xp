@@ -191,7 +191,7 @@ export default async function DashboardPage() {
                 <p className="text-white/60 text-xs font-semibold uppercase tracking-wide">XP</p>
                 {memberCount < 3 && (
                   <p className="text-xs text-amber-400/80 mt-1">
-                    earning ×{memberCount === 1 ? "3" : "3/2"} XP
+                    earning ×{memberCount === 1 ? "3" : "1.5"} XP
                   </p>
                 )}
               </div>
