@@ -5,7 +5,6 @@ import {
   validateText,
   validateChecklist,
   validateFields,
-  validateCodeEntry,
   validateComposite,
 } from "../lib/validators";
 
@@ -115,59 +114,6 @@ describe("validateFields", () => {
 
   it("fails when fields object is missing entirely", () => {
     const result = validateFields({}, config);
-    expect(result.valid).toBe(false);
-  });
-});
-
-// ─── validateCodeEntry ────────────────────────────────────────────────────────
-
-describe("validateCodeEntry", () => {
-  const ownTeamId = "team-abc";
-
-  function makeSupabase(teamId: string | null) {
-    return {
-      from: () => ({
-        select: () => ({
-          eq: () => ({
-            maybeSingle: async () => ({
-              data: teamId ? { id: teamId } : null,
-            }),
-          }),
-        }),
-      }),
-    } as unknown as Parameters<typeof validateCodeEntry>[2];
-  }
-
-  it("passes with a valid code that belongs to a different team", async () => {
-    const result = await validateCodeEntry(
-      { code: "NOVA-1234" },
-      ownTeamId,
-      makeSupabase("team-xyz")
-    );
-    expect(result.valid).toBe(true);
-  });
-
-  it("fails when the code belongs to the user's own team", async () => {
-    const result = await validateCodeEntry(
-      { code: "ARC-8086" },
-      ownTeamId,
-      makeSupabase(ownTeamId)
-    );
-    expect(result.valid).toBe(false);
-    expect(result.reason).toContain("own team");
-  });
-
-  it("fails when the code does not match any team", async () => {
-    const result = await validateCodeEntry(
-      { code: "FAKE-0000" },
-      ownTeamId,
-      makeSupabase(null)
-    );
-    expect(result.valid).toBe(false);
-  });
-
-  it("fails when code is empty", async () => {
-    const result = await validateCodeEntry({ code: "" }, ownTeamId, makeSupabase(null));
     expect(result.valid).toBe(false);
   });
 });

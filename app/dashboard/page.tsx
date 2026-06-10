@@ -240,98 +240,126 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* ── Achievements ── */}
-        <div className="animate-fade-up" style={{ animationDelay: "0.1s" }}>
-          <div
-            className="rounded-2xl border border-indigo-400/20 overflow-hidden"
-            style={{ background: "rgba(15,13,40,0.85)" }}
-          >
-            <div className="px-4 pt-4 pb-2 border-b border-white/5">
-              <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest">Achievements</h2>
-            </div>
-          <div className="flex flex-col divide-y divide-white/15">
-            {(achievements ?? []).map((achievement, i) => {
-              const isLocked = !achievement.is_unlocked;
-              const mySub = isLocked ? undefined : mySubsMap.get(achievement.id);
-              const isApproved = mySub?.status === "auto_approved" || mySub?.status === "approved";
-              const isPending = mySub?.status === "pending";
-              const teamDone = teamDoneMap.get(achievement.id) ?? 0;
+        {/* ── Achievements grouped by block ── */}
+        {(() => {
+          const allAchs = achievements ?? [];
+          // Group by block_number using a Map so interleaved sort_orders
+          // (which happen after instructor reorders across blocks) never fragment blocks.
+          const blockMap = new Map<number, typeof allAchs>();
+          for (const a of allAchs) {
+            if (!blockMap.has(a.block_number)) blockMap.set(a.block_number, []);
+            blockMap.get(a.block_number)!.push(a);
+          }
+          const blocks = Array.from(blockMap.entries())
+            .sort(([a], [b]) => a - b)
+            .map(([blockNum, items]) => ({
+              blockNum,
+              // sort_order=0 means "unordered" — put those last
+              items: [...items].sort((a, b) =>
+                a.sort_order === 0 ? 1 : b.sort_order === 0 ? -1 : a.sort_order - b.sort_order
+              ),
+            }));
 
-              const card = (
+          let globalIdx = 0;
+
+          return (
+            <div className="animate-fade-up flex flex-col gap-4" style={{ animationDelay: "0.1s" }}>
+              {blocks.map(({ blockNum, items }) => (
                 <div
-                  style={{
-                    animationDelay: `${0.12 + i * 0.03}s`,
-                    background: isApproved
-                      ? "rgba(20,40,20,0.3)"
-                      : isPending
-                      ? "rgba(46,28,15,0.5)"
-                      : "transparent",
-                  }}
-                  className={`animate-fade-up flex items-center justify-between px-4 py-5 transition-all duration-200 ${
-                    isLocked
-                      ? "opacity-35 select-none"
-                      : isApproved
-                      ? ""
-                      : isPending
-                      ? ""
-                      : "group hover:bg-indigo-500/10 cursor-pointer"
-                  }`}
+                  key={blockNum}
+                  className="rounded-2xl border border-indigo-400/20 overflow-hidden"
+                  style={{ background: "rgba(15,13,40,0.85)" }}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {isLocked && <span className="text-xs">🔒</span>}
-                      <p className={`text-sm font-semibold truncate ${isApproved ? "text-white/40 line-through" : isLocked ? "text-white/40" : "text-white"}`}>
-                        {achievement.title}
-                      </p>
-                      {!isLocked && achievement.proof_type === "quiz" && (
-                        <span className="text-xs bg-violet-500/30 text-violet-200 border border-violet-400/30 px-2 py-0.5 rounded-full font-semibold shrink-0">
-                          Quiz
-                        </span>
-                      )}
-                    </div>
-                    {!isLocked && <p className="text-xs text-white/40 mt-0.5 truncate">{achievement.description}</p>}
-                    {!isLocked && teamDone > 0 && !isApproved && (
-                      <div className="flex items-center gap-1 mt-1.5">
-                        {[...Array(3)].map((_, j) => (
-                          <div key={j} className={`w-1.5 h-1.5 rounded-full ${j < teamDone ? "bg-indigo-300" : "bg-white/15"}`} />
-                        ))}
-                        <span className="text-xs text-white/40 ml-1">{teamDone}/3 done</span>
-                      </div>
-                    )}
+                  <div className="px-4 pt-4 pb-2 border-b border-white/5">
+                    <h2 className="text-xs font-bold text-white/30 uppercase tracking-widest">Block {blockNum}</h2>
                   </div>
+                  <div className="flex flex-col divide-y divide-white/15">
+                    {items.map((achievement) => {
+                      const i = globalIdx++;
+                      const isLocked = !achievement.is_unlocked;
+                      const mySub = isLocked ? undefined : mySubsMap.get(achievement.id);
+                      const isApproved = mySub?.status === "auto_approved" || mySub?.status === "approved";
+                      const isPending = mySub?.status === "pending";
+                      const teamDone = teamDoneMap.get(achievement.id) ?? 0;
 
-                  <div className="ml-3 shrink-0 text-right">
-                    {isLocked ? (
-                      <span className="text-white/20 text-xs">+{achievement.xp} XP</span>
-                    ) : isApproved ? (
-                      <span className="inline-flex items-center gap-1 bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-bold px-2.5 py-1 rounded-full">
-                        ✓ +{achievement.xp} XP
-                      </span>
-                    ) : isPending ? (
-                      <span className="inline-flex items-center gap-1.5 text-amber-300 text-xs font-semibold">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                        Pending
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center bg-indigo-500/25 border border-indigo-400/30 text-indigo-200 text-xs font-bold px-2.5 py-1 rounded-full group-hover:bg-indigo-500 group-hover:text-white group-hover:border-indigo-500 transition-all">
-                        +{achievement.xp} XP
-                      </span>
-                    )}
+                      const card = (
+                        <div
+                          style={{
+                            animationDelay: `${0.12 + i * 0.03}s`,
+                            background: isApproved
+                              ? "rgba(20,40,20,0.3)"
+                              : isPending
+                              ? "rgba(46,28,15,0.5)"
+                              : "transparent",
+                          }}
+                          className={`animate-fade-up flex items-center justify-between px-4 py-5 transition-all duration-200 ${
+                            isLocked
+                              ? "opacity-35 select-none"
+                              : isApproved
+                              ? ""
+                              : isPending
+                              ? ""
+                              : "group hover:bg-indigo-500/10 cursor-pointer"
+                          }`}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {isLocked && <span className="text-xs">🔒</span>}
+                              <p className={`text-sm font-semibold truncate ${isApproved ? "text-white/40 line-through" : isLocked ? "text-white/40" : "text-white"}`}>
+                                {achievement.title}
+                              </p>
+                              {!isLocked && achievement.proof_type === "quiz" && (
+                                <span className="text-xs bg-violet-500/30 text-violet-200 border border-violet-400/30 px-2 py-0.5 rounded-full font-semibold shrink-0">
+                                  Quiz
+                                </span>
+                              )}
+                            </div>
+                            {!isLocked && <p className="text-xs text-white/40 mt-0.5 truncate">{achievement.description}</p>}
+                            {!isLocked && teamDone > 0 && !isApproved && (
+                              <div className="flex items-center gap-1 mt-1.5">
+                                {[...Array(3)].map((_, j) => (
+                                  <div key={j} className={`w-1.5 h-1.5 rounded-full ${j < teamDone ? "bg-indigo-300" : "bg-white/15"}`} />
+                                ))}
+                                <span className="text-xs text-white/40 ml-1">{teamDone}/3 done</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="ml-3 shrink-0 text-right">
+                            {isLocked ? (
+                              <span className="text-white/20 text-xs">+{achievement.xp} XP</span>
+                            ) : isApproved ? (
+                              <span className="inline-flex items-center gap-1 bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-bold px-2.5 py-1 rounded-full">
+                                ✓ +{achievement.xp} XP
+                              </span>
+                            ) : isPending ? (
+                              <span className="inline-flex items-center gap-1.5 text-amber-300 text-xs font-semibold">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                                Pending
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center bg-indigo-500/25 border border-indigo-400/30 text-indigo-200 text-xs font-bold px-2.5 py-1 rounded-full group-hover:bg-indigo-500 group-hover:text-white group-hover:border-indigo-500 transition-all">
+                                +{achievement.xp} XP
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+
+                      return isLocked ? (
+                        <div key={achievement.id}>{card}</div>
+                      ) : (
+                        <Link key={achievement.id} href={`/dashboard/achievement/${achievement.slug}`}>
+                          {card}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
-              );
-
-              return isLocked ? (
-                <div key={achievement.id}>{card}</div>
-              ) : (
-                <Link key={achievement.id} href={`/dashboard/achievement/${achievement.slug}`}>
-                  {card}
-                </Link>
-              );
-            })}
-          </div>
-          </div>
-        </div>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* ── Footer ── */}
         <div className="pb-6">

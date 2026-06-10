@@ -1,4 +1,3 @@
-import { SupabaseClient } from "@supabase/supabase-js";
 import { QuizQuestion, QuizAnswer } from "@/lib/quiz-xp";
 
 export type ValidationResult = {
@@ -62,26 +61,6 @@ export function validateFields(
   if (empty.length > 0) {
     return { valid: false, reason: `Fill in all fields: ${empty.join(", ")}` };
   }
-  return { valid: true };
-}
-
-export async function validateCodeEntry(
-  proofData: Record<string, unknown>,
-  ownTeamId: string,
-  supabase: SupabaseClient
-): Promise<ValidationResult> {
-  const code = (proofData.code as string | undefined)?.trim().toUpperCase();
-  if (!code) return { valid: false, reason: "Enter a team code." };
-
-  const { data: team } = await supabase
-    .from("teams")
-    .select("id")
-    .eq("code", code)
-    .maybeSingle();
-
-  if (!team) return { valid: false, reason: "That code doesn't match any team." };
-  if (team.id === ownTeamId) return { valid: false, reason: "That's your own team's code." };
-
   return { valid: true };
 }
 

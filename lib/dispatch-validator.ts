@@ -1,4 +1,3 @@
-import { SupabaseClient } from "@supabase/supabase-js";
 import { Achievement } from "@/lib/types";
 import {
   ValidationResult,
@@ -7,7 +6,6 @@ import {
   validateText,
   validateChecklist,
   validateFields,
-  validateCodeEntry,
   validateComposite,
   validateQuiz,
 } from "@/lib/validators";
@@ -16,8 +14,7 @@ export async function runValidator(
   achievement: Achievement,
   proofData: Record<string, unknown>,
   screenshotUrl: string | null,
-  teamId: string,
-  supabase: SupabaseClient
+  teamId: string
 ): Promise<ValidationResult> {
   const config = achievement.proof_config;
 
@@ -32,8 +29,6 @@ export async function runValidator(
       return validateChecklist(proofData, config);
     case "fields":
       return validateFields(proofData, config);
-    case "code_entry":
-      return validateCodeEntry(proofData, teamId, supabase);
     case "composite":
       return validateComposite(proofData, screenshotUrl, config);
     case "quiz":

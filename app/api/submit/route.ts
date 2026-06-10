@@ -73,8 +73,7 @@ export async function POST(request: Request) {
     achievement as Achievement,
     proof_data ?? {},
     screenshot_url ?? null,
-    teamId,
-    supabase
+    teamId
   );
 
   // Determine status and XP

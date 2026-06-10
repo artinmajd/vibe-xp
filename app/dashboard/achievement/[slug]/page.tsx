@@ -7,7 +7,6 @@ import UrlForm from "@/components/proof-forms/UrlForm";
 import TextForm from "@/components/proof-forms/TextForm";
 import ChecklistForm from "@/components/proof-forms/ChecklistForm";
 import FieldsForm from "@/components/proof-forms/FieldsForm";
-import CodeEntryForm from "@/components/proof-forms/CodeEntryForm";
 import CompositeForm from "@/components/proof-forms/CompositeForm";
 import QuizForm from "@/components/proof-forms/QuizForm";
 import PendingPoller from "@/components/PendingPoller";
@@ -72,8 +71,6 @@ export default async function AchievementPage({
         return <ChecklistForm achievementSlug={slug} items={(config.items as string[]) ?? []} />;
       case "fields":
         return <FieldsForm achievementSlug={slug} fields={(config.fields as string[]) ?? []} />;
-      case "code_entry":
-        return <CodeEntryForm achievementSlug={slug} />;
       case "composite":
         return (
           <CompositeForm
@@ -100,8 +97,6 @@ export default async function AchievementPage({
             return <FieldsForm achievementSlug={slug} fields={(config.fields as string[]) ?? []} />;
           case "url":
             return <UrlForm achievementSlug={slug} />;
-          case "code_entry":
-            return <CodeEntryForm achievementSlug={slug} />;
           case "composite":
             return (
               <CompositeForm

@@ -38,6 +38,13 @@ type SessionInfo = {
 
 type AchievementPreview = { id: string; title: string };
 
+type NewQuestion = {
+  question: string;
+  options: string[];
+  correct_index: number;
+  xp: number;
+};
+
 type AchievementRow = {
   id: string;
   title: string;
@@ -46,6 +53,7 @@ type AchievementRow = {
   is_unlocked: boolean;
   is_secret: boolean;
   sort_order: number;
+  block_number: number;
 };
 
 type Props = {
@@ -162,9 +170,31 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
   const [editingAchId, setEditingAchId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
+  const [editBlock, setEditBlock] = useState(1);
+
+  // Create form state
+  const [creating, setCreating] = useState(false);
+  const [createBusy, setCreateBusy] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [newBlock, setNewBlock] = useState(1);
+  const [newXp, setNewXp] = useState(5);
+  const [newFormType, setNewFormType] = useState("screenshot");
+  const [newNeedsApproval, setNewNeedsApproval] = useState(true);
+  // Type-specific config state
+  const [newMinWords, setNewMinWords] = useState(0);
+  const [newChecklistItems, setNewChecklistItems] = useState<string[]>(["Item 1"]);
+  const [newFieldNames, setNewFieldNames] = useState<string[]>(["Field 1"]);
+  const [newCompositeItems, setNewCompositeItems] = useState<string[]>(["Item 1"]);
+  const [newQuestions, setNewQuestions] = useState<NewQuestion[]>([
+    { question: "", options: ["", ""], correct_index: 0, xp: 5 },
+  ]);
   const [achBusy, setAchBusy] = useState<string | null>(null);
-  const [dragSrcIdx, setDragSrcIdx] = useState<number | null>(null);
-  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  // Per-block drag state — prevents cross-block drops corrupting sort_order
+  const [dragInfo, setDragInfo] = useState<{ blockNum: number; idx: number } | null>(null);
+  const [dragOverInfo, setDragOverInfo] = useState<{ blockNum: number; idx: number } | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Sync metadata (title, description, lock state) from server without clobbering local drag order
   React.useEffect(() => {
@@ -316,7 +346,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
     await fetch("/api/instructor/achievements", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, title: editTitle, description: editDesc }),
+      body: JSON.stringify({ id, title: editTitle, description: editDesc, block_number: editBlock }),
     });
     setAchBusy(null);
     setEditingAchId(null);
@@ -331,6 +361,133 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
       body: JSON.stringify({ updates }),
     });
     router.refresh();
+  }
+
+  // Achievements grouped by block_number, sorted by block number.
+  // Recalculated whenever localAchievements changes.
+  const achievementBlocks = React.useMemo(() => {
+    const blockMap = new Map<number, AchievementRow[]>();
+    for (const a of localAchievements) {
+      if (!blockMap.has(a.block_number)) blockMap.set(a.block_number, []);
+      blockMap.get(a.block_number)!.push(a);
+    }
+    return Array.from(blockMap.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([blockNum, items]) => ({ blockNum, items }));
+  }, [localAchievements]);
+
+  function handleBlockDrop(blockNum: number, dropIdx: number) {
+    if (!dragInfo || dragInfo.blockNum !== blockNum || dragInfo.idx === dropIdx) {
+      setDragInfo(null);
+      setDragOverInfo(null);
+      return;
+    }
+    const blockItems = localAchievements.filter((a) => a.block_number === blockNum);
+    const reordered = [...blockItems];
+    const [moved] = reordered.splice(dragInfo.idx, 1);
+    reordered.splice(dropIdx, 0, moved);
+
+    // Rebuild flat list: blocks in ascending block_number order, each block in its new order.
+    // This keeps sort_orders block-clustered after reassignment (1..k for block 1, k+1..m for block 2, …).
+    const sortedBlockNums = Array.from(new Set(localAchievements.map((a) => a.block_number))).sort((a, b) => a - b);
+    const newFlatList: AchievementRow[] = [];
+    for (const bn of sortedBlockNums) {
+      if (bn === blockNum) {
+        newFlatList.push(...reordered);
+      } else {
+        newFlatList.push(...localAchievements.filter((a) => a.block_number === bn));
+      }
+    }
+
+    setLocalAchievements(newFlatList);
+    setDragInfo(null);
+    setDragOverInfo(null);
+    handleReorder(newFlatList);
+  }
+
+  async function handleDeleteAchievement(id: string) {
+    setDeleteError(null);
+    setAchBusy(id);
+    const res = await fetch("/api/instructor/achievements", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    setAchBusy(null);
+    setConfirmDeleteId(null);
+    if (!res.ok) {
+      const body = await res.json();
+      setDeleteError(body.error ?? "Delete failed.");
+    } else {
+      router.refresh();
+    }
+  }
+
+  function resetCreateForm() {
+    setCreating(false);
+    setNewTitle("");
+    setNewDesc("");
+    setNewBlock(1);
+    setNewXp(5);
+    setNewFormType("screenshot");
+    setNewNeedsApproval(true);
+    setNewMinWords(0);
+    setNewChecklistItems(["Item 1"]);
+    setNewFieldNames(["Field 1"]);
+    setNewCompositeItems(["Item 1"]);
+    setNewQuestions([{ question: "", options: ["", ""], correct_index: 0, xp: 5 }]);
+  }
+
+  async function handleCreateAchievement() {
+    if (!newTitle.trim()) return;
+    setCreateBusy(true);
+
+    // Build type-specific config extras
+    function buildExtra(): Record<string, unknown> {
+      if (newFormType === "text") return { min_words: newMinWords };
+      if (newFormType === "checklist") return { items: newChecklistItems.filter((i) => i.trim()) };
+      if (newFormType === "fields") return { fields: newFieldNames.filter((f) => f.trim()) };
+      if (newFormType === "composite") return {
+        require: ["screenshot", "checklist"],
+        items: newCompositeItems.filter((i) => i.trim()),
+      };
+      return {};
+    }
+
+    let proof_type: string;
+    let proof_config: Record<string, unknown>;
+    let xp = newXp;
+
+    if (newFormType === "quiz") {
+      proof_type = "quiz";
+      proof_config = { questions: newQuestions };
+      xp = newQuestions.reduce((sum, q) => sum + q.xp, 0);
+    } else if (newNeedsApproval) {
+      proof_type = "instructor_flag";
+      proof_config = { form_type: newFormType, ...buildExtra() };
+    } else {
+      proof_type = newFormType;
+      proof_config = buildExtra();
+    }
+
+    const res = await fetch("/api/instructor/achievements", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: newTitle.trim(),
+        description: newDesc.trim(),
+        block_number: newBlock,
+        xp,
+        proof_type,
+        proof_config,
+      }),
+    });
+
+    setCreateBusy(false);
+    if (res.ok) {
+      resetCreateForm();
+      router.refresh();
+    }
   }
 
   async function handleUnlock(action: "release" | "retract") {
@@ -545,110 +702,481 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
               <p className="text-zinc-500 text-sm">No achievements for this session.</p>
             ) : (
               <>
-                <p className="text-xs text-zinc-500 mb-4">
-                  Drag rows to reorder. Click <span className="text-zinc-300">Edit</span> to change a title or description — students see changes within 5 seconds.
-                </p>
-                <div className="flex flex-col gap-2">
-                  {localAchievements.map((ach, idx) => (
-                    <div
-                      key={ach.id}
-                      draggable
-                      onDragStart={() => setDragSrcIdx(idx)}
-                      onDragOver={(e) => { e.preventDefault(); setDragOverIdx(idx); }}
-                      onDragLeave={() => setDragOverIdx(null)}
-                      onDrop={() => {
-                        setDragOverIdx(null);
-                        if (dragSrcIdx === null || dragSrcIdx === idx) { setDragSrcIdx(null); return; }
-                        const next = [...localAchievements];
-                        const [moved] = next.splice(dragSrcIdx, 1);
-                        next.splice(idx, 0, moved);
-                        setLocalAchievements(next);
-                        setDragSrcIdx(null);
-                        handleReorder(next);
-                      }}
-                      onDragEnd={() => { setDragSrcIdx(null); setDragOverIdx(null); }}
-                      className={`bg-zinc-900 border rounded-xl p-4 transition-all ${
-                        dragOverIdx === idx && dragSrcIdx !== idx
-                          ? "border-indigo-500 scale-[1.01]"
-                          : dragSrcIdx === idx
-                          ? "border-zinc-600 opacity-50"
-                          : "border-zinc-800"
-                      }`}
+                <div className="flex items-center justify-between mb-5">
+                  <p className="text-xs text-zinc-500">
+                    Drag rows to reorder within a block. Use <span className="text-zinc-300">Edit</span> to change title, description, or move to a different block.
+                  </p>
+                  {!creating && (
+                    <button
+                      onClick={() => setCreating(true)}
+                      className="cursor-pointer shrink-0 ml-4 text-xs font-semibold bg-indigo-700 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg transition-colors"
                     >
-                      {editingAchId === ach.id ? (
-                        /* ── Edit mode ── */
-                        <div className="flex flex-col gap-3">
-                          <input
-                            type="text"
-                            value={editTitle}
-                            onChange={(e) => setEditTitle(e.target.value)}
-                            placeholder="Title"
-                            className="bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 w-full"
-                          />
-                          <textarea
-                            value={editDesc}
-                            onChange={(e) => setEditDesc(e.target.value)}
-                            placeholder="Description"
-                            rows={2}
-                            className="bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 w-full resize-none"
-                          />
-                          <div className="flex items-center gap-2">
-                            <button
-                              disabled={achBusy === ach.id || !editTitle.trim()}
-                              onClick={() => handleSaveAchievement(ach.id)}
-                              className="cursor-pointer bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
-                            >
-                              {achBusy === ach.id ? "Saving…" : "Save"}
-                            </button>
-                            <button
-                              onClick={() => setEditingAchId(null)}
-                              className="cursor-pointer text-zinc-500 hover:text-zinc-300 text-xs px-3 py-2 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                          </div>
+                      + New Achievement
+                    </button>
+                  )}
+                </div>
+
+                {/* ── Create form ── */}
+                {creating && (
+                  <div className="bg-zinc-900 border border-indigo-600/40 rounded-xl p-5 mb-6">
+                    <p className="text-sm font-bold text-white mb-4">New Achievement</p>
+
+                    <div className="flex flex-col gap-3">
+                      {/* Title */}
+                      <input
+                        type="text"
+                        value={newTitle}
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        placeholder="Title"
+                        className="bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 w-full"
+                      />
+
+                      {/* Description */}
+                      <textarea
+                        value={newDesc}
+                        onChange={(e) => setNewDesc(e.target.value)}
+                        placeholder="Description"
+                        rows={2}
+                        className="bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 w-full resize-none"
+                      />
+
+                      {/* Block + XP row */}
+                      <div className="flex gap-3 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs text-zinc-500 shrink-0">Block</label>
+                          <select
+                            value={newBlock}
+                            onChange={(e) => setNewBlock(parseInt(e.target.value))}
+                            className="bg-zinc-800 text-zinc-200 text-xs rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer border border-zinc-700"
+                          >
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                              <option key={n} value={n}>Block {n}</option>
+                            ))}
+                          </select>
                         </div>
-                      ) : (
-                        /* ── View mode ── */
-                        <div className="flex items-start gap-3">
-                          {/* Drag handle */}
-                          <span className="text-zinc-600 hover:text-zinc-400 cursor-grab active:cursor-grabbing mt-0.5 select-none text-lg leading-none">
-                            ⠿
-                          </span>
-                          {/* Content */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="text-sm font-semibold text-white">{ach.title}</p>
-                              {ach.is_secret && (
-                                <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium">secret</span>
-                              )}
-                              <span className="text-xs px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-medium">+{ach.xp} XP</span>
-                            </div>
-                            <p className="text-xs text-zinc-500 mt-0.5 truncate">{ach.description}</p>
+                        {newFormType !== "quiz" ? (
+                          <div className="flex items-center gap-2">
+                            <label className="text-xs text-zinc-500 shrink-0">XP</label>
+                            <input
+                              type="number"
+                              value={newXp}
+                              min={1}
+                              onChange={(e) => setNewXp(parseInt(e.target.value) || 1)}
+                              className="w-20 bg-zinc-800 text-white rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-indigo-500 border border-zinc-700"
+                            />
                           </div>
-                          <button
-                            disabled={achBusy === ach.id}
-                            onClick={() => handleToggleLock(ach.id)}
-                            className={`cursor-pointer shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
-                              ach.is_unlocked
-                                ? "bg-emerald-900/50 hover:bg-emerald-900 text-emerald-300 border border-emerald-800"
-                                : "bg-red-900/50 hover:bg-red-900 text-red-300 border border-red-800"
-                            }`}
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <label className="text-xs text-zinc-500 shrink-0">XP</label>
+                            <span className="text-xs text-zinc-400 bg-zinc-800 border border-zinc-700 rounded px-3 py-2">
+                              {newQuestions.reduce((s, q) => s + q.xp, 0)} (sum of question XP)
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Submission type + approval */}
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs text-zinc-500 shrink-0">Student submits</label>
+                          <select
+                            value={newFormType}
+                            onChange={(e) => setNewFormType(e.target.value)}
+                            className="bg-zinc-800 text-zinc-200 text-xs rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer border border-zinc-700"
                           >
-                            {ach.is_unlocked ? "Unlocked" : "Locked"}
-                          </button>
+                            <option value="screenshot">Screenshot</option>
+                            <option value="url">URL</option>
+                            <option value="text">Text response</option>
+                            <option value="checklist">Checklist</option>
+                            <option value="fields">Fill in fields</option>
+                            <option value="composite">Screenshot + Checklist</option>
+                            <option value="quiz">Quiz (auto-graded)</option>
+                          </select>
+                        </div>
+                        {newFormType !== "quiz" && (
+                          <label className="flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={newNeedsApproval}
+                              onChange={(e) => setNewNeedsApproval(e.target.checked)}
+                              className="w-4 h-4 rounded accent-indigo-500"
+                            />
+                            <span className="text-xs text-zinc-300">Needs instructor approval</span>
+                          </label>
+                        )}
+                        {newFormType === "quiz" && (
+                          <span className="text-xs text-zinc-500">Auto-graded — no approval needed</span>
+                        )}
+                      </div>
+
+                      {/* ── Type-specific config ── */}
+
+                      {/* text: minimum word count */}
+                      {newFormType === "text" && (
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs text-zinc-500 shrink-0">Minimum words</label>
+                          <input
+                            type="number"
+                            value={newMinWords}
+                            min={0}
+                            onChange={(e) => setNewMinWords(parseInt(e.target.value) || 0)}
+                            className="w-20 bg-zinc-800 text-white rounded px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-indigo-500 border border-zinc-700"
+                          />
+                          {newMinWords === 0 && (
+                            <span className="text-xs text-zinc-600">No minimum</span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* checklist: list of items */}
+                      {newFormType === "checklist" && (
+                        <div className="flex flex-col gap-1.5">
+                          <p className="text-xs text-zinc-500">Checklist items</p>
+                          {newChecklistItems.map((item, i) => (
+                            <div key={i} className="flex gap-1.5 items-center">
+                              <input
+                                value={item}
+                                onChange={(e) => setNewChecklistItems((prev) => { const n = [...prev]; n[i] = e.target.value; return n; })}
+                                placeholder={`Item ${i + 1}`}
+                                className="flex-1 bg-zinc-700 text-white rounded px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+                              />
+                              {newChecklistItems.length > 1 && (
+                                <button onClick={() => setNewChecklistItems((prev) => prev.filter((_, j) => j !== i))} className="text-zinc-500 hover:text-rose-400 text-sm px-1">×</button>
+                              )}
+                            </div>
+                          ))}
+                          <button onClick={() => setNewChecklistItems((prev) => [...prev, ""])} className="text-xs text-indigo-400 hover:text-indigo-300 text-left">+ Add item</button>
+                        </div>
+                      )}
+
+                      {/* fields: list of field names */}
+                      {newFormType === "fields" && (
+                        <div className="flex flex-col gap-1.5">
+                          <p className="text-xs text-zinc-500">Field names</p>
+                          {newFieldNames.map((name, i) => (
+                            <div key={i} className="flex gap-1.5 items-center">
+                              <input
+                                value={name}
+                                onChange={(e) => setNewFieldNames((prev) => { const n = [...prev]; n[i] = e.target.value; return n; })}
+                                placeholder={`Field ${i + 1}`}
+                                className="flex-1 bg-zinc-700 text-white rounded px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+                              />
+                              {newFieldNames.length > 1 && (
+                                <button onClick={() => setNewFieldNames((prev) => prev.filter((_, j) => j !== i))} className="text-zinc-500 hover:text-rose-400 text-sm px-1">×</button>
+                              )}
+                            </div>
+                          ))}
+                          <button onClick={() => setNewFieldNames((prev) => [...prev, ""])} className="text-xs text-indigo-400 hover:text-indigo-300 text-left">+ Add field</button>
+                        </div>
+                      )}
+
+                      {/* composite: checklist items (screenshot is always included) */}
+                      {newFormType === "composite" && (
+                        <div className="flex flex-col gap-1.5">
+                          <p className="text-xs text-zinc-500">Checklist items <span className="text-zinc-600">(screenshot is always required)</span></p>
+                          {newCompositeItems.map((item, i) => (
+                            <div key={i} className="flex gap-1.5 items-center">
+                              <input
+                                value={item}
+                                onChange={(e) => setNewCompositeItems((prev) => { const n = [...prev]; n[i] = e.target.value; return n; })}
+                                placeholder={`Item ${i + 1}`}
+                                className="flex-1 bg-zinc-700 text-white rounded px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+                              />
+                              {newCompositeItems.length > 1 && (
+                                <button onClick={() => setNewCompositeItems((prev) => prev.filter((_, j) => j !== i))} className="text-zinc-500 hover:text-rose-400 text-sm px-1">×</button>
+                              )}
+                            </div>
+                          ))}
+                          <button onClick={() => setNewCompositeItems((prev) => [...prev, ""])} className="text-xs text-indigo-400 hover:text-indigo-300 text-left">+ Add item</button>
+                        </div>
+                      )}
+
+                      {/* quiz: question builder */}
+                      {newFormType === "quiz" && (
+                        <div className="flex flex-col gap-3">
+                          <p className="text-xs text-zinc-500">Questions</p>
+                          {newQuestions.map((q, qi) => (
+                            <div key={qi} className="bg-zinc-800 border border-zinc-700 rounded-lg p-3 flex flex-col gap-2">
+                              {/* Question text + XP + remove */}
+                              <div className="flex gap-2 items-start">
+                                <input
+                                  value={q.question}
+                                  onChange={(e) => setNewQuestions((prev) => prev.map((x, i) => i === qi ? { ...x, question: e.target.value } : x))}
+                                  placeholder={`Question ${qi + 1}`}
+                                  className="flex-1 bg-zinc-700 text-white rounded px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+                                />
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <span className="text-xs text-zinc-500">XP</span>
+                                  <input
+                                    type="number"
+                                    value={q.xp}
+                                    min={1}
+                                    onChange={(e) => setNewQuestions((prev) => prev.map((x, i) => i === qi ? { ...x, xp: parseInt(e.target.value) || 1 } : x))}
+                                    className="w-14 bg-zinc-700 text-white rounded px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+                                  />
+                                </div>
+                                {newQuestions.length > 1 && (
+                                  <button
+                                    onClick={() => setNewQuestions((prev) => prev.filter((_, i) => i !== qi))}
+                                    className="text-zinc-500 hover:text-rose-400 text-sm px-1 shrink-0"
+                                  >
+                                    ×
+                                  </button>
+                                )}
+                              </div>
+                              {/* Options */}
+                              <div className="flex flex-col gap-1 pl-1">
+                                {q.options.map((opt, oi) => (
+                                  <div key={oi} className="flex gap-2 items-center">
+                                    <input
+                                      type="radio"
+                                      name={`correct-${qi}`}
+                                      checked={q.correct_index === oi}
+                                      onChange={() => setNewQuestions((prev) => prev.map((x, i) => i === qi ? { ...x, correct_index: oi } : x))}
+                                      className="accent-emerald-500 shrink-0"
+                                      title="Mark as correct"
+                                    />
+                                    <input
+                                      value={opt}
+                                      onChange={(e) => setNewQuestions((prev) => prev.map((x, i) => {
+                                        if (i !== qi) return x;
+                                        const opts = [...x.options];
+                                        opts[oi] = e.target.value;
+                                        return { ...x, options: opts };
+                                      }))}
+                                      placeholder={`Option ${oi + 1}`}
+                                      className="flex-1 bg-zinc-700 text-white rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+                                    />
+                                    {q.options.length > 2 && (
+                                      <button
+                                        onClick={() => setNewQuestions((prev) => prev.map((x, i) => {
+                                          if (i !== qi) return x;
+                                          const opts = x.options.filter((_, j) => j !== oi);
+                                          return { ...x, options: opts, correct_index: Math.min(x.correct_index, opts.length - 1) };
+                                        }))}
+                                        className="text-zinc-600 hover:text-rose-400 text-sm px-0.5 shrink-0"
+                                      >
+                                        ×
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
+                                {q.options.length < 4 && (
+                                  <button
+                                    onClick={() => setNewQuestions((prev) => prev.map((x, i) => i === qi ? { ...x, options: [...x.options, ""] } : x))}
+                                    className="text-xs text-zinc-600 hover:text-zinc-400 text-left mt-0.5 ml-5"
+                                  >
+                                    + option
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-xs text-zinc-600 pl-1">● = correct answer</p>
+                            </div>
+                          ))}
                           <button
-                            onClick={() => {
-                              setEditingAchId(ach.id);
-                              setEditTitle(ach.title);
-                              setEditDesc(ach.description);
-                            }}
-                            className="cursor-pointer shrink-0 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors"
+                            onClick={() => setNewQuestions((prev) => [...prev, { question: "", options: ["", ""], correct_index: 0, xp: 5 }])}
+                            className="text-xs text-indigo-400 hover:text-indigo-300 text-left"
                           >
-                            Edit
+                            + Add question
                           </button>
                         </div>
                       )}
+
+                      {/* Summary badge */}
+                      <div className="flex items-center gap-2 flex-wrap mt-1">
+                        <span className="text-xs text-zinc-500">Will create:</span>
+                        <span className="text-xs px-2 py-0.5 rounded bg-zinc-700 text-zinc-300 font-mono">
+                          {newFormType === "quiz"
+                            ? "quiz"
+                            : newNeedsApproval
+                            ? `instructor_flag › ${newFormType}`
+                            : newFormType}
+                        </span>
+                        <span className="text-xs px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                          Block {newBlock}
+                        </span>
+                        <span className="text-xs px-2 py-0.5 rounded bg-zinc-700 text-zinc-400">
+                          +{newXp} XP
+                        </span>
+                        <span className="text-xs px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/25">
+                          Locked on creation
+                        </span>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 mt-1">
+                        <button
+                          disabled={createBusy || (() => {
+                            if (!newTitle.trim()) return true;
+                            if (newFormType === "checklist" && !newChecklistItems.some((i) => i.trim())) return true;
+                            if (newFormType === "fields" && !newFieldNames.some((f) => f.trim())) return true;
+                            if (newFormType === "composite" && !newCompositeItems.some((i) => i.trim())) return true;
+                            if (newFormType === "quiz" && (newQuestions.length === 0 || newQuestions.some((q) => !q.question.trim() || q.options.length < 2))) return true;
+                            return false;
+                          })()}
+                          onClick={handleCreateAchievement}
+                          className="cursor-pointer bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                        >
+                          {createBusy ? "Creating…" : "Create Achievement"}
+                        </button>
+                        <button
+                          onClick={resetCreateForm}
+                          className="cursor-pointer text-zinc-500 hover:text-zinc-300 text-xs px-3 py-2 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {deleteError && (
+                  <div className="flex items-center justify-between bg-rose-950 border border-rose-800 rounded-lg px-4 py-3 mb-4 text-sm text-rose-300">
+                    <span>{deleteError}</span>
+                    <button onClick={() => setDeleteError(null)} className="text-rose-500 hover:text-rose-300 ml-4 text-xs">Dismiss</button>
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-8">
+                  {achievementBlocks.map(({ blockNum, items }) => (
+                    <div key={blockNum}>
+                      <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">
+                        Block {blockNum} · {items.length} achievement{items.length !== 1 ? "s" : ""}
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        {items.map((ach, idx) => {
+                          const isDragging = dragInfo?.blockNum === blockNum && dragInfo?.idx === idx;
+                          const isDragOver = dragOverInfo?.blockNum === blockNum && dragOverInfo?.idx === idx && !isDragging;
+                          return (
+                            <div
+                              key={ach.id}
+                              draggable
+                              onDragStart={() => setDragInfo({ blockNum, idx })}
+                              onDragOver={(e) => { e.preventDefault(); setDragOverInfo({ blockNum, idx }); }}
+                              onDragLeave={() => setDragOverInfo(null)}
+                              onDrop={() => handleBlockDrop(blockNum, idx)}
+                              onDragEnd={() => { setDragInfo(null); setDragOverInfo(null); }}
+                              className={`bg-zinc-900 border rounded-xl p-4 transition-all ${
+                                isDragOver
+                                  ? "border-indigo-500 scale-[1.01]"
+                                  : isDragging
+                                  ? "border-zinc-600 opacity-50"
+                                  : "border-zinc-800"
+                              }`}
+                            >
+                              {editingAchId === ach.id ? (
+                                /* ── Edit mode ── */
+                                <div className="flex flex-col gap-3">
+                                  <input
+                                    type="text"
+                                    value={editTitle}
+                                    onChange={(e) => setEditTitle(e.target.value)}
+                                    placeholder="Title"
+                                    className="bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 w-full"
+                                  />
+                                  <textarea
+                                    value={editDesc}
+                                    onChange={(e) => setEditDesc(e.target.value)}
+                                    placeholder="Description"
+                                    rows={2}
+                                    className="bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 w-full resize-none"
+                                  />
+                                  <div className="flex items-center gap-2">
+                                    <label className="text-xs text-zinc-500 shrink-0">Block</label>
+                                    <select
+                                      value={editBlock}
+                                      onChange={(e) => setEditBlock(parseInt(e.target.value))}
+                                      className="bg-zinc-800 text-zinc-200 text-xs rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer border border-zinc-700"
+                                    >
+                                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                                        <option key={n} value={n}>Block {n}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      disabled={achBusy === ach.id || !editTitle.trim()}
+                                      onClick={() => handleSaveAchievement(ach.id)}
+                                      className="cursor-pointer bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                                    >
+                                      {achBusy === ach.id ? "Saving…" : "Save"}
+                                    </button>
+                                    <button
+                                      onClick={() => setEditingAchId(null)}
+                                      className="cursor-pointer text-zinc-500 hover:text-zinc-300 text-xs px-3 py-2 transition-colors"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                /* ── View mode ── */
+                                <div className="flex items-start gap-3">
+                                  <span className="text-zinc-600 hover:text-zinc-400 cursor-grab active:cursor-grabbing mt-0.5 select-none text-lg leading-none">
+                                    ⠿
+                                  </span>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <p className="text-sm font-semibold text-white">{ach.title}</p>
+                                      {ach.is_secret && (
+                                        <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium">secret</span>
+                                      )}
+                                      <span className="text-xs px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-medium">+{ach.xp} XP</span>
+                                    </div>
+                                    <p className="text-xs text-zinc-500 mt-0.5 truncate">{ach.description}</p>
+                                  </div>
+                                  <button
+                                    disabled={achBusy === ach.id}
+                                    onClick={() => handleToggleLock(ach.id)}
+                                    className={`cursor-pointer shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
+                                      ach.is_unlocked
+                                        ? "bg-emerald-900/50 hover:bg-emerald-900 text-emerald-300 border border-emerald-800"
+                                        : "bg-red-900/50 hover:bg-red-900 text-red-300 border border-red-800"
+                                    }`}
+                                  >
+                                    {ach.is_unlocked ? "Unlocked" : "Locked"}
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setEditingAchId(ach.id);
+                                      setEditTitle(ach.title);
+                                      setEditDesc(ach.description);
+                                      setEditBlock(ach.block_number);
+                                    }}
+                                    className="cursor-pointer shrink-0 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors"
+                                  >
+                                    Edit
+                                  </button>
+                                  {confirmDeleteId === ach.id ? (
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <button
+                                        disabled={achBusy === ach.id}
+                                        onClick={() => handleDeleteAchievement(ach.id)}
+                                        className="cursor-pointer text-xs bg-rose-800 hover:bg-rose-700 disabled:opacity-50 text-rose-200 font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                                      >
+                                        {achBusy === ach.id ? "Deleting…" : "Confirm"}
+                                      </button>
+                                      <button
+                                        onClick={() => setConfirmDeleteId(null)}
+                                        className="cursor-pointer text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1.5 transition-colors"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => { setConfirmDeleteId(ach.id); setDeleteError(null); }}
+                                      className="cursor-pointer shrink-0 text-xs text-zinc-600 hover:text-rose-400 px-2 py-1.5 rounded-lg transition-colors"
+                                    >
+                                      Delete
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   ))}
                 </div>
