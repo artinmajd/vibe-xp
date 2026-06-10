@@ -121,7 +121,7 @@ export default async function DashboardPage() {
   return (
     <>
     {/* Future Wrights logo — outside main so overflow-x-hidden doesn't trap fixed */}
-    <div className="fixed top-0 left-3 z-20">
+    <div style={{ position: "fixed", top: 0, left: 12, zIndex: 50 }}>
       <Image src="/assets/Future_Wrights.png" alt="Future Wrights" width={260} height={88} className="object-contain" style={{ mixBlendMode: "screen" }} />
     </div>
 
