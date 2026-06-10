@@ -125,8 +125,8 @@ export default async function DashboardPage() {
       <DarkBackground />
 
       {/* Future Wrights logo — fixed top left */}
-      <div className="fixed top-4 left-5 z-20">
-        <Image src="/assets/Future_Wrights.png" alt="Future Wrights" width={180} height={60} className="object-contain" style={{ mixBlendMode: "screen" }} />
+      <div className="fixed top-0 left-3 z-20">
+        <Image src="/assets/Future_Wrights.png" alt="Future Wrights" width={240} height={80} className="object-contain" style={{ mixBlendMode: "screen" }} />
       </div>
 
       <Suspense>
