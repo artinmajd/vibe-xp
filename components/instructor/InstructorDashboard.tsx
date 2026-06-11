@@ -66,6 +66,7 @@ type Props = {
   nextAchievement: AchievementPreview | null;
   lastUnlockedAchievement: AchievementPreview | null;
   sessionAchievements: AchievementRow[];
+  chatEnabled: boolean;
 };
 
 type Tab = "submissions" | "teams" | "achievements" | "session" | "leaderboard";
@@ -141,13 +142,29 @@ function SubmissionGroups({
                     const displayData = Object.fromEntries(
                       Object.entries(s.proof_data).filter(([k]) => k !== "screenshot_urls")
                     );
-                    return Object.keys(displayData).length > 0 ? (
+                    if (Object.keys(displayData).length === 0) return null;
+
+                    // Flatten one level: { values: { "Field": "Answer" } } → individual rows
+                    const rows: { label: string; value: string }[] = [];
+                    for (const [k, v] of Object.entries(displayData)) {
+                      if (v !== null && typeof v === "object" && !Array.isArray(v)) {
+                        for (const [subK, subV] of Object.entries(v as Record<string, unknown>)) {
+                          rows.push({ label: subK, value: String(subV) });
+                        }
+                      } else if (Array.isArray(v)) {
+                        rows.push({ label: k, value: (v as unknown[]).join(", ") });
+                      } else {
+                        rows.push({ label: k, value: String(v) });
+                      }
+                    }
+
+                    return (
                       <div className="bg-zinc-800 rounded-lg p-3 text-xs text-zinc-300 font-mono break-all">
-                        {Object.entries(displayData).map(([k, v]) => (
-                          <div key={k}><span className="text-zinc-500">{k}:</span> {String(v)}</div>
+                        {rows.map(({ label, value }) => (
+                          <div key={label}><span className="text-zinc-500">{label}:</span> {value}</div>
                         ))}
                       </div>
-                    ) : null;
+                    );
                   })()}
                 </div>
                 {renderActions(s)}
@@ -160,9 +177,10 @@ function SubmissionGroups({
   );
 }
 
-export default function InstructorDashboard({ pending, approved, teams, teamlessStudents, sessions, activeSession, nextAchievement, lastUnlockedAchievement, sessionAchievements }: Props) {
+export default function InstructorDashboard({ pending, approved, teams, teamlessStudents, sessions, activeSession, nextAchievement, lastUnlockedAchievement, sessionAchievements, chatEnabled: initialChatEnabled }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("submissions");
+  const [chatEnabled, setChatEnabled] = useState(initialChatEnabled);
   const [groupBy, setGroupBy] = useState<GroupBy>("team");
 
   // Achievements tab state
@@ -254,12 +272,17 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
 
   async function handleRetract(id: string) {
     setBusy(id);
-    await fetch("/api/instructor/approve", {
+    const res = await fetch("/api/instructor/approve", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ submission_id: id, action: "retract" }),
     });
     setBusy(null);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      alert(body.error ?? "Retract failed — check the console.");
+      return;
+    }
     router.refresh();
   }
 
@@ -501,6 +524,17 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
     router.refresh();
   }
 
+  async function handleToggleChat() {
+    const next = !chatEnabled;
+    setChatEnabled(next);
+    const res = await fetch("/api/instructor/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_enabled: next }),
+    });
+    if (!res.ok) setChatEnabled(!next); // revert on failure
+  }
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       {/* Header */}
@@ -513,6 +547,21 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Chat toggle */}
+          {activeSession && (
+            <button
+              onClick={handleToggleChat}
+              className="cursor-pointer flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border transition-all"
+              style={chatEnabled
+                ? { borderColor: "rgb(63,63,70)", background: "rgb(9,9,11)", color: "rgb(161,161,170)" }
+                : { borderColor: "rgb(239,68,68,0.5)", background: "rgba(239,68,68,0.08)", color: "rgb(252,165,165)" }
+              }
+            >
+              <span>{chatEnabled ? "💬" : "🔇"}</span>
+              <span>Chat {chatEnabled ? "On" : "Off"}</span>
+            </button>
+          )}
+
           {/* Unlock controls */}
           {activeSession && (
             <div className="relative">

@@ -7,6 +7,7 @@ import PendingPoller from "@/components/PendingPoller";
 import DarkBackground from "@/components/DarkBackground";
 import UnlockPoller from "@/components/UnlockPoller";
 import Image from "next/image";
+import TeamChat from "@/components/TeamChat";
 
 const LEVEL_GRADIENTS: Record<string, string> = {
   "Builder":          "from-slate-400 to-slate-500",
@@ -49,7 +50,7 @@ export default async function DashboardPage() {
 
   const { data: session } = await supabase
     .from("sessions")
-    .select("id, title, is_active")
+    .select("id, title, is_active, chat_enabled")
     .eq("is_active", true)
     .maybeSingle();
 
@@ -373,6 +374,11 @@ export default async function DashboardPage() {
         </div>
 
       </div>
+      {session?.chat_enabled !== false && (
+        <div className="hidden xl:block fixed right-4 top-6 w-[300px]" style={{ zIndex: 20 }}>
+          <TeamChat teamId={team.id} studentId={user.id} />
+        </div>
+      )}
     </main>
     </>
   );

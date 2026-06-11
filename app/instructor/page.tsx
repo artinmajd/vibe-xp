@@ -113,7 +113,7 @@ export default async function InstructorPage() {
   // All sessions
   const { data: sessionsRaw } = await supabase
     .from("sessions")
-    .select("id, title, is_active, unlocked_through")
+    .select("id, title, is_active, unlocked_through, chat_enabled")
     .order("id");
 
   const sessions = (sessionsRaw ?? []).map((s) => ({
@@ -122,6 +122,8 @@ export default async function InstructorPage() {
     is_active: s.is_active,
     unlocked_through: s.unlocked_through ?? 0,
   }));
+
+  const chatEnabled = (sessionsRaw ?? []).find((s) => s.is_active)?.chat_enabled ?? true;
 
   const activeSession = sessions.find((s) => s.is_active) ?? null;
 
@@ -174,6 +176,7 @@ export default async function InstructorPage() {
       nextAchievement={nextAchievement}
       lastUnlockedAchievement={lastUnlockedAchievement}
       sessionAchievements={sessionAchievements}
+      chatEnabled={chatEnabled}
     />
   );
 }

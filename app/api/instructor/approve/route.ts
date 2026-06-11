@@ -28,6 +28,10 @@ export async function POST(request: Request) {
   }
 
   if (action === "retract") {
+    // Remove instructor_actions rows first — their FK references submissions.id
+    // and would block the delete if the submission was manually approved.
+    await supabase.from("instructor_actions").delete().eq("submission_id", submission_id);
+
     const { error: deleteError } = await supabase
       .from("submissions")
       .delete()
