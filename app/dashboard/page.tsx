@@ -375,7 +375,7 @@ export default async function DashboardPage() {
 
       </div>
       {session?.chat_enabled !== false && (
-        <div className="hidden xl:block fixed right-4 top-6 w-[300px]" style={{ zIndex: 20 }}>
+        <div className="hidden xl:block fixed right-6 bottom-6" style={{ zIndex: 20 }}>
           <TeamChat teamId={team.id} studentId={user.id} />
         </div>
       )}

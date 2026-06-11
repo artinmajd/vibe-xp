@@ -535,6 +535,54 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
     if (!res.ok) setChatEnabled(!next); // revert on failure
   }
 
+  const [broadcastText, setBroadcastText] = useState("");
+  const [broadcastBusy, setBroadcastBusy] = useState(false);
+  const [broadcastSent, setBroadcastSent] = useState(false);
+  const [broadcastError, setBroadcastError] = useState<string | null>(null);
+  const [broadcastPendingFile, setBroadcastPendingFile] = useState<{ url: string; name: string; type: string } | null>(null);
+  const broadcastFileRef = React.useRef<HTMLInputElement>(null);
+
+  async function handleBroadcastFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBroadcastError(null);
+    setBroadcastBusy(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/instructor/broadcasts/upload", { method: "POST", body: fd });
+    const body = await res.json();
+    setBroadcastBusy(false);
+    e.target.value = "";
+    if (!res.ok) { setBroadcastError(body.error ?? "Upload failed."); return; }
+    setBroadcastPendingFile({ url: body.url, name: body.name, type: body.type });
+  }
+
+  async function handleBroadcast() {
+    if ((!broadcastText.trim() && !broadcastPendingFile) || broadcastBusy) return;
+    setBroadcastBusy(true);
+    setBroadcastError(null);
+    const res = await fetch("/api/instructor/broadcasts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content: broadcastText.trim() || null,
+        file_url: broadcastPendingFile?.url ?? null,
+        file_name: broadcastPendingFile?.name ?? null,
+        file_type: broadcastPendingFile?.type ?? null,
+      }),
+    });
+    setBroadcastBusy(false);
+    if (res.ok) {
+      setBroadcastText("");
+      setBroadcastPendingFile(null);
+      setBroadcastSent(true);
+      setTimeout(() => setBroadcastSent(false), 2000);
+    } else {
+      const body = await res.json();
+      setBroadcastError(body.error ?? "Failed to send.");
+    }
+  }
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       {/* Header */}
@@ -619,6 +667,75 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
             Log out
           </button>
         </div>
+      </div>
+
+      {/* Broadcast bar */}
+      <div className="border-b border-zinc-800 px-6 py-3 flex flex-col gap-2" style={{ background: "rgba(251,191,36,0.04)" }}>
+        <div className="flex items-center gap-3">
+          <span className="text-base shrink-0" title="Broadcast to all students">📢</span>
+          <input
+            type="text"
+            value={broadcastText}
+            onChange={(e) => setBroadcastText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleBroadcast(); } }}
+            placeholder="Broadcast a message to all students…"
+            className="flex-1 bg-zinc-900 border border-zinc-700 focus:border-amber-500/50 text-white placeholder-zinc-600 rounded-lg px-3 py-2 text-sm outline-none transition-colors"
+          />
+          <input
+            ref={broadcastFileRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif,application/pdf"
+            className="hidden"
+            onChange={handleBroadcastFileChange}
+          />
+          <button
+            onClick={() => broadcastFileRef.current?.click()}
+            disabled={broadcastBusy}
+            title="Attach file"
+            className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900 hover:border-zinc-500 hover:bg-zinc-800 transition-colors disabled:opacity-40"
+          >
+            <span className="text-base">📎</span>
+          </button>
+          <button
+            onClick={handleBroadcast}
+            disabled={(!broadcastText.trim() && !broadcastPendingFile) || broadcastBusy}
+            className="shrink-0 text-xs font-semibold px-4 py-2 rounded-lg transition-all disabled:opacity-40"
+            style={{
+              background: broadcastSent ? "rgba(34,197,94,0.2)" : "rgba(251,191,36,0.15)",
+              border: `1px solid ${broadcastSent ? "rgba(34,197,94,0.4)" : "rgba(251,191,36,0.3)"}`,
+              color: broadcastSent ? "rgb(134,239,172)" : "rgb(253,230,138)",
+            }}
+          >
+            {broadcastBusy ? "Sending…" : broadcastSent ? "✓ Sent" : "Send"}
+          </button>
+        </div>
+
+        {/* Pending file preview */}
+        {broadcastPendingFile && (
+          <div className="ml-8 flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-500/20 bg-amber-500/5">
+            {broadcastPendingFile.type.startsWith("image/") ? (
+              <img src={broadcastPendingFile.url} alt="preview" className="h-10 w-16 object-cover rounded" />
+            ) : (
+              <span className="text-lg">📎</span>
+            )}
+            <span className="text-xs text-amber-200/70 truncate flex-1" style={{ maxWidth: "300px" }}>
+              {broadcastPendingFile.name}
+            </span>
+            <button
+              onClick={() => setBroadcastPendingFile(null)}
+              className="text-zinc-500 hover:text-zinc-300 text-sm leading-none"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        {broadcastError && (
+          <div className="ml-8 flex items-center justify-between text-xs text-rose-400 px-3 py-1.5 rounded-lg border border-rose-500/20 bg-rose-500/5">
+            <span>{broadcastError}</span>
+            <button onClick={() => setBroadcastError(null)} className="text-rose-600 hover:text-rose-400 ml-3">×</button>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
