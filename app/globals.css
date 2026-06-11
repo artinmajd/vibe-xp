@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #1e1b4b;
   --foreground: #171717;
 }
 
@@ -12,8 +12,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  background-color: #1e1b4b; /* indigo — matches top of gradient for top overscroll */
+}
+
 body {
-  background: var(--background);
+  min-height: 100vh;
+  background-color: #1e3a8a; /* blue — matches bottom of gradient for bottom overscroll */
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
