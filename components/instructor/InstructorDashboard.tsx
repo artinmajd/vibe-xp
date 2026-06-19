@@ -524,6 +524,17 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
     router.refresh();
   }
 
+  async function handleBulkLock(action: "lock_all" | "unlock_all") {
+    setAchBusy(action);
+    await fetch("/api/instructor/unlock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
+    setAchBusy(null);
+    router.refresh();
+  }
+
   async function handleToggleChat() {
     const next = !chatEnabled;
     setChatEnabled(next);
@@ -872,14 +883,37 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                   <p className="text-xs text-zinc-500">
                     Drag rows to reorder within a block. Use <span className="text-zinc-300">Edit</span> to change title, description, or move to a different block.
                   </p>
-                  {!creating && (
-                    <button
-                      onClick={() => setCreating(true)}
-                      className="cursor-pointer shrink-0 ml-4 text-xs font-semibold bg-indigo-700 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                      + New Achievement
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2 shrink-0 ml-4">
+                    {(() => {
+                      const anyUnlocked = localAchievements.some((a) => a.is_unlocked);
+                      const action = anyUnlocked ? "lock_all" : "unlock_all";
+                      return (
+                        <button
+                          disabled={achBusy === "lock_all" || achBusy === "unlock_all"}
+                          onClick={() => handleBulkLock(action)}
+                          className={`cursor-pointer text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
+                            anyUnlocked
+                              ? "bg-red-900/50 hover:bg-red-900 text-red-300 border border-red-800"
+                              : "bg-emerald-900/50 hover:bg-emerald-900 text-emerald-300 border border-emerald-800"
+                          }`}
+                        >
+                          {achBusy === "lock_all" || achBusy === "unlock_all"
+                            ? "Working…"
+                            : anyUnlocked
+                            ? "Lock All"
+                            : "Unlock All"}
+                        </button>
+                      );
+                    })()}
+                    {!creating && (
+                      <button
+                        onClick={() => setCreating(true)}
+                        className="cursor-pointer text-xs font-semibold bg-indigo-700 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        + New Achievement
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* ── Create form ── */}

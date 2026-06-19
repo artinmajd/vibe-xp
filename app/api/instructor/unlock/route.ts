@@ -3,7 +3,7 @@ import { createServerClient } from "@/lib/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
 
 // POST /api/instructor/unlock
-// body: { action: "release" | "retract" }
+// body: { action: "release" | "retract" | "lock_all" | "unlock_all" }
 //   OR: { action: "toggle", achievement_id: string }
 export async function POST(req: NextRequest) {
   await requireInstructor();
@@ -57,6 +57,20 @@ export async function POST(req: NextRequest) {
     if (!last) return NextResponse.json({ error: "Nothing to retract" }, { status: 400 });
     await supabase.from("achievements").update({ is_unlocked: false }).eq("id", last.id);
     return NextResponse.json({ achievement_id: last.id, title: last.title });
+  } else if (action === "unlock_all") {
+    await supabase
+      .from("achievements")
+      .update({ is_unlocked: true })
+      .eq("session_number", session.id)
+      .eq("is_active", true);
+    return NextResponse.json({ action: "unlock_all" });
+  } else if (action === "lock_all") {
+    await supabase
+      .from("achievements")
+      .update({ is_unlocked: false })
+      .eq("session_number", session.id)
+      .eq("is_active", true);
+    return NextResponse.json({ action: "lock_all" });
   } else {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
