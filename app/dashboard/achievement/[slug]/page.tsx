@@ -30,6 +30,11 @@ export default async function AchievementPage({
 
   if (!student?.team_id) redirect("/team-setup");
 
+  const { count: memberCount } = await supabase
+    .from("team_members")
+    .select("*", { count: "exact", head: true })
+    .eq("team_id", student.team_id);
+
   const { data: achievement } = await supabase
     .from("achievements")
     .select("*")
@@ -77,6 +82,7 @@ export default async function AchievementPage({
             achievementSlug={slug}
             require={(config.require as string[]) ?? []}
             items={(config.items as string[]) ?? []}
+            fields={(config.fields as string[]) ?? []}
           />
         );
       case "quiz":
@@ -103,6 +109,7 @@ export default async function AchievementPage({
                 achievementSlug={slug}
                 require={(config.require as string[]) ?? []}
                 items={(config.items as string[]) ?? []}
+                fields={(config.fields as string[]) ?? []}
               />
             );
           default:
@@ -174,7 +181,7 @@ export default async function AchievementPage({
         {/* Team progress */}
         {teamDoneCount > 0 && (
           <p className="text-xs text-white/30 mt-3 px-1">
-            {teamDoneCount} / 3 teammates done
+            {teamDoneCount} / {memberCount ?? teamDoneCount} teammates done
           </p>
         )}
       </div>

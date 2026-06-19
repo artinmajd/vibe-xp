@@ -319,10 +319,10 @@ export default async function DashboardPage() {
                             {!isLocked && <p className="text-xs text-white/40 mt-0.5 truncate">{achievement.description}</p>}
                             {!isLocked && teamDone > 0 && !isApproved && (
                               <div className="flex items-center gap-1 mt-1.5">
-                                {[...Array(3)].map((_, j) => (
+                                {[...Array(members.length)].map((_, j) => (
                                   <div key={j} className={`w-1.5 h-1.5 rounded-full ${j < teamDone ? "bg-indigo-300" : "bg-white/15"}`} />
                                 ))}
-                                <span className="text-xs text-white/40 ml-1">{teamDone}/3 done</span>
+                                <span className="text-xs text-white/40 ml-1">{teamDone}/{members.length} done</span>
                               </div>
                             )}
                           </div>

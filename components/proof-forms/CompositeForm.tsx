@@ -8,14 +8,17 @@ export default function CompositeForm({
   achievementSlug,
   require: requiredTypes,
   items,
+  fields,
 }: {
   achievementSlug: string;
   require: string[];
   items?: string[];
+  fields?: string[];
 }) {
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [checked, setChecked] = useState<string[]>([]);
+  const [values, setValues] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -52,7 +55,11 @@ export default function CompositeForm({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         achievement_slug: achievementSlug,
-        proof_data: { checked, ...(screenshotUrls.length > 0 && { screenshot_urls: screenshotUrls }) },
+        proof_data: {
+          checked,
+          ...(requiredTypes.includes("fields") && { values }),
+          ...(screenshotUrls.length > 0 && { screenshot_urls: screenshotUrls }),
+        },
         screenshot_url: screenshotUrls[0] ?? null,
       }),
     });
@@ -72,6 +79,7 @@ export default function CompositeForm({
   }
 
   const allChecked = (items ?? []).every((item) => checked.includes(item));
+  const allFieldsFilled = (fields ?? []).every((f) => values[f]?.trim());
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -118,11 +126,27 @@ export default function CompositeForm({
         </div>
       )}
 
+      {requiredTypes.includes("fields") && fields && fields.length > 0 && (
+        <div className="flex flex-col gap-3">
+          {fields.map((field) => (
+            <div key={field} className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-white/70">{field}</label>
+              <input
+                type="text"
+                value={values[field] ?? ""}
+                onChange={(e) => setValues((prev) => ({ ...prev, [field]: e.target.value }))}
+                className="bg-white/10 border border-white/20 text-white placeholder:text-white/30 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
       {error && <p className="text-red-400 text-sm">{error}</p>}
 
       <button
         type="submit"
-        disabled={loading || (requiredTypes.includes("checklist") && !allChecked)}
+        disabled={loading || (requiredTypes.includes("checklist") && !allChecked) || (requiredTypes.includes("fields") && !allFieldsFilled)}
         className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-lg px-4 py-3 text-sm transition-colors"
       >
         {loading ? "Submitting..." : "Submit"}
