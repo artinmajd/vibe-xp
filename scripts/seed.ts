@@ -401,6 +401,471 @@ const achievements = [
     },
     is_secret: false,
   },
+
+  // ─── Session 2 — Into Cursor: build your first pages ─────────────────────────
+
+  // Block 1 — Into Cursor
+  {
+    slug: "s2-cursor-ready",
+    session_number: 2,
+    block_number: 1,
+    title: "Cursor Ready",
+    description: "Cursor's open, you're signed in, and your my-page folder is ready to go.",
+    xp: 10,
+    proof_type: "checklist", // auto-awards the moment all three are checked
+    proof_config: {
+      items: ["Cursor open", "Signed in", "Folder open"],
+    },
+    is_secret: false,
+  },
+  {
+    slug: "first-pixels",
+    session_number: 2,
+    block_number: 1,
+    title: "First Pixels",
+    description: "Typed one prompt and watched a real page appear with your name in big colorful letters.",
+    xp: 5,
+    proof_type: "screenshot", // auto-confirms an image was submitted
+    proof_config: {},
+    is_secret: false,
+  },
+
+  // Block 2 — Lazy vs. specific
+  {
+    slug: "spot-the-difference",
+    session_number: 2,
+    block_number: 2,
+    title: "Spot the Difference",
+    description: "Named three things the specific pizza page had that the lazy one didn't.",
+    xp: 5,
+    proof_type: "fields", // auto-awards when all three are filled in
+    proof_config: {
+      fields: ["Difference 1", "Difference 2", "Difference 3"],
+    },
+    is_secret: false,
+  },
+
+  // Block 3 — Iterating
+  {
+    slug: "chain-builder",
+    session_number: 2,
+    block_number: 3,
+    title: "Chain Builder",
+    description: "Took your lazy pizza page and iterated it into something that looks completely different.",
+    xp: 5,
+    proof_type: "instructor_flag", // instructor checks it actually changed
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+
+  // Block 4 — Builder Menu (à la carte)
+  {
+    slug: "add-picture",
+    session_number: 2,
+    block_number: 4,
+    title: "Add a Picture or Emoji",
+    description: "Added a picture or emoji to your page.",
+    xp: 3,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+  {
+    slug: "visual-theme",
+    session_number: 2,
+    block_number: 4,
+    title: "Visual Theme",
+    description: "Gave your page a named look — Pokémon card, neon arcade, movie poster, you name it.",
+    xp: 5,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+  {
+    slug: "working-button",
+    session_number: 2,
+    block_number: 4,
+    title: "Button That Does Something",
+    description: "Added a button that actually makes something happen when you click it.",
+    xp: 5,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+  {
+    slug: "add-hover-effect",
+    session_number: 2,
+    block_number: 4,
+    title: "Animation or Hover Effect",
+    description: "Added an animation or a hover effect to your page.",
+    xp: 5,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+  {
+    slug: "add-second-section",
+    session_number: 2,
+    block_number: 4,
+    title: "Second Section",
+    description: "Added a second section to your page.",
+    xp: 3,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+  {
+    slug: "ten-prompts-total",
+    session_number: 2,
+    block_number: 4,
+    title: "Ten Prompts",
+    description: "Used 10 or more prompts total to build and improve your page.",
+    xp: 10,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+  {
+    slug: "builder-combo",
+    session_number: 2,
+    block_number: 4,
+    title: "Builder Combo",
+    description: "Hit three Builder Menu items on one page.",
+    xp: 10,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+
+  // ─── Session 3 — The Art of Prompting ────────────────────────────────────────
+  // Four more (Before & After, Reference Confirmed, Upgrade Menu, Card Complete)
+  // still need product decisions before they can be added.
+
+  // Block 0 — Launch & Setup
+  {
+    slug: "s3-ready-check",
+    session_number: 3,
+    block_number: 0,
+    title: "Ready Check",
+    description: "You're set up and ready to build — tick all four to log in for the day.",
+    xp: 10,
+    proof_type: "checklist",
+    proof_config: {
+      items: [
+        "Cursor open & signed in",
+        "Session 2 folder visible",
+        "New Session 3 folder created",
+        "I know where the page opens",
+      ],
+    },
+    is_secret: false,
+  },
+
+  // Block 1 — The Gap Game
+  {
+    slug: "s3-gap-page",
+    session_number: 3,
+    block_number: 1,
+    title: "Same Sentence, Different Page",
+    description: "Everyone typed the same sentence — upload a screenshot of the page Cursor gave you.",
+    xp: 5,
+    proof_type: "screenshot",
+    proof_config: {},
+    is_secret: false,
+  },
+  {
+    slug: "s3-spot-the-gaps",
+    session_number: 3,
+    block_number: 1,
+    title: "Spot the Gaps",
+    description: "List 5 things Cursor decided on its own — font, colors, background, mood, spacing…",
+    xp: 5,
+    proof_type: "fields",
+    proof_config: { fields: ["Gap 1", "Gap 2", "Gap 3", "Gap 4", "Gap 5"] },
+    is_secret: false,
+  },
+
+  // Block 2 — Vague vs. Decided
+  {
+    slug: "s3-guess-list",
+    session_number: 3,
+    block_number: 2,
+    title: "Guess-List",
+    description: "List 6 things the lazy \"Make tic-tac-toe.\" prompt left for Cursor to guess.",
+    xp: 5,
+    proof_type: "fields",
+    proof_config: { fields: ["Guess 1", "Guess 2", "Guess 3", "Guess 4", "Guess 5", "Guess 6"] },
+    is_secret: false,
+  },
+  {
+    slug: "s3-decided-build",
+    session_number: 3,
+    block_number: 2,
+    title: "The Decided Build",
+    description: "Screenshot your styled tic-tac-toe that matches the decided prompt you wrote.",
+    xp: 5,
+    proof_type: "screenshot",
+    proof_config: {},
+    is_secret: false,
+  },
+  {
+    slug: "s3-goldilocks-sort",
+    session_number: 3,
+    block_number: 2,
+    title: "Goldilocks Sort",
+    description: "For each prompt, decide: too vague, too much, or just right?",
+    xp: 5,
+    proof_type: "quiz",
+    proof_config: {
+      questions: [
+        { question: "Make a cool team page.", options: ["Too vague", "Too much", "Just right"], correct_index: 0, xp: 1 },
+        { question: "Hi Cursor, I hope you're doing well today. So basically we are a team and we were kind of thinking that maybe it would be nice, if it's not too hard, to have some sort of page, it could be any color really, we like blue but also red is fine, and maybe our names somewhere, and our teacher said it should look good, so yeah, something cool, thanks so much, you're the best…", options: ["Too vague", "Too much", "Just right"], correct_index: 1, xp: 1 },
+        { question: "Make a one-page site for our team, the Pixel Pirates. Dark purple and gold pirate theme, team name huge at the top, three cards with each member's nickname and role, and a button that shows our battle cry. Easy to read.", options: ["Too vague", "Too much", "Just right"], correct_index: 2, xp: 1 },
+        { question: "Make something fun.", options: ["Too vague", "Too much", "Just right"], correct_index: 0, xp: 1 },
+        { question: "Make a one-page profile card for a player called Nova. Neon green on black, big name at the top, three stats with numbers, and a button that flips the card. Keep it readable.", options: ["Too vague", "Too much", "Just right"], correct_index: 2, xp: 1 },
+      ],
+    },
+    is_secret: false,
+  },
+
+  // Block 3 — Nudging
+  {
+    slug: "s3-before-after",
+    session_number: 3,
+    block_number: 3,
+    title: "Before & After",
+    description: "Upload two screenshots: your 'before' (the Block 1 page) and your 'after' (transformed with five nudges).",
+    xp: 5,
+    proof_type: "screenshot", // ScreenshotForm allows up to 3 images per submission
+    proof_config: {},
+    is_secret: false,
+  },
+  {
+    slug: "s3-five-lanes",
+    session_number: 3,
+    block_number: 3,
+    title: "Five Lanes",
+    description: "Used all five kinds of nudge — tick each one you steered with.",
+    xp: 5,
+    proof_type: "checklist",
+    proof_config: { items: ["Style", "Keep-but", "Motion", "Mood", "Polish"] },
+    is_secret: false,
+  },
+  {
+    slug: "s3-broke-it-fixed-it",
+    session_number: 3,
+    block_number: 3,
+    title: "Broke It, Fixed It",
+    description: "Something broke and you fixed it — screenshot a repair prompt (a described symptom or a pasted error with \"fix this\").",
+    xp: 5,
+    proof_type: "screenshot",
+    proof_config: {},
+    is_secret: false,
+  },
+
+  // Block 4 — Reference Prompting
+  {
+    slug: "s3-caught-it-wrong",
+    session_number: 3,
+    block_number: 4,
+    title: "Caught It Wrong",
+    description: "Cursor confidently botched the reference — screenshot the wrong result you caught.",
+    xp: 5,
+    proof_type: "screenshot",
+    proof_config: {},
+    is_secret: false,
+  },
+  {
+    slug: "s3-restyle",
+    session_number: 3,
+    block_number: 4,
+    title: "The Restyle",
+    description: "Screenshot your page after restyling it with one named reference look.",
+    xp: 5,
+    proof_type: "screenshot",
+    proof_config: {},
+    is_secret: false,
+  },
+  {
+    slug: "s3-reference-confirmed",
+    session_number: 3,
+    block_number: 4,
+    title: "Reference Confirmed",
+    description: "A neighbor team guessed your reference cold. Record your reference and their guess — an instructor confirms the match.",
+    xp: 5,
+    proof_type: "instructor_flag",
+    proof_config: {
+      form_type: "fields",
+      fields: ["The reference you built (record this first)", "What the neighbor team guessed"],
+    },
+    is_secret: false,
+  },
+  {
+    slug: "s3-double-style",
+    session_number: 3,
+    block_number: 4,
+    title: "Double Style",
+    description: "Stacked two references on one page and it still reads clearly.",
+    xp: 3,
+    proof_type: "checklist",
+    proof_config: { items: ["Stacked two references on one page and it still reads clearly"] },
+    is_secret: false,
+  },
+
+  // Block 5 — Build Your Trading Card
+  {
+    slug: "s3-card-canvas",
+    session_number: 3,
+    block_number: 5,
+    title: "Card Canvas",
+    description: "Decide on paper first — fill in all 8 fields of your Card Design Canvas before you prompt.",
+    xp: 5,
+    proof_type: "fields",
+    proof_config: {
+      fields: [
+        "Character name",
+        "Character title",
+        "Card style (named reference)",
+        "Main colors",
+        "Four stats with numbers",
+        "Signature move",
+        "Picture area (which emoji or shape?)",
+        "One surprise detail",
+      ],
+    },
+    is_secret: false,
+  },
+  {
+    slug: "s3-first-card",
+    session_number: 3,
+    block_number: 5,
+    title: "First Card",
+    description: "Screenshot your trading card right after your first build prompt.",
+    xp: 5,
+    proof_type: "screenshot",
+    proof_config: {},
+    is_secret: false,
+  },
+  // Upgrade Menu — five à-la-carte lanes, +3 each, instructor-approved (no cap).
+  {
+    slug: "s3-upgrade-stronger-style",
+    session_number: 3,
+    block_number: 5,
+    title: "Upgrade: Stronger Style",
+    description: "Sharpen the border, title font, and badge so the card reads like a real one.",
+    xp: 3,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+  {
+    slug: "s3-upgrade-stat-drama",
+    session_number: 3,
+    block_number: 5,
+    title: "Upgrade: Stat Drama",
+    description: "Make the stats look like meters or bars that fill up, and highlight the highest one.",
+    xp: 3,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+  {
+    slug: "s3-upgrade-layout",
+    session_number: 3,
+    block_number: 5,
+    title: "Upgrade: Layout",
+    description: "Tidy the layout — everything aligned, nothing cramped, easy to read at a glance.",
+    xp: 3,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+  {
+    slug: "s3-upgrade-personality",
+    session_number: 3,
+    block_number: 5,
+    title: "Upgrade: Personality",
+    description: "Make the card feel less generic — a stronger title, a small catchphrase, a detail nobody else would have.",
+    xp: 3,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+  {
+    slug: "s3-upgrade-polish",
+    session_number: 3,
+    block_number: 5,
+    title: "Upgrade: Polish",
+    description: "Make it feel finished — spacing, contrast, and one subtle premium detail.",
+    xp: 3,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "screenshot" },
+    is_secret: false,
+  },
+
+  {
+    slug: "s3-card-complete",
+    session_number: 3,
+    block_number: 5,
+    title: "Card Complete",
+    description: "Your card is finished and meets every requirement. An instructor checks it off.",
+    xp: 10,
+    proof_type: "instructor_flag",
+    proof_config: {
+      form_type: "checklist",
+      items: [
+        "Safe name + title",
+        "Emoji or shape picture area (no photo)",
+        "Four stats with numbers",
+        "Signature-move box",
+        "A nameable reference style",
+        "Three or more upgrade nudges",
+        "No private information",
+        "Final screenshot submitted",
+      ],
+    },
+    is_secret: false,
+  },
+
+  // Block 6 — Showcase & Wrap
+  {
+    slug: "s3-showed-card",
+    session_number: 3,
+    block_number: 6,
+    title: "We Showed Our Card",
+    description: "Your team presented its card on the projector.",
+    xp: 3,
+    proof_type: "instructor_flag",
+    proof_config: { form_type: "checklist", items: ["We presented our card to the class"] },
+    is_secret: false,
+  },
+  {
+    slug: "s3-takeaway",
+    session_number: 3,
+    block_number: 6,
+    title: "One-Line Takeaway",
+    description: "Finish the line: \"Today I learned that when steering Cursor, I should ___.\"",
+    xp: 3,
+    proof_type: "fields",
+    proof_config: { fields: ["Today I learned that when steering Cursor, I should…"] },
+    is_secret: false,
+  },
+  {
+    slug: "s3-recap-check",
+    session_number: 3,
+    block_number: 6,
+    title: "Recap Check",
+    description: "Quick myth-or-fact check on today's moves.",
+    xp: 2,
+    proof_type: "quiz",
+    proof_config: {
+      questions: [
+        { question: "A longer prompt is always a better prompt.", options: ["Myth", "Fact"], correct_index: 0, xp: 1 },
+        { question: "Nudging beats restarting when a result is close.", options: ["Myth", "Fact"], correct_index: 1, xp: 1 },
+      ],
+    },
+    is_secret: false,
+  },
 ];
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -443,7 +908,63 @@ async function main() {
   }
   console.log(`  ${achievements.length} achievements seeded.`);
 
+  // Assign sort_order to any rows that don't have one yet (newly inserted rows
+  // default to 0). This runs per session, in the order the rows appear in the
+  // `achievements` array above. Rows that already have a sort_order are left
+  // untouched, so instructor reordering done in the dashboard is preserved.
+  // This guarantees future sessions never end up unordered (the bug that made
+  // "Release Next" pick achievements in a random order).
+  await backfillSortOrder();
+
   console.log("Done.");
+}
+
+async function backfillSortOrder() {
+  const { data: rows, error } = await supabase
+    .from("achievements")
+    .select("id, slug, session_number, sort_order");
+
+  if (error) {
+    console.error("Failed to read achievements for sort_order backfill:", error.message);
+    process.exit(1);
+  }
+  if (!rows) return;
+
+  // Intended order within a session = position in the `achievements` array above.
+  // Slugs not in the array (e.g. created via the instructor UI) sort last.
+  const seedIndex = new Map(achievements.map((a, i) => [a.slug, i]));
+  const rank = (slug: string) => seedIndex.get(slug) ?? Number.MAX_SAFE_INTEGER;
+
+  // Group rows by session
+  const bySession = new Map<number, typeof rows>();
+  for (const r of rows) {
+    if (!bySession.has(r.session_number)) bySession.set(r.session_number, []);
+    bySession.get(r.session_number)!.push(r);
+  }
+
+  let assigned = 0;
+  for (const group of bySession.values()) {
+    const maxExisting = Math.max(0, ...group.filter((r) => r.sort_order > 0).map((r) => r.sort_order));
+    const needsOrder = group
+      .filter((r) => !r.sort_order || r.sort_order === 0)
+      .sort((a, b) => rank(a.slug) - rank(b.slug));
+
+    let next = maxExisting;
+    for (const r of needsOrder) {
+      next += 1;
+      const { error: updateError } = await supabase
+        .from("achievements")
+        .update({ sort_order: next })
+        .eq("id", r.id);
+      if (updateError) {
+        console.error(`Failed to set sort_order for ${r.slug}:`, updateError.message);
+        process.exit(1);
+      }
+      assigned += 1;
+    }
+  }
+
+  console.log(`  sort_order backfill: ${assigned} row(s) assigned, ${rows.length - assigned} already ordered.`);
 }
 
 main();

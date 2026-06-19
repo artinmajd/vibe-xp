@@ -19,7 +19,7 @@ Artin is building this before the course starts. He is not a full-time backend e
 There are three kinds of users:
 
 - **Students** — teens, 13–17, have their own login (email + password via Supabase Auth). They sign up individually, then form or join teams of up to 3.
-- **Teams** — 5 teams per cohort, max 3 students each. **All scoring happens at the team level.** Individual student XP does not exist. The `student_id` on a submission is only for audit ("which team member submitted this") and to power the `builders-apprentice` secret achievement.
+- **Teams** — 5 teams per cohort, max 3 students each. **The leaderboard and levels are team-level** — there are no individual standings. But **scoring is per-member: each student submits their own proof for an achievement, and every member's `xp_awarded` sums into the team total.** The submissions unique key is **`(student_id, achievement_id)`** (NOT `team_id` — the committed `schema.sql` once said otherwise and was wrong), so all three teammates completing the same achievement piles up more XP for the team. That is by design — the achievement page even shows "X / 3 teammates done". `applyTeamMultiplier` (×`3/memberCount`) keeps smaller teams fair. `student_id` also powers the `builders-apprentice` secret achievement. **Do not assume one submission per team.**
 - **Instructors** — access a separate dashboard behind a single shared passcode (`INSTRUCTOR_PASSCODE` env var). No per-instructor auth in v1.
 
 ## The course context that shapes design decisions

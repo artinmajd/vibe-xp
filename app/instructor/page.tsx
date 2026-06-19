@@ -144,6 +144,7 @@ export default async function InstructorPage() {
         .eq("session_number", activeSession.id)
         .eq("is_active", true)
         .order("sort_order")
+        .order("id")
     : { data: [] };
 
   const allAchievements = achievementRows ?? [];

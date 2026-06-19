@@ -69,7 +69,11 @@ create table submissions (
   xp_awarded int not null default 0,
   submitted_at timestamptz default now(),
   reviewed_at timestamptz,
-  unique (team_id, achievement_id)
+  -- Submissions are PER STUDENT, not per team: each member submits their own
+  -- proof for an achievement, and every member's xp_awarded sums into the team
+  -- total (see lib/team-xp.ts). The dashboard shows "X / 3 teammates done".
+  -- Do NOT assume one submission per team.
+  unique (student_id, achievement_id)
 );
 
 -- sessions

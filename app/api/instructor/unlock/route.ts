@@ -32,13 +32,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ achievement_id: ach.id, title: ach.title, is_unlocked: !ach.is_unlocked });
   }
 
+  // Order by sort_order to match the instructor page's "next/last" preview
+  // (sort_order is block-clustered, so this preserves block order too).
+  // id is a deterministic tiebreaker in case two rows share a sort_order.
   const { data: achievements } = await supabase
     .from("achievements")
     .select("id, title, is_unlocked")
     .eq("session_number", session.id)
     .eq("is_secret", false)
     .eq("is_active", true)
-    .order("block_number")
+    .order("sort_order")
     .order("id");
 
   const list = achievements ?? [];
