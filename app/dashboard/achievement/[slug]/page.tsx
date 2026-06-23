@@ -24,7 +24,7 @@ export default async function AchievementPage({
 
   const { data: student } = await supabase
     .from("students")
-    .select("team_id")
+    .select("team_id, cohort_id")
     .eq("id", user.id)
     .single();
 
@@ -44,7 +44,15 @@ export default async function AchievementPage({
 
   if (!achievement) notFound();
 
-  if (!achievement.is_unlocked) redirect("/dashboard");
+  // Unlock state is per-cohort now.
+  const { data: unlockRow } = await supabase
+    .from("cohort_achievement_unlocks")
+    .select("is_unlocked")
+    .eq("cohort_id", student.cohort_id)
+    .eq("achievement_id", achievement.id)
+    .maybeSingle();
+
+  if (!unlockRow?.is_unlocked) redirect("/dashboard");
 
   const { data: submission } = await supabase
     .from("submissions")

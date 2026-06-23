@@ -7,19 +7,38 @@ export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
   const view = request.nextUrl.searchParams.get("view") ?? "total";
+  const cohortCode = request.nextUrl.searchParams.get("cohort");
   const supabase = createServerClient();
 
-  // Active session
-  const { data: session } = await supabase
-    .from("sessions")
-    .select("id, title")
-    .eq("is_active", true)
+  if (!cohortCode) {
+    return NextResponse.json({ teams: [], session: null, cohort: null });
+  }
+
+  // Resolve the cohort by its join code (case-insensitive).
+  const { data: cohort } = await supabase
+    .from("cohorts")
+    .select("id, name, join_code, active_session_id")
+    .eq("join_code", cohortCode.toUpperCase())
     .maybeSingle();
 
-  // All teams with members
+  if (!cohort) {
+    return NextResponse.json({ teams: [], session: null, cohort: null });
+  }
+
+  // The cohort's current session.
+  const { data: session } = cohort.active_session_id
+    ? await supabase
+        .from("sessions")
+        .select("id, title")
+        .eq("id", cohort.active_session_id)
+        .maybeSingle()
+    : { data: null };
+
+  // Teams in this cohort, with members.
   const { data: teams } = await supabase
     .from("teams")
-    .select("id, name, emoji");
+    .select("id, name, emoji")
+    .eq("cohort_id", cohort.id);
 
   const { data: membersRaw } = await supabase
     .from("team_members")
@@ -35,12 +54,12 @@ export async function GET(request: NextRequest) {
   }
 
   if (!teams || teams.length === 0) {
-    return NextResponse.json({ teams: [], session });
+    return NextResponse.json({ teams: [], session, cohort: { name: cohort.name, join_code: cohort.join_code } });
   }
 
   const teamIds = teams.map((t) => t.id);
 
-  // All approved submissions
+  // All approved submissions for these teams
   const { data: submissions } = await supabase
     .from("submissions")
     .select("team_id, xp_awarded, achievement_id")
@@ -53,7 +72,7 @@ export async function GET(request: NextRequest) {
     .select("team_id, xp")
     .in("team_id", teamIds);
 
-  // Achievement IDs for the active session (for session XP)
+  // Achievement IDs for the cohort's current session (for session XP)
   const { data: sessionAchievements } = session
     ? await supabase
         .from("achievements")
@@ -63,7 +82,6 @@ export async function GET(request: NextRequest) {
 
   const sessionAchievementIds = new Set((sessionAchievements ?? []).map((a) => a.id));
 
-  // Build leaderboard rows
   const rows = teams.map((team) => {
     const teamMembers = membersByTeam.get(team.id) ?? [];
     const memberCount = teamMembers.length || 1;
@@ -94,10 +112,13 @@ export async function GET(request: NextRequest) {
     };
   });
 
-  // Sort by requested view
   rows.sort((a, b) =>
     view === "session" ? b.sessionXp - a.sessionXp : b.totalXp - a.totalXp
   );
 
-  return NextResponse.json({ teams: rows, session });
+  return NextResponse.json({
+    teams: rows,
+    session,
+    cohort: { name: cohort.name, join_code: cohort.join_code },
+  });
 }

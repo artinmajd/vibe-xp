@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   // Look up the student — also provides display_name and team membership proof.
   const { data: student } = await supabase
     .from("students")
-    .select("team_id, display_name")
+    .select("team_id, display_name, cohort_id")
     .eq("id", user.id)
     .single();
 
@@ -73,14 +73,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Empty message." }, { status: 400 });
   }
 
-  // Reject if the active session has chat disabled.
-  const { data: activeSession } = await supabase
-    .from("sessions")
+  // Reject if the student's cohort has chat disabled.
+  const { data: cohort } = await supabase
+    .from("cohorts")
     .select("chat_enabled")
-    .eq("is_active", true)
+    .eq("id", student.cohort_id)
     .maybeSingle();
 
-  if (activeSession?.chat_enabled === false) {
+  if (cohort?.chat_enabled === false) {
     return NextResponse.json({ error: "Chat is currently disabled." }, { status: 403 });
   }
 

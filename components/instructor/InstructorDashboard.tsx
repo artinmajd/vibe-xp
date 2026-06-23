@@ -38,6 +38,8 @@ type SessionInfo = {
 
 type AchievementPreview = { id: string; title: string };
 
+type CohortInfo = { id: string; name: string; join_code: string };
+
 type NewQuestion = {
   question: string;
   options: string[];
@@ -67,6 +69,7 @@ type Props = {
   lastUnlockedAchievement: AchievementPreview | null;
   sessionAchievements: AchievementRow[];
   chatEnabled: boolean;
+  cohort: CohortInfo;
 };
 
 type Tab = "submissions" | "teams" | "achievements" | "session" | "leaderboard";
@@ -177,7 +180,7 @@ function SubmissionGroups({
   );
 }
 
-export default function InstructorDashboard({ pending, approved, teams, teamlessStudents, sessions, activeSession, nextAchievement, lastUnlockedAchievement, sessionAchievements, chatEnabled: initialChatEnabled }: Props) {
+export default function InstructorDashboard({ pending, approved, teams, teamlessStudents, sessions, activeSession, nextAchievement, lastUnlockedAchievement, sessionAchievements, chatEnabled: initialChatEnabled, cohort }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("submissions");
   const [chatEnabled, setChatEnabled] = useState(initialChatEnabled);
@@ -599,7 +602,18 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
       {/* Header */}
       <div className="border-b border-zinc-800 px-6 py-4 flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold">Instructor Dashboard</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold">Instructor Dashboard</h1>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              {cohort.name}
+            </span>
+            <a
+              href="/instructor/cohorts"
+              className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors underline decoration-dotted"
+            >
+              switch
+            </a>
+          </div>
           {activeSession && (
             <p className="text-xs text-zinc-500">Active: Session {activeSession.id} — {activeSession.title}</p>
           )}
@@ -1599,7 +1613,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
           <div>
             <p className="text-xs text-zinc-500 mb-3">Live preview — same view as the projector.</p>
             <iframe
-              src="/leaderboard?embed=1"
+              src={`/leaderboard/${cohort.join_code}?embed=1`}
               className="w-full rounded-xl border border-zinc-800"
               style={{ height: "600px" }}
             />

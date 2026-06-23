@@ -1,4 +1,5 @@
 import { createServerClient } from "@/lib/supabase-server";
+import { getInstructorCohort } from "@/lib/cohort";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -7,10 +8,17 @@ async function checkAuth() {
   return cookieStore.get("instructor_auth")?.value === process.env.INSTRUCTOR_PASSCODE;
 }
 
-// POST — create a new achievement in the active session
+// POST — create a new achievement in the active cohort's current session.
+// New achievements start locked for every cohort (no unlock row == locked).
 export async function POST(request: Request) {
   if (!(await checkAuth())) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
+  const cohort = await getInstructorCohort();
+  if (!cohort) return NextResponse.json({ error: "Pick a cohort first." }, { status: 400 });
+  if (!cohort.active_session_id) {
+    return NextResponse.json({ error: "No active session for this cohort." }, { status: 400 });
   }
 
   const { title, description, block_number, xp, proof_type, proof_config } = await request.json();
@@ -19,13 +27,7 @@ export async function POST(request: Request) {
   }
 
   const supabase = createServerClient();
-
-  const { data: session } = await supabase
-    .from("sessions")
-    .select("id")
-    .eq("is_active", true)
-    .maybeSingle();
-  if (!session) return NextResponse.json({ error: "No active session." }, { status: 400 });
+  const session = { id: cohort.active_session_id };
 
   // Unique slug derived from title — append -2, -3, … if taken
   const base = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -61,7 +63,6 @@ export async function POST(request: Request) {
       xp: xp ?? 5,
       proof_type,
       proof_config: proof_config ?? {},
-      is_unlocked: false,
       is_active: true,
       is_secret: false,
       sort_order,

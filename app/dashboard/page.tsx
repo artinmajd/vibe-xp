@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/require-auth";
 import { createServerClient } from "@/lib/supabase-server";
 import { getTeamXP } from "@/lib/team-xp";
+import { getUnlockedAchievementIds } from "@/lib/cohort";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import PendingPoller from "@/components/PendingPoller";
@@ -49,11 +50,20 @@ export default async function DashboardPage() {
     return s?.display_name ?? "Unknown";
   });
 
-  const { data: session } = await supabase
-    .from("sessions")
-    .select("id, title, is_active, chat_enabled")
-    .eq("is_active", true)
+  // The student's cohort drives the active session, unlock state, and chat.
+  const { data: cohort } = await supabase
+    .from("cohorts")
+    .select("id, join_code, active_session_id, chat_enabled")
+    .eq("id", student.cohort_id)
     .maybeSingle();
+
+  const { data: session } = cohort?.active_session_id
+    ? await supabase
+        .from("sessions")
+        .select("id, title")
+        .eq("id", cohort.active_session_id)
+        .maybeSingle()
+    : { data: null };
 
   const { data: achievements } = await supabase
     .from("achievements")
@@ -65,6 +75,11 @@ export default async function DashboardPage() {
     .order("id");
 
   const achievementIds = (achievements ?? []).map((a) => a.id);
+
+  // Per-cohort unlock state — replaces the old global achievements.is_unlocked.
+  const unlockedSet = cohort
+    ? await getUnlockedAchievementIds(cohort.id, achievementIds)
+    : new Set<string>();
   const { data: allTeamSubs } = achievementIds.length
     ? await supabase
         .from("submissions")
@@ -100,7 +115,7 @@ export default async function DashboardPage() {
     : 100;
 
   const levelGradient = LEVEL_GRADIENTS[levelInfo.name] ?? "from-indigo-500 to-violet-600";
-  const unlockedAchievements = (achievements ?? []).filter((a) => a.is_unlocked);
+  const unlockedAchievements = (achievements ?? []).filter((a) => unlockedSet.has(a.id));
   const doneCount = unlockedAchievements.filter((a) => {
     const s = mySubsMap.get(a.id);
     return s?.status === "auto_approved" || s?.status === "approved";
@@ -144,7 +159,7 @@ export default async function DashboardPage() {
           </div>
           <div className="flex items-center gap-2">
             <Link
-              href="/leaderboard"
+              href={cohort?.join_code ? `/leaderboard/${cohort.join_code}` : "/leaderboard"}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
               style={{ background: "rgba(255,255,255,0.08)" }}
             >
@@ -280,7 +295,7 @@ export default async function DashboardPage() {
                   <div className="flex flex-col divide-y divide-white/15">
                     {items.map((achievement) => {
                       const i = globalIdx++;
-                      const isLocked = !achievement.is_unlocked;
+                      const isLocked = !unlockedSet.has(achievement.id);
                       const mySub = isLocked ? undefined : mySubsMap.get(achievement.id);
                       const isApproved = mySub?.status === "auto_approved" || mySub?.status === "approved";
                       const isPending = mySub?.status === "pending";
@@ -377,7 +392,7 @@ export default async function DashboardPage() {
         </div>
 
       </div>
-      {session?.chat_enabled !== false && (
+      {cohort?.chat_enabled !== false && (
         <div className="hidden xl:block fixed right-6 bottom-6" style={{ zIndex: 20 }}>
           <TeamChat teamId={team.id} studentId={user.id} />
         </div>

@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   // Check student is not already on a team
   const { data: student } = await supabase
     .from("students")
-    .select("team_id")
+    .select("team_id, cohort_id")
     .eq("id", user.id)
     .single();
 
@@ -74,6 +74,11 @@ export async function POST(request: Request) {
 
   if (!team) {
     return NextResponse.json({ error: "Team not found. Double-check the code." }, { status: 404 });
+  }
+
+  // A student can only join a team in their own class.
+  if (team.cohort_id !== student?.cohort_id) {
+    return NextResponse.json({ error: "That team is in a different class." }, { status: 400 });
   }
 
   // Check current member count

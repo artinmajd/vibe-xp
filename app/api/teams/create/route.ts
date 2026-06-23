@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   // Check student is not already on a team
   const { data: student } = await supabase
     .from("students")
-    .select("team_id")
+    .select("team_id, cohort_id")
     .eq("id", user.id)
     .single();
 
@@ -42,11 +42,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "You're already on a team." }, { status: 400 });
   }
 
-  // Check team limit
+  if (!student?.cohort_id) {
+    return NextResponse.json({ error: "You're not in a class yet. Ask your instructor for the class code." }, { status: 400 });
+  }
+
+  // Team limit is per cohort.
   const maxTeams = parseInt(process.env.MAX_TEAMS ?? "5");
   const { count } = await supabase
     .from("teams")
-    .select("*", { count: "exact", head: true });
+    .select("*", { count: "exact", head: true })
+    .eq("cohort_id", student.cohort_id);
 
   if ((count ?? 0) >= maxTeams) {
     return NextResponse.json({ error: `Maximum of ${maxTeams} teams allowed.` }, { status: 400 });
@@ -66,10 +71,10 @@ export async function POST(request: Request) {
     attempts++;
   }
 
-  // Create the team
+  // Create the team in the student's cohort
   const { data: team, error: teamError } = await supabase
     .from("teams")
-    .insert({ code, name: name.trim(), emoji: emoji?.trim() || null })
+    .insert({ code, name: name.trim(), emoji: emoji?.trim() || null, cohort_id: student.cohort_id })
     .select()
     .single();
 

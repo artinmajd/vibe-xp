@@ -13,17 +13,19 @@ const shouldReset = process.argv.includes("--reset");
 
 // ─── Sessions ────────────────────────────────────────────────────────────────
 
+// Sessions are a shared catalog. Which one is "active" is per-cohort now
+// (cohorts.active_session_id), so there is no is_active flag here.
 const sessions = [
-  { id: 1, title: "Intro to AI & Vibe Coding", is_active: true },
-  { id: 2, title: "Prompting Like a Pro", is_active: false },
-  { id: 3, title: "Building Your First App", is_active: false },
-  { id: 4, title: "Adding Features", is_active: false },
-  { id: 5, title: "Think in Pieces, Build in Pieces", is_active: false },
-  { id: 6, title: "Everything Breaks (and How Pros Fix It Fast)", is_active: false },
-  { id: 7, title: "Teach Cursor How You Work", is_active: false },
-  { id: 8, title: "Taking It Live", is_active: false },
-  { id: 9, title: "Sharing & Deploying", is_active: false },
-  { id: 10, title: "Showcase & Celebration", is_active: false },
+  { id: 1, title: "Intro to AI & Vibe Coding" },
+  { id: 2, title: "Prompting Like a Pro" },
+  { id: 3, title: "Building Your First App" },
+  { id: 4, title: "Adding Features" },
+  { id: 5, title: "Think in Pieces, Build in Pieces" },
+  { id: 6, title: "Everything Breaks (and How Pros Fix It Fast)" },
+  { id: 7, title: "Teach Cursor How You Work" },
+  { id: 8, title: "Taking It Live" },
+  { id: 9, title: "Sharing & Deploying" },
+  { id: 10, title: "Showcase & Celebration" },
 ];
 
 // ─── Achievements ─────────────────────────────────────────────────────────────

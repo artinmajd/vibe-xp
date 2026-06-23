@@ -1,0 +1,236 @@
+"use client";
+
+import { useEffect, useState, useRef, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import DarkBackground from "@/components/DarkBackground";
+import { createBrowserClient } from "@/lib/supabase-browser";
+
+type TeamRow = {
+  teamId: string;
+  name: string;
+  emoji: string | null;
+  members: string[];
+  memberCount: number;
+  sessionXp: number;
+  totalXp: number;
+  level: number;
+  levelName: string;
+  xpToNext: number | null;
+};
+
+type LeaderboardData = {
+  teams: TeamRow[];
+  session: { id: number; title: string } | null;
+  cohort: { name: string; join_code: string } | null;
+};
+
+const RANK_COLORS = [
+  "text-yellow-400",
+  "text-zinc-300",
+  "text-amber-500",
+  "text-white/40",
+  "text-white/40",
+];
+
+const LEVEL_COLORS: Record<string, string> = {
+  "Builder":          "bg-white/10 text-white/60",
+  "Creator":          "bg-blue-500/20 text-blue-300",
+  "Inventor":         "bg-violet-500/20 text-violet-300",
+  "Engineer":         "bg-indigo-500/20 text-indigo-300",
+  "Architect":        "bg-emerald-500/20 text-emerald-300",
+  "Founder":          "bg-orange-500/20 text-orange-300",
+  "AI Master Builder":"bg-yellow-500/20 text-yellow-300",
+};
+
+const bgStyle = { background: "linear-gradient(135deg, #1e1b4b 0%, #2e1065 40%, #1e3a8a 100%)" };
+
+function LeaderboardInner({ code }: { code: string }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const view = (searchParams.get("view") ?? "total") as "total" | "session";
+  const isEmbed = searchParams.get("embed") === "1";
+
+  const [data, setData] = useState<LeaderboardData | null>(null);
+  const [highlightedIds, setHighlightedIds] = useState<Set<string>>(new Set());
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const prevOrderRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    createBrowserClient().auth.getSession().then(({ data: { session } }) => {
+      setIsSignedIn(!!session);
+    });
+  }, []);
+
+  const fetchLeaderboard = useCallback(async () => {
+    const res = await fetch(`/api/leaderboard?view=${view}&cohort=${encodeURIComponent(code)}`);
+    if (!res.ok) return;
+    const newData: LeaderboardData = await res.json();
+
+    const newOrder = newData.teams.map((t) => t.teamId);
+    const prev = prevOrderRef.current;
+    if (prev.length > 0) {
+      const movers = newOrder.filter(
+        (id, idx) => prev.indexOf(id) !== -1 && prev.indexOf(id) !== idx
+      );
+      if (movers.length > 0) {
+        setHighlightedIds(new Set(movers));
+        setTimeout(() => setHighlightedIds(new Set()), 2000);
+      }
+    }
+    prevOrderRef.current = newOrder;
+    setData(newData);
+  }, [view, code]);
+
+  useEffect(() => {
+    fetchLeaderboard();
+    const interval = setInterval(fetchLeaderboard, 5000);
+    return () => clearInterval(interval);
+  }, [fetchLeaderboard]);
+
+  function toggleView() {
+    router.push(`/leaderboard/${encodeURIComponent(code)}?view=${view === "total" ? "session" : "total"}${isEmbed ? "&embed=1" : ""}`);
+  }
+
+  if (!data) {
+    return (
+      <main className="min-h-screen flex items-center justify-center relative overflow-hidden" style={bgStyle}>
+        <DarkBackground />
+        <p className="relative z-10 text-white/40 text-xl">Loading...</p>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen text-white flex flex-col px-8 py-10 relative overflow-hidden" style={bgStyle}>
+      <DarkBackground />
+
+      <div className="relative z-10 flex flex-col flex-1">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-10">
+          <div>
+            <h1 className="text-4xl font-black tracking-tight">
+              Leaderboard{data.cohort ? ` — ${data.cohort.name}` : ""}
+            </h1>
+            {data.session && (
+              <p className="text-white/50 text-lg mt-1">
+                Session {data.session.id} — {data.session.title}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={toggleView}
+            className="cursor-pointer text-sm text-white/70 px-4 py-2 rounded-lg border border-white/20 hover:border-white/40 hover:text-white transition-all"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          >
+            Showing: {view === "total" ? "Total XP" : "Session XP"}
+          </button>
+        </div>
+
+        {/* Teams */}
+        {data.teams.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-white/30 text-2xl">No teams yet.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4 flex-1">
+            {data.teams.map((team, idx) => {
+              const isHighlighted = highlightedIds.has(team.teamId);
+              const xp = view === "session" ? team.sessionXp : team.totalXp;
+
+              return (
+                <div
+                  key={team.teamId}
+                  className={`rounded-2xl px-8 py-5 border transition-all duration-500 ${
+                    isHighlighted
+                      ? "border-indigo-400/60 scale-[1.01]"
+                      : idx === 0
+                      ? "border-yellow-500/30"
+                      : "border-white/10"
+                  }`}
+                  style={{
+                    background: isHighlighted
+                      ? "rgba(99,102,241,0.25)"
+                      : idx === 0
+                      ? "rgba(255,255,255,0.15)"
+                      : "rgba(30,27,75,0.75)",
+                    backdropFilter: idx === 0 ? "blur(20px)" : undefined,
+                  }}
+                >
+                  {/* Top row: rank · emoji · name · XP */}
+                  <div className="flex items-center gap-6">
+                    <span className={`text-5xl font-black w-16 text-center shrink-0 ${RANK_COLORS[idx] ?? "text-white/30"}`}>
+                      {idx + 1}
+                    </span>
+
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <span className="text-4xl">{team.emoji ?? "🏆"}</span>
+                      <div className="min-w-0">
+                        <p className="text-2xl font-bold truncate">{team.name}</p>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium border border-white/10 ${LEVEL_COLORS[team.levelName] ?? "bg-white/10 text-white/50"}`}>
+                          {team.levelName}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <p className="text-4xl font-black text-white">{xp}</p>
+                      <p className="text-sm text-white/40">XP</p>
+                      {team.memberCount < 3 && (
+                        <p className="text-xs text-amber-400/80 mt-1">
+                          earning ×{team.memberCount === 1 ? "3" : "1.5"} XP
+                        </p>
+                      )}
+                      {view === "total" && (
+                        <p className="text-xs text-white/25 mt-1">{team.sessionXp} this session</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Members row */}
+                  {team.members.length > 0 && (
+                    <div className="flex items-center gap-2 mt-3 pl-20">
+                      <span className="text-xs text-white/35 font-medium">Members:</span>
+                      {team.members.map((m) => (
+                        <span key={m} className="text-xs font-medium px-3 py-1 rounded-full border border-white/15 text-white/55"
+                          style={{ background: "rgba(255,255,255,0.07)" }}>
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Back button — hidden when embedded in instructor dashboard */}
+        {!isEmbed && (
+          <div className="mt-8 pb-2">
+            <a
+              href={isSignedIn ? "/dashboard" : "/"}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
+              style={{ background: "rgba(255,255,255,0.08)" }}
+            >
+              ← {isSignedIn ? "Dashboard" : "Main Menu"}
+            </a>
+          </div>
+        )}
+
+      </div>
+    </main>
+  );
+}
+
+export default function LeaderboardView({ code }: { code: string }) {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center relative overflow-hidden" style={bgStyle}>
+        <DarkBackground />
+        <p className="relative z-10 text-white/40 text-xl">Loading...</p>
+      </main>
+    }>
+      <LeaderboardInner code={code} />
+    </Suspense>
+  );
+}

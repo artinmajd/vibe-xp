@@ -1,14 +1,26 @@
+export type Cohort = {
+  id: string;
+  name: string;
+  join_code: string;
+  active_session_id: number | null;
+  chat_enabled: boolean;
+  is_archived: boolean;
+  created_at: string;
+};
+
 export type Team = {
   id: string;
   code: string;
   name: string;
   emoji: string | null;
+  cohort_id: string;
   created_at: string;
 };
 
 export type Student = {
   id: string;
   team_id: string | null;
+  cohort_id: string;
   display_name: string;
   email: string;
   created_at: string;
@@ -51,7 +63,6 @@ export type Submission = {
 export type Session = {
   id: number;
   title: string;
-  is_active: boolean;
 };
 
 export type InstructorAction = {

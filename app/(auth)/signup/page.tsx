@@ -14,6 +14,7 @@ export default function SignupPage() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [classCode, setClassCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +35,7 @@ export default function SignupPage() {
     const res = await fetch("/api/students/create-profile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: data.user.id, email, display_name: displayName }),
+      body: JSON.stringify({ user_id: data.user.id, email, display_name: displayName, class_code: classCode }),
     });
 
     if (!res.ok) {
@@ -105,6 +106,19 @@ export default function SignupPage() {
                 required
                 className={inputClass}
               />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-white/70">Class code</label>
+              <input
+                type="text"
+                value={classCode}
+                onChange={(e) => setClassCode(e.target.value.toUpperCase())}
+                placeholder="e.g. NOVA-123"
+                required
+                className={`${inputClass} font-mono`}
+              />
+              <p className="text-white/30 text-xs">Your instructor gives you this.</p>
             </div>
 
             {error && <p className="text-red-400 text-sm">{error}</p>}
