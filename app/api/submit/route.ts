@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     .eq("achievement_id", achievement.id)
     .maybeSingle();
 
-  if (existing && existing.status !== "rejected") {
+  if (existing && existing.status !== "rejected" && existing.status !== "retracted") {
     return NextResponse.json(
       { error: "You already submitted this one.", already_done: true },
       { status: 409 }

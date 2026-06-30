@@ -3,11 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 
 type Confirmation = { id: string; title: string; rank: number; bonus: number };
-type Toast = { key: number; headline: string; detail: string; tone: "good" | "down" | "up" };
+type Toast = { key: number; headline: string; detail: string; tone: "good" | "down" | "up"; exiting: boolean };
 type SeenMap = Record<string, { rank: number; bonus: number }>;
 
 const SEEN_KEY = "seen-confirmations";
 const POLL_MS = 3000;
+const TOAST_MS = 15000; // stay on screen 15s
+const EXIT_MS = 400;    // matches .animate-toast-out duration
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];
@@ -41,10 +43,14 @@ export default function BonusToaster() {
       try { localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch { /* ignore */ }
     }
 
-    function pushToast(t: Omit<Toast, "key">) {
+    function pushToast(t: Omit<Toast, "key" | "exiting">) {
       const key = keyRef.current++;
-      setToasts((prev) => [...prev, { ...t, key }]);
-      setTimeout(() => setToasts((prev) => prev.filter((x) => x.key !== key)), 6500);
+      setToasts((prev) => [...prev, { ...t, key, exiting: false }]);
+      // After 15s, play the fly-down exit, then remove.
+      setTimeout(() => {
+        setToasts((prev) => prev.map((x) => (x.key === key ? { ...x, exiting: true } : x)));
+        setTimeout(() => setToasts((prev) => prev.filter((x) => x.key !== key)), EXIT_MS);
+      }, TOAST_MS);
     }
 
     function toastForNew(c: Confirmation) {
@@ -103,10 +109,10 @@ export default function BonusToaster() {
 
   if (toasts.length === 0) return null;
 
-  const toneStyle: Record<Toast["tone"], { border: string; headline: string }> = {
-    good: { border: "rgba(129,140,248,0.4)", headline: "text-white" },
-    up:   { border: "rgba(52,211,153,0.45)", headline: "text-emerald-300" },
-    down: { border: "rgba(251,191,36,0.45)", headline: "text-amber-300" },
+  const headlineColor: Record<Toast["tone"], string> = {
+    good: "text-emerald-300",
+    up:   "text-emerald-300",
+    down: "text-amber-300",
   };
 
   return (
@@ -114,11 +120,16 @@ export default function BonusToaster() {
       {toasts.map((t) => (
         <div
           key={t.key}
-          className="animate-fade-up pointer-events-auto rounded-2xl px-5 py-3 shadow-2xl border max-w-sm"
-          style={{ background: "rgba(30,27,75,0.95)", backdropFilter: "blur(12px)", borderColor: toneStyle[t.tone].border }}
+          className={`${t.exiting ? "animate-toast-out" : "animate-toast-in"} pointer-events-auto rounded-2xl px-5 py-3 border-2 max-w-sm`}
+          style={{
+            background: "rgba(20,30,25,0.95)",
+            backdropFilter: "blur(12px)",
+            borderColor: "#4ade80",
+            boxShadow: "0 0 18px rgba(74,222,128,0.85), 0 0 42px rgba(34,197,94,0.5)",
+          }}
         >
-          <p className={`text-sm font-bold ${toneStyle[t.tone].headline}`}>{t.headline}</p>
-          <p className="text-xs text-white/60 mt-0.5">{t.detail}</p>
+          <p className={`text-sm font-bold ${headlineColor[t.tone]}`}>{t.headline}</p>
+          <p className="text-xs text-white/70 mt-0.5">{t.detail}</p>
         </div>
       ))}
     </div>

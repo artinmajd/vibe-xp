@@ -31,19 +31,26 @@ export async function POST(request: Request) {
   const ach = submission.achievements as unknown as { xp: number; cohort_id: string } | null;
 
   if (action === "retract") {
-    // Remove instructor_actions rows first — their FK references submissions.id
-    // and would block the delete if the submission was manually approved.
-    await supabase.from("instructor_actions").delete().eq("submission_id", submission_id);
-
-    const { error: deleteError } = await supabase
+    // Keep the row (so it stays visible, tagged "Retracted"), just strip its XP
+    // and rank. It leaves the confirmed set, so others re-rank up. The student
+    // can resubmit, which reuses this row.
+    const { error: retractError } = await supabase
       .from("submissions")
-      .delete()
+      .update({ status: "retracted", xp_awarded: 0, submission_rank: null, bonus_xp: 0, reviewed_at: new Date().toISOString() })
       .eq("id", submission_id);
-    if (deleteError) {
-      return NextResponse.json({ error: deleteError.message }, { status: 500 });
+    if (retractError) {
+      return NextResponse.json({ error: retractError.message }, { status: 500 });
     }
-    // The dropped submission may have freed up a rank for others.
     if (ach?.cohort_id) await rerankAchievement(supabase, submission.achievement_id, ach.cohort_id);
+
+    await supabase.from("instructor_actions").insert({
+      instructor_email: "instructor",
+      submission_id,
+      team_id: submission.team_id,
+      action: "retract",
+      xp_delta: 0,
+      note: note ?? null,
+    });
     return NextResponse.json({ ok: true, status: "retracted" });
   }
 

@@ -53,7 +53,7 @@ export default async function DashboardPage() {
   // The student's cohort drives the active session, unlock state, and chat.
   const { data: cohort } = await supabase
     .from("cohorts")
-    .select("id, join_code, active_session_id, chat_enabled")
+    .select("id, name, join_code, active_session_id, chat_enabled")
     .eq("id", student.cohort_id)
     .maybeSingle();
 
@@ -168,6 +168,13 @@ export default async function DashboardPage() {
             >
               🏆 Leaderboard
             </Link>
+            <Link
+              href="/dashboard/submissions"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
+              style={{ background: "rgba(255,255,255,0.08)" }}
+            >
+              📋 Submissions
+            </Link>
             <a
               href="/logout"
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/70 text-sm font-semibold hover:border-white/40 hover:text-white transition-all duration-200"
@@ -188,6 +195,9 @@ export default async function DashboardPage() {
                 <div>
                   <h1 className="text-2xl font-extrabold text-white leading-tight">{team.name}</h1>
                   <p className="text-white/50 text-xs font-mono mt-0.5">Code: {team.code}</p>
+                  {cohort?.name && (
+                    <p className="text-white/40 text-xs mt-0.5">Class: {cohort.name}</p>
+                  )}
                 </div>
               </div>
               <div className="text-right">

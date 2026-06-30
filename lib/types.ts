@@ -56,7 +56,7 @@ export type Submission = {
   achievement_id: string;
   proof_data: Record<string, unknown>;
   screenshot_url: string | null;
-  status: "auto_approved" | "pending" | "approved" | "rejected";
+  status: "auto_approved" | "pending" | "approved" | "rejected" | "retracted";
   xp_awarded: number;
   submission_rank: number | null;
   bonus_xp: number;
