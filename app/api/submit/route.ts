@@ -2,6 +2,7 @@ import { createServerClient } from "@/lib/supabase-server";
 import { createAuthClient } from "@/lib/supabase-auth";
 import { runValidator } from "@/lib/dispatch-validator";
 import { applyTeamMultiplier } from "@/lib/team-xp";
+import { rerankAchievement } from "@/lib/rank-bonus";
 import { Achievement } from "@/lib/types";
 import { calcTotalQuizXP, QuizQuestion, QuizAnswer } from "@/lib/quiz-xp";
 import { NextResponse } from "next/server";
@@ -82,20 +83,25 @@ export async function POST(request: Request) {
   const isQuiz = achievement.proof_type === "quiz";
   let status: string;
   let xpAwarded: number;
+  // Auto-graded submissions are confirmed now; the rank bonus is assigned by
+  // the re-rank pass below (by submitted_at). instructor_flag waits for approval.
+  const isConfirmingNow = !isInstructorFlag && validationResult.valid;
 
   if (isInstructorFlag) {
     status = "pending";
     xpAwarded = 0;
   } else if (validationResult.valid) {
     status = "auto_approved";
+    let baseXp: number;
     if (isQuiz) {
       const config = achievement.proof_config as { questions: QuizQuestion[] };
       const answers = (proof_data?.answers ?? []) as QuizAnswer[];
-      xpAwarded = calcTotalQuizXP(config.questions ?? [], answers);
+      baseXp = calcTotalQuizXP(config.questions ?? [], answers);
     } else {
-      xpAwarded = achievement.xp;
+      baseXp = achievement.xp;
     }
-    xpAwarded = applyTeamMultiplier(xpAwarded, memberCount ?? 1);
+    // Base only here; rerankAchievement adds the rank bonus.
+    xpAwarded = applyTeamMultiplier(baseXp, memberCount ?? 1);
   } else {
     return NextResponse.json({ error: validationResult.reason }, { status: 422 });
   }
@@ -108,6 +114,8 @@ export async function POST(request: Request) {
         screenshot_url: screenshot_url ?? null,
         status,
         xp_awarded: xpAwarded,
+        submission_rank: null,
+        bonus_xp: 0,
         reviewed_at: null,
       }).eq("id", existing.id)
     : await supabase.from("submissions").insert({
@@ -128,6 +136,11 @@ export async function POST(request: Request) {
       );
     }
     return NextResponse.json({ error: insertError.message }, { status: 500 });
+  }
+
+  // Confirmed now → re-rank the achievement so the bonus reflects submit order.
+  if (isConfirmingNow) {
+    await rerankAchievement(supabase, achievement.id, student.cohort_id);
   }
 
   return NextResponse.json({

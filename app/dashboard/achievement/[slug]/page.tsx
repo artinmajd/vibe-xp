@@ -11,6 +11,7 @@ import CompositeForm from "@/components/proof-forms/CompositeForm";
 import QuizForm from "@/components/proof-forms/QuizForm";
 import PendingPoller from "@/components/PendingPoller";
 import DarkBackground from "@/components/DarkBackground";
+import BonusToaster from "@/components/BonusToaster";
 import { QuizQuestion } from "@/lib/quiz-xp";
 
 export default async function AchievementPage({
@@ -127,6 +128,7 @@ export default async function AchievementPage({
     <main className="min-h-screen px-4 py-10 relative overflow-x-hidden"
       style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #2e1065 40%, #1e3a8a 100%)" }}>
       <DarkBackground />
+      <BonusToaster />
 
       <div className="relative z-10 max-w-lg mx-auto">
         <Link href="/dashboard" className="text-white/50 text-sm hover:text-white/80 mb-8 inline-flex items-center gap-1">

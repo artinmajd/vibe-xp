@@ -58,6 +58,8 @@ export type Submission = {
   screenshot_url: string | null;
   status: "auto_approved" | "pending" | "approved" | "rejected";
   xp_awarded: number;
+  submission_rank: number | null;
+  bonus_xp: number;
   submitted_at: string;
   reviewed_at: string | null;
 };
