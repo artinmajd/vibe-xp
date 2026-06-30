@@ -59,36 +59,3 @@ export async function getStudentCohort(studentId: string): Promise<Cohort | null
 
   return (cohort as Cohort) ?? null;
 }
-
-// Read the per-cohort unlock state for a set of achievements as a Set of
-// unlocked achievement ids. Missing row == locked.
-export async function getUnlockedAchievementIds(
-  cohortId: string,
-  achievementIds: string[]
-): Promise<Set<string>> {
-  if (achievementIds.length === 0) return new Set();
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("cohort_achievement_unlocks")
-    .select("achievement_id, is_unlocked")
-    .eq("cohort_id", cohortId)
-    .eq("is_unlocked", true)
-    .in("achievement_id", achievementIds);
-
-  return new Set((data ?? []).map((r) => r.achievement_id));
-}
-
-// Set a single achievement's unlock state for a cohort (upsert).
-export async function setAchievementUnlocked(
-  cohortId: string,
-  achievementId: string,
-  isUnlocked: boolean
-): Promise<void> {
-  const supabase = createServerClient();
-  await supabase
-    .from("cohort_achievement_unlocks")
-    .upsert(
-      { cohort_id: cohortId, achievement_id: achievementId, is_unlocked: isUnlocked },
-      { onConflict: "cohort_id,achievement_id" }
-    );
-}

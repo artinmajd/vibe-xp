@@ -3600,13 +3600,42 @@ const achievements = [
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
+// Achievements are per-cohort. This script seeds the TEMPLATE cohort
+// (test-cohort) — the canonical curriculum that new cohorts copy from via the
+// instructor dashboard. It never touches other cohorts.
+const TEMPLATE_JOIN_CODE = "TEST-COHORT";
+
+async function resolveTemplateCohortId(): Promise<string> {
+  const { data: existing } = await supabase
+    .from("cohorts")
+    .select("id")
+    .eq("join_code", TEMPLATE_JOIN_CODE)
+    .maybeSingle();
+  if (existing) return existing.id;
+
+  const { data: created, error } = await supabase
+    .from("cohorts")
+    .insert({ name: "test-cohort", join_code: TEMPLATE_JOIN_CODE })
+    .select("id")
+    .single();
+  if (error || !created) {
+    console.error("Failed to create template cohort:", error?.message);
+    process.exit(1);
+  }
+  return created.id;
+}
+
 async function main() {
   console.log("Seeding vibe-xp database...");
 
-  // Reset achievements if --reset flag is passed
+  const cohortId = await resolveTemplateCohortId();
+  console.log(`  template cohort: ${cohortId}`);
+
+  // Reset the template cohort's achievements if --reset is passed (scoped — never
+  // touches other cohorts).
   if (shouldReset) {
-    console.log("--reset: truncating achievements...");
-    const { error } = await supabase.from("achievements").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    console.log("--reset: clearing template cohort achievements...");
+    const { error } = await supabase.from("achievements").delete().eq("cohort_id", cohortId);
     if (error) {
       console.error("Failed to reset achievements:", error.message);
       process.exit(1);
@@ -3626,11 +3655,12 @@ async function main() {
   }
   console.log(`  ${sessions.length} sessions seeded.`);
 
-  // Upsert achievements
+  // Upsert achievements into the template cohort (unique key: cohort_id + slug).
   console.log("Seeding achievements...");
+  const withCohort = achievements.map((a) => ({ ...a, cohort_id: cohortId }));
   const { error: achievementsError } = await supabase
     .from("achievements")
-    .upsert(achievements, { onConflict: "slug" });
+    .upsert(withCohort, { onConflict: "cohort_id,slug" });
 
   if (achievementsError) {
     console.error("Failed to seed achievements:", achievementsError.message);
@@ -3644,15 +3674,16 @@ async function main() {
   // untouched, so instructor reordering done in the dashboard is preserved.
   // This guarantees future sessions never end up unordered (the bug that made
   // "Release Next" pick achievements in a random order).
-  await backfillSortOrder();
+  await backfillSortOrder(cohortId);
 
   console.log("Done.");
 }
 
-async function backfillSortOrder() {
+async function backfillSortOrder(cohortId: string) {
   const { data: rows, error } = await supabase
     .from("achievements")
-    .select("id, slug, session_number, sort_order");
+    .select("id, slug, session_number, sort_order")
+    .eq("cohort_id", cohortId);
 
   if (error) {
     console.error("Failed to read achievements for sort_order backfill:", error.message);

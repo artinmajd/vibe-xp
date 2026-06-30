@@ -72,11 +72,12 @@ export async function GET(request: NextRequest) {
     .select("team_id, xp")
     .in("team_id", teamIds);
 
-  // Achievement IDs for the cohort's current session (for session XP)
+  // Achievement IDs for THIS cohort's current session (for session XP)
   const { data: sessionAchievements } = session
     ? await supabase
         .from("achievements")
         .select("id")
+        .eq("cohort_id", cohort.id)
         .eq("session_number", session.id)
     : { data: [] };
 

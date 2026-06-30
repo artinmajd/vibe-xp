@@ -12,6 +12,7 @@ type CohortRow = {
   is_archived: boolean;
   studentCount: number;
   teamCount: number;
+  achievementCount: number;
   activeSessionTitle: string | null;
 };
 
@@ -29,6 +30,10 @@ export default function CohortManager({
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [newCode, setNewCode] = useState("");
+  const [newCopyFrom, setNewCopyFrom] = useState("");
+
+  // Per-cohort "copy from" selections (cohort id -> source cohort id)
+  const [copySource, setCopySource] = useState<Record<string, string>>({});
 
   const active = cohorts.filter((c) => !c.is_archived);
   const archived = cohorts.filter((c) => c.is_archived);
@@ -58,11 +63,17 @@ export default function CohortManager({
   async function handleCreate() {
     if (!newName.trim()) return;
     setBusy("create");
-    const ok = await post({ action: "create", name: newName.trim(), join_code: newCode.trim() || undefined });
+    const ok = await post({
+      action: "create",
+      name: newName.trim(),
+      join_code: newCode.trim() || undefined,
+      copy_from_cohort_id: newCopyFrom || undefined,
+    });
     setBusy(null);
     if (ok) {
       setNewName("");
       setNewCode("");
+      setNewCopyFrom("");
       setCreating(false);
       router.refresh();
     }
@@ -81,6 +92,23 @@ export default function CohortManager({
     const ok = await post({ action: "delete", cohort_id: id });
     setBusy(null);
     if (ok) router.refresh();
+  }
+
+  async function handleCopy(target: CohortRow) {
+    const sourceId = copySource[target.id];
+    if (!sourceId) return;
+    const source = cohorts.find((c) => c.id === sourceId);
+    const warning = target.achievementCount > 0
+      ? `This REPLACES all ${target.achievementCount} achievements in "${target.name}" (and any submissions against them) with a fresh copy of "${source?.name}". This can't be undone. Continue?`
+      : `Copy all achievements from "${source?.name}" into "${target.name}"? They'll start locked.`;
+    if (!confirm(warning)) return;
+    setBusy(`copy-${target.id}`);
+    const ok = await post({ action: "copy", cohort_id: target.id, source_cohort_id: sourceId });
+    setBusy(null);
+    if (ok) {
+      setCopySource((prev) => { const n = { ...prev }; delete n[target.id]; return n; });
+      router.refresh();
+    }
   }
 
   return (
@@ -104,7 +132,7 @@ export default function CohortManager({
 
         {!selectedCohortId && (
           <p className="text-sm text-zinc-400">
-            Pick a cohort to manage. Everything in the dashboard — leaderboard, sessions, unlocks — scopes to your choice. It&apos;s remembered in this browser until you switch.
+            Pick a cohort to manage. Everything in the dashboard — leaderboard, sessions, unlocks, achievements — scopes to your choice. It&apos;s remembered in this browser until you switch.
           </p>
         )}
 
@@ -115,48 +143,76 @@ export default function CohortManager({
           )}
           {active.map((c) => {
             const isSelected = c.id === selectedCohortId;
+            const otherCohorts = cohorts.filter((o) => o.id !== c.id);
             return (
               <div
                 key={c.id}
-                className={`bg-zinc-900 border rounded-xl p-5 flex items-center justify-between gap-4 ${
+                className={`bg-zinc-900 border rounded-xl p-5 flex flex-col gap-3 ${
                   isSelected ? "border-indigo-500" : "border-zinc-800"
                 }`}
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold text-sm">{c.name}</p>
-                    {isSelected && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                        managing
-                      </span>
-                    )}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-sm">{c.name}</p>
+                      {isSelected && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                          managing
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-zinc-500 mt-1">
+                      Class code <span className="font-mono text-zinc-300">{c.join_code}</span> ·{" "}
+                      {c.studentCount} student{c.studentCount !== 1 ? "s" : ""} · {c.teamCount} team{c.teamCount !== 1 ? "s" : ""} ·{" "}
+                      {c.achievementCount} achievement{c.achievementCount !== 1 ? "s" : ""}
+                    </p>
+                    <p className="text-xs text-zinc-600 mt-0.5">
+                      {c.activeSessionTitle ? `On: ${c.activeSessionTitle}` : "No session set yet"}
+                    </p>
                   </div>
-                  <p className="text-xs text-zinc-500 mt-1">
-                    Class code <span className="font-mono text-zinc-300">{c.join_code}</span> ·{" "}
-                    {c.studentCount} student{c.studentCount !== 1 ? "s" : ""} · {c.teamCount} team{c.teamCount !== 1 ? "s" : ""}
-                  </p>
-                  <p className="text-xs text-zinc-600 mt-0.5">
-                    {c.activeSessionTitle ? `On: ${c.activeSessionTitle}` : "No session set yet"}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {!isSelected && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    {!isSelected && (
+                      <button
+                        disabled={busy === `switch-${c.id}`}
+                        onClick={() => handleSwitch(c.id)}
+                        className="cursor-pointer text-xs font-semibold bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        {busy === `switch-${c.id}` ? "…" : "Manage"}
+                      </button>
+                    )}
                     <button
-                      disabled={busy === `switch-${c.id}`}
-                      onClick={() => handleSwitch(c.id)}
-                      className="cursor-pointer text-xs font-semibold bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors"
+                      disabled={busy === `archive-${c.id}`}
+                      onClick={() => handleArchive(c.id, true)}
+                      className="cursor-pointer text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1.5 transition-colors"
                     >
-                      {busy === `switch-${c.id}` ? "…" : "Manage"}
+                      Archive
                     </button>
-                  )}
-                  <button
-                    disabled={busy === `archive-${c.id}`}
-                    onClick={() => handleArchive(c.id, true)}
-                    className="cursor-pointer text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1.5 transition-colors"
-                  >
-                    Archive
-                  </button>
+                  </div>
                 </div>
+
+                {/* Copy achievements from another cohort */}
+                {otherCohorts.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap border-t border-zinc-800 pt-3">
+                    <span className="text-xs text-zinc-500">Copy achievements from</span>
+                    <select
+                      value={copySource[c.id] ?? ""}
+                      onChange={(e) => setCopySource((prev) => ({ ...prev, [c.id]: e.target.value }))}
+                      className="bg-zinc-800 text-zinc-200 text-xs rounded-lg px-2 py-1.5 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer border border-zinc-700"
+                    >
+                      <option value="">Choose a cohort…</option>
+                      {otherCohorts.map((o) => (
+                        <option key={o.id} value={o.id}>{o.name} ({o.achievementCount})</option>
+                      ))}
+                    </select>
+                    <button
+                      disabled={!copySource[c.id] || busy === `copy-${c.id}`}
+                      onClick={() => handleCopy(c)}
+                      className="cursor-pointer text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 text-zinc-200 px-3 py-1.5 rounded-lg transition-colors border border-zinc-700"
+                    >
+                      {busy === `copy-${c.id}` ? "Copying…" : c.achievementCount > 0 ? "Copy (overwrites)" : "Copy"}
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -180,6 +236,20 @@ export default function CohortManager({
                 className="bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
               />
               <p className="text-xs text-zinc-600">Students type this code when they sign up.</p>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-zinc-500">Copy achievements from</label>
+              <select
+                value={newCopyFrom}
+                onChange={(e) => setNewCopyFrom(e.target.value)}
+                className="bg-zinc-800 text-zinc-200 text-sm rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer border border-zinc-700"
+              >
+                <option value="">Empty — no achievements</option>
+                {cohorts.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name} ({c.achievementCount})</option>
+                ))}
+              </select>
+              <p className="text-xs text-zinc-600">Start blank, or duplicate another cohort&apos;s full set (they&apos;ll start locked).</p>
             </div>
             <div className="flex items-center gap-2">
               <button

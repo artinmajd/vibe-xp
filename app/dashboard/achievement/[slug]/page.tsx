@@ -35,24 +35,18 @@ export default async function AchievementPage({
     .select("*", { count: "exact", head: true })
     .eq("team_id", student.team_id);
 
+  // Achievements are per-cohort: scope the lookup to the student's cohort.
   const { data: achievement } = await supabase
     .from("achievements")
     .select("*")
     .eq("slug", slug)
+    .eq("cohort_id", student.cohort_id)
     .eq("is_active", true)
     .maybeSingle();
 
   if (!achievement) notFound();
 
-  // Unlock state is per-cohort now.
-  const { data: unlockRow } = await supabase
-    .from("cohort_achievement_unlocks")
-    .select("is_unlocked")
-    .eq("cohort_id", student.cohort_id)
-    .eq("achievement_id", achievement.id)
-    .maybeSingle();
-
-  if (!unlockRow?.is_unlocked) redirect("/dashboard");
+  if (!achievement.is_unlocked) redirect("/dashboard");
 
   const { data: submission } = await supabase
     .from("submissions")

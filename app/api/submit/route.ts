@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   // Look up student and team
   const { data: student } = await supabase
     .from("students")
-    .select("team_id")
+    .select("team_id, cohort_id")
     .eq("id", user.id)
     .single();
 
@@ -41,11 +41,12 @@ export async function POST(request: Request) {
     .select("*", { count: "exact", head: true })
     .eq("team_id", teamId);
 
-  // Load achievement
+  // Load achievement (per-cohort: scope to the student's cohort)
   const { data: achievement } = await supabase
     .from("achievements")
     .select("*")
     .eq("slug", achievement_slug)
+    .eq("cohort_id", student.cohort_id)
     .eq("is_active", true)
     .single();
 

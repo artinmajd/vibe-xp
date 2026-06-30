@@ -23,9 +23,10 @@ export default async function CohortsPage() {
 
   const rows = await Promise.all(
     (cohorts ?? []).map(async (c) => {
-      const [{ count: studentCount }, { count: teamCount }] = await Promise.all([
+      const [{ count: studentCount }, { count: teamCount }, { count: achievementCount }] = await Promise.all([
         supabase.from("students").select("*", { count: "exact", head: true }).eq("cohort_id", c.id),
         supabase.from("teams").select("*", { count: "exact", head: true }).eq("cohort_id", c.id),
+        supabase.from("achievements").select("*", { count: "exact", head: true }).eq("cohort_id", c.id),
       ]);
       return {
         id: c.id,
@@ -36,6 +37,7 @@ export default async function CohortsPage() {
         is_archived: c.is_archived,
         studentCount: studentCount ?? 0,
         teamCount: teamCount ?? 0,
+        achievementCount: achievementCount ?? 0,
         activeSessionTitle: c.active_session_id ? sessionTitle.get(c.active_session_id) ?? null : null,
       };
     })

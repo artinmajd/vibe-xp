@@ -35,6 +35,7 @@ export type TeamMember = {
 
 export type Achievement = {
   id: string;
+  cohort_id: string;
   slug: string;
   session_number: number;
   block_number: number;
@@ -45,6 +46,7 @@ export type Achievement = {
   proof_config: Record<string, unknown>;
   is_secret: boolean;
   is_active: boolean;
+  is_unlocked: boolean;
 };
 
 export type Submission = {

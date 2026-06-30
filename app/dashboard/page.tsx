@@ -1,7 +1,6 @@
 import { requireAuth } from "@/lib/require-auth";
 import { createServerClient } from "@/lib/supabase-server";
 import { getTeamXP } from "@/lib/team-xp";
-import { getUnlockedAchievementIds } from "@/lib/cohort";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import PendingPoller from "@/components/PendingPoller";
@@ -65,21 +64,23 @@ export default async function DashboardPage() {
         .maybeSingle()
     : { data: null };
 
-  const { data: achievements } = await supabase
-    .from("achievements")
-    .select("*")
-    .eq("session_number", session?.id ?? 1)
-    .eq("is_secret", false)
-    .eq("is_active", true)
-    .order("sort_order")
-    .order("id");
+  // Achievements are per-cohort now; is_unlocked lives on the row.
+  const { data: achievements } = cohort
+    ? await supabase
+        .from("achievements")
+        .select("*")
+        .eq("cohort_id", cohort.id)
+        .eq("session_number", session?.id ?? 1)
+        .eq("is_secret", false)
+        .eq("is_active", true)
+        .order("sort_order")
+        .order("id")
+    : { data: [] };
 
+  const unlockedSet = new Set(
+    (achievements ?? []).filter((a) => a.is_unlocked).map((a) => a.id)
+  );
   const achievementIds = (achievements ?? []).map((a) => a.id);
-
-  // Per-cohort unlock state — replaces the old global achievements.is_unlocked.
-  const unlockedSet = cohort
-    ? await getUnlockedAchievementIds(cohort.id, achievementIds)
-    : new Set<string>();
   const { data: allTeamSubs } = achievementIds.length
     ? await supabase
         .from("submissions")

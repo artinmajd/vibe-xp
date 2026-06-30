@@ -2,12 +2,14 @@ import { createServerClient } from "@/lib/supabase-server";
 import { createAuthClient } from "@/lib/supabase-auth";
 import { NextResponse } from "next/server";
 
-async function autoAwardTeamNames(supabase: ReturnType<typeof createServerClient>, teamId: string) {
+async function autoAwardTeamNames(supabase: ReturnType<typeof createServerClient>, teamId: string, cohortId: string) {
+  // "team-names" is per-cohort now — scope the lookup to this team's cohort.
   const { data: achievement } = await supabase
     .from("achievements")
     .select("id, xp")
     .eq("slug", "team-names")
-    .single();
+    .eq("cohort_id", cohortId)
+    .maybeSingle();
 
   if (!achievement) return;
 
@@ -109,7 +111,7 @@ export async function POST(request: Request) {
   // Auto-award team-names if this was the 3rd member
   const newCount = (count ?? 0) + 1;
   if (newCount === 3) {
-    await autoAwardTeamNames(supabase, team.id);
+    await autoAwardTeamNames(supabase, team.id, team.cohort_id);
   }
 
   return NextResponse.json({ team });

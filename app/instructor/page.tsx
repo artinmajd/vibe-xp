@@ -1,6 +1,6 @@
 import { requireInstructor } from "@/lib/require-instructor";
 import { createServerClient } from "@/lib/supabase-server";
-import { getInstructorCohort, getUnlockedAchievementIds } from "@/lib/cohort";
+import { getInstructorCohort } from "@/lib/cohort";
 import { getTeamXP } from "@/lib/team-xp";
 import { redirect } from "next/navigation";
 import InstructorDashboard from "@/components/instructor/InstructorDashboard";
@@ -23,11 +23,12 @@ export default async function InstructorPage() {
 
   const cohortTeamIds = (teamsRaw ?? []).map((t) => t.id);
 
-  // Achievement ids for the cohort's current session (for session XP).
+  // Achievement ids for THIS cohort's current session (for session XP).
   const sessionAchIds = cohort.active_session_id
     ? ((await supabase
         .from("achievements")
         .select("id")
+        .eq("cohort_id", cohort.id)
         .eq("session_number", cohort.active_session_id)).data ?? []).map((a) => a.id)
     : [];
 
@@ -142,11 +143,12 @@ export default async function InstructorPage() {
 
   const teamlessStudents = (teamlessRaw ?? []).map((s) => ({ id: s.id, name: s.display_name }));
 
-  // Achievements for the active session + this cohort's unlock state.
+  // Achievements for the active session — per-cohort, is_unlocked on the row.
   const { data: achievementRows } = activeSession
     ? await supabase
         .from("achievements")
-        .select("id, title, description, xp, is_secret, sort_order, block_number")
+        .select("id, title, description, xp, is_secret, sort_order, block_number, is_unlocked")
+        .eq("cohort_id", cohort.id)
         .eq("session_number", activeSession.id)
         .eq("is_active", true)
         .order("sort_order")
@@ -154,12 +156,11 @@ export default async function InstructorPage() {
     : { data: [] };
 
   const allAchievements = achievementRows ?? [];
-  const unlockedSet = await getUnlockedAchievementIds(cohort.id, allAchievements.map((a) => a.id));
 
   // Unlock preview uses non-secret achievements in order.
   const nonSecretList = allAchievements.filter((a) => !a.is_secret);
-  const nextAchievement = nonSecretList.find((a) => !unlockedSet.has(a.id)) ?? null;
-  const unlockedList = nonSecretList.filter((a) => unlockedSet.has(a.id));
+  const nextAchievement = nonSecretList.find((a) => !a.is_unlocked) ?? null;
+  const unlockedList = nonSecretList.filter((a) => a.is_unlocked);
   const lastUnlockedAchievement = unlockedList[unlockedList.length - 1] ?? null;
 
   const sessionAchievements = allAchievements.map((a) => ({
@@ -167,7 +168,7 @@ export default async function InstructorPage() {
     title: a.title,
     description: a.description ?? "",
     xp: a.xp,
-    is_unlocked: unlockedSet.has(a.id),
+    is_unlocked: a.is_unlocked,
     is_secret: a.is_secret,
     sort_order: a.sort_order ?? 0,
     block_number: a.block_number ?? 1,

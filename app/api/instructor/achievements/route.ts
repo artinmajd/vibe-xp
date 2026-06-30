@@ -29,22 +29,23 @@ export async function POST(request: Request) {
   const supabase = createServerClient();
   const session = { id: cohort.active_session_id };
 
-  // Unique slug derived from title — append -2, -3, … if taken
+  // Unique slug derived from title (within this cohort) — append -2, -3, … if taken
   const base = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   let slug = base;
   let suffix = 2;
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const { data: existing } = await supabase
-      .from("achievements").select("id").eq("slug", slug).maybeSingle();
+      .from("achievements").select("id").eq("slug", slug).eq("cohort_id", cohort.id).maybeSingle();
     if (!existing) break;
     slug = `${base}-${suffix++}`;
   }
 
-  // Place at end of list (globally highest sort_order for this session)
+  // Place at end of list (highest sort_order for this cohort + session)
   const { data: maxRow } = await supabase
     .from("achievements")
     .select("sort_order")
+    .eq("cohort_id", cohort.id)
     .eq("session_number", session.id)
     .order("sort_order", { ascending: false })
     .limit(1)
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
   const { data: created, error } = await supabase
     .from("achievements")
     .insert({
+      cohort_id: cohort.id,
       slug,
       session_number: session.id,
       block_number: block_number ?? 1,
@@ -65,6 +67,7 @@ export async function POST(request: Request) {
       proof_config: proof_config ?? {},
       is_active: true,
       is_secret: false,
+      is_unlocked: false,
       sort_order,
     })
     .select("id")
@@ -79,6 +82,9 @@ export async function DELETE(request: Request) {
   if (!(await checkAuth())) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
+
+  const cohort = await getInstructorCohort();
+  if (!cohort) return NextResponse.json({ error: "Pick a cohort first." }, { status: 400 });
 
   const { id } = await request.json();
   if (!id) return NextResponse.json({ error: "Missing id." }, { status: 400 });
@@ -97,7 +103,8 @@ export async function DELETE(request: Request) {
     );
   }
 
-  const { error } = await supabase.from("achievements").delete().eq("id", id);
+  // Scope the delete to the managed cohort.
+  const { error } = await supabase.from("achievements").delete().eq("id", id).eq("cohort_id", cohort.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
@@ -107,6 +114,9 @@ export async function PATCH(request: Request) {
   if (!(await checkAuth())) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
+
+  const cohort = await getInstructorCohort();
+  if (!cohort) return NextResponse.json({ error: "Pick a cohort first." }, { status: 400 });
 
   const { id, title, description, block_number } = await request.json();
   if (!id) {
@@ -122,7 +132,8 @@ export async function PATCH(request: Request) {
   const { error } = await supabase
     .from("achievements")
     .update(updates)
-    .eq("id", id);
+    .eq("id", id)
+    .eq("cohort_id", cohort.id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
@@ -134,6 +145,9 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
+  const cohort = await getInstructorCohort();
+  if (!cohort) return NextResponse.json({ error: "Pick a cohort first." }, { status: 400 });
+
   const { updates } = await request.json() as { updates: { id: string; sort_order: number }[] };
   if (!Array.isArray(updates) || updates.length === 0) {
     return NextResponse.json({ error: "Missing updates." }, { status: 400 });
@@ -142,7 +156,7 @@ export async function PUT(request: Request) {
   const supabase = createServerClient();
   const results = await Promise.all(
     updates.map(({ id, sort_order }) =>
-      supabase.from("achievements").update({ sort_order }).eq("id", id)
+      supabase.from("achievements").update({ sort_order }).eq("id", id).eq("cohort_id", cohort.id)
     )
   );
 
