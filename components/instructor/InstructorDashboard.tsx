@@ -1429,37 +1429,43 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
         {/* ── Teams ── */}
         {tab === "teams" && (
           <div className="flex flex-col gap-6">
-            {/* Cohort team limits */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-              <p className="text-sm font-bold text-white mb-1">Team limits</p>
-              <p className="text-xs text-zinc-500 mb-4">
+            {/* Cohort team limits — settings surface, styled distinctly from team cards below */}
+            <div className="rounded-xl p-5 border-2 border-indigo-500/40 bg-indigo-950/30 shadow-[0_0_0_1px_rgba(99,102,241,0.15)]">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-base">⚙️</span>
+                <p className="text-sm font-bold text-indigo-200">Team Limits</p>
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-indigo-300/70 bg-indigo-500/10 border border-indigo-500/30 rounded-full px-2 py-0.5">
+                  Cohort setting
+                </span>
+              </div>
+              <p className="text-xs text-indigo-200/50 mb-4">
                 Applies to this cohort only. Lowering a limit below what already exists is blocked — remove teams or members first.
               </p>
               <div className="flex items-end gap-4 flex-wrap">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">Max teams</label>
+                  <label className="text-xs text-indigo-200/60">Max teams</label>
                   <input
                     type="number"
                     min={1}
                     value={limitMaxTeams}
                     onChange={(e) => setLimitMaxTeams(parseInt(e.target.value) || 1)}
-                    className="w-24 bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 border border-zinc-700"
+                    className="w-24 bg-zinc-950 text-white rounded px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 border border-indigo-500/30"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">Max members per team</label>
+                  <label className="text-xs text-indigo-200/60">Max members per team</label>
                   <input
                     type="number"
                     min={1}
                     value={limitMaxMembers}
                     onChange={(e) => setLimitMaxMembers(parseInt(e.target.value) || 1)}
-                    className="w-24 bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 border border-zinc-700"
+                    className="w-24 bg-zinc-950 text-white rounded px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 border border-indigo-500/30"
                   />
                 </div>
                 <button
                   disabled={limitsBusy || (limitMaxTeams === cohort.max_teams && limitMaxMembers === cohort.max_team_members)}
                   onClick={handleSaveLimits}
-                  className="cursor-pointer bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors"
+                  className="cursor-pointer bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-[0_0_12px_rgba(99,102,241,0.4)]"
                 >
                   {limitsBusy ? "Saving…" : limitsSaved ? "✓ Saved" : "Save limits"}
                 </button>
