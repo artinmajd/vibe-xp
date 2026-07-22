@@ -18,6 +18,8 @@ export type Cohort = {
   active_session_id: number | null;
   chat_enabled: boolean;
   is_archived: boolean;
+  max_teams: number;
+  max_team_members: number;
   created_at: string;
 };
 

@@ -76,7 +76,7 @@ export default function TeamSetupPage() {
               <Image src="/assets/logo.png" alt="vibe-xp logo" width={120} height={120} className="mx-auto mb-2 object-contain" style={{ mixBlendMode: "screen" }} />
             </Link>
             <h1 className="text-2xl font-bold text-white">Join or create a team</h1>
-            <p className="text-white/50 text-sm mt-1">Teams are 3 people. You earn XP together.</p>
+            <p className="text-white/50 text-sm mt-1">Join up with your classmates. You earn XP together.</p>
           </div>
           <div className="flex flex-col gap-3">
             <button

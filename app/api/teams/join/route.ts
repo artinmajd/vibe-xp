@@ -83,34 +83,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "That team is in a different class." }, { status: 400 });
   }
 
+  // Team size limit is configured per cohort.
+  const { data: cohortRow } = await supabase
+    .from("cohorts")
+    .select("max_team_members")
+    .eq("id", team.cohort_id)
+    .single();
+  const maxMembers = cohortRow?.max_team_members ?? 3;
+
   // Check current member count
   const { count } = await supabase
     .from("team_members")
     .select("*", { count: "exact", head: true })
     .eq("team_id", team.id);
 
-  if ((count ?? 0) >= 3) {
-    return NextResponse.json({ error: "This team already has 3 members." }, { status: 400 });
+  if ((count ?? 0) >= maxMembers) {
+    return NextResponse.json({ error: `This team already has ${maxMembers} members.` }, { status: 400 });
   }
 
-  // Add member (trigger will also enforce the limit as a safety net)
   const { error: memberError } = await supabase
     .from("team_members")
     .insert({ team_id: team.id, student_id: user.id });
 
   if (memberError) {
-    if (memberError.message.includes("already has 3 members")) {
-      return NextResponse.json({ error: "This team already has 3 members." }, { status: 400 });
-    }
     return NextResponse.json({ error: memberError.message }, { status: 500 });
   }
 
   // Update student's team_id
   await supabase.from("students").update({ team_id: team.id }).eq("id", user.id);
 
-  // Auto-award team-names if this was the 3rd member
+  // Auto-award team-names when the team reaches the cohort's max (team complete)
   const newCount = (count ?? 0) + 1;
-  if (newCount === 3) {
+  if (newCount === maxMembers) {
     await autoAwardTeamNames(supabase, team.id, team.cohort_id);
   }
 

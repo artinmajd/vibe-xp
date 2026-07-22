@@ -38,7 +38,7 @@ type SessionInfo = {
 
 type AchievementPreview = { id: string; title: string };
 
-type CohortInfo = { id: string; name: string; join_code: string };
+type CohortInfo = { id: string; name: string; join_code: string; max_teams: number; max_team_members: number };
 
 type NewQuestion = {
   question: string;
@@ -250,6 +250,33 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
   const [reassigning, setReassigning] = useState<string | null>(null);
   const [reassignTarget, setReassignTarget] = useState<Record<string, string>>({});
   const [kicking, setKicking] = useState<string | null>(null);
+
+  // Cohort team limits (Teams tab settings)
+  const [limitMaxTeams, setLimitMaxTeams] = useState(cohort.max_teams);
+  const [limitMaxMembers, setLimitMaxMembers] = useState(cohort.max_team_members);
+  const [limitsBusy, setLimitsBusy] = useState(false);
+  const [limitsError, setLimitsError] = useState<string | null>(null);
+  const [limitsSaved, setLimitsSaved] = useState(false);
+
+  async function handleSaveLimits() {
+    setLimitsBusy(true);
+    setLimitsError(null);
+    setLimitsSaved(false);
+    const res = await fetch("/api/instructor/teams", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ max_teams: limitMaxTeams, max_team_members: limitMaxMembers }),
+    });
+    const body = await res.json().catch(() => ({}));
+    setLimitsBusy(false);
+    if (!res.ok) {
+      setLimitsError(body.error ?? "Something broke. Try again.");
+      return;
+    }
+    setLimitsSaved(true);
+    setTimeout(() => setLimitsSaved(false), 2000);
+    router.refresh();
+  }
 
   async function handleApprove(id: string, xpOverride?: number) {
     setBusy(id);
@@ -1402,6 +1429,46 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
         {/* ── Teams ── */}
         {tab === "teams" && (
           <div className="flex flex-col gap-6">
+            {/* Cohort team limits */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+              <p className="text-sm font-bold text-white mb-1">Team limits</p>
+              <p className="text-xs text-zinc-500 mb-4">
+                Applies to this cohort only. Lowering a limit below what already exists is blocked — remove teams or members first.
+              </p>
+              <div className="flex items-end gap-4 flex-wrap">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-zinc-500">Max teams</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={limitMaxTeams}
+                    onChange={(e) => setLimitMaxTeams(parseInt(e.target.value) || 1)}
+                    className="w-24 bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 border border-zinc-700"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-zinc-500">Max members per team</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={limitMaxMembers}
+                    onChange={(e) => setLimitMaxMembers(parseInt(e.target.value) || 1)}
+                    className="w-24 bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 border border-zinc-700"
+                  />
+                </div>
+                <button
+                  disabled={limitsBusy || (limitMaxTeams === cohort.max_teams && limitMaxMembers === cohort.max_team_members)}
+                  onClick={handleSaveLimits}
+                  className="cursor-pointer bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors"
+                >
+                  {limitsBusy ? "Saving…" : limitsSaved ? "✓ Saved" : "Save limits"}
+                </button>
+              </div>
+              {limitsError && (
+                <p className="text-rose-400 text-xs mt-3">{limitsError}</p>
+              )}
+            </div>
+
             {teams.map((team) => (
               <div key={team.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
 

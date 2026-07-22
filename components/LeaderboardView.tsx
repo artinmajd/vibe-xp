@@ -21,7 +21,7 @@ type TeamRow = {
 type LeaderboardData = {
   teams: TeamRow[];
   session: { id: number; title: string } | null;
-  cohort: { name: string; join_code: string } | null;
+  cohort: { name: string; join_code: string; max_team_members?: number } | null;
 };
 
 const RANK_COLORS = [
@@ -136,6 +136,7 @@ function LeaderboardInner({ code }: { code: string }) {
             {data.teams.map((team, idx) => {
               const isHighlighted = highlightedIds.has(team.teamId);
               const xp = view === "session" ? team.sessionXp : team.totalXp;
+              const maxMembers = data.cohort?.max_team_members ?? 3;
 
               return (
                 <div
@@ -175,9 +176,9 @@ function LeaderboardInner({ code }: { code: string }) {
                     <div className="text-right shrink-0">
                       <p className="text-4xl font-black text-white">{xp}</p>
                       <p className="text-sm text-white/40">XP</p>
-                      {team.memberCount < 3 && (
+                      {team.memberCount < maxMembers && (
                         <p className="text-xs text-amber-400/80 mt-1">
-                          earning ×{team.memberCount === 1 ? "3" : "1.5"} XP
+                          earning ×{Math.round((maxMembers / team.memberCount) * 10) / 10} XP
                         </p>
                       )}
                       {view === "total" && (

@@ -38,9 +38,10 @@ export async function getTeamXP(teamId: string, memberCount?: number): Promise<T
   return { totalXp, memberCount: resolvedMemberCount, levelInfo: xpToLevel(totalXp) };
 }
 
-// Apply the fairness multiplier for a given team size.
+// Apply the fairness multiplier for a given team size, relative to the
+// cohort's configured max team size (so smaller teams aren't disadvantaged).
 // Call this when xp_awarded is being set, not when reading it back.
-export function applyTeamMultiplier(baseXp: number, memberCount: number): number {
-  if (memberCount >= 3) return baseXp;
-  return Math.round((baseXp * 3) / memberCount);
+export function applyTeamMultiplier(baseXp: number, memberCount: number, maxTeamMembers = 3): number {
+  if (memberCount >= maxTeamMembers) return baseXp;
+  return Math.round((baseXp * maxTeamMembers) / memberCount);
 }

@@ -53,7 +53,7 @@ export default async function DashboardPage() {
   // The student's cohort drives the active session, unlock state, and chat.
   const { data: cohort } = await supabase
     .from("cohorts")
-    .select("id, name, join_code, active_session_id, chat_enabled")
+    .select("id, name, join_code, active_session_id, chat_enabled, max_team_members")
     .eq("id", student.cohort_id)
     .maybeSingle();
 
@@ -203,9 +203,9 @@ export default async function DashboardPage() {
               <div className="text-right">
                 <p className="text-4xl font-black text-white tabular-nums">{totalXp}</p>
                 <p className="text-white/60 text-xs font-semibold uppercase tracking-wide">XP</p>
-                {memberCount < 3 && (
+                {memberCount < (cohort?.max_team_members ?? 3) && (
                   <p className="text-xs text-amber-400/80 mt-1">
-                    earning ×{memberCount === 1 ? "3" : "1.5"} XP
+                    earning ×{(Math.round(((cohort?.max_team_members ?? 3) / memberCount) * 10) / 10)} XP
                   </p>
                 )}
               </div>

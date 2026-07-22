@@ -46,8 +46,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "You're not in a class yet. Ask your instructor for the class code." }, { status: 400 });
   }
 
-  // Team limit is per cohort.
-  const maxTeams = parseInt(process.env.MAX_TEAMS ?? "5");
+  // Team limit is configured per cohort (instructor sets it in the Teams tab).
+  const { data: cohort } = await supabase
+    .from("cohorts")
+    .select("max_teams")
+    .eq("id", student.cohort_id)
+    .single();
+  const maxTeams = cohort?.max_teams ?? 5;
+
   const { count } = await supabase
     .from("teams")
     .select("*", { count: "exact", head: true })

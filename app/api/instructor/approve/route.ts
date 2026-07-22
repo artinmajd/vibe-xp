@@ -64,7 +64,16 @@ export async function POST(request: Request) {
       .from("team_members")
       .select("*", { count: "exact", head: true })
       .eq("team_id", submission.team_id);
-    xpAwarded = applyTeamMultiplier(baseXp, memberCount ?? 1);
+    let maxTeamMembers = 3;
+    if (ach?.cohort_id) {
+      const { data: cohortLimits } = await supabase
+        .from("cohorts")
+        .select("max_team_members")
+        .eq("id", ach.cohort_id)
+        .single();
+      maxTeamMembers = cohortLimits?.max_team_members ?? 3;
+    }
+    xpAwarded = applyTeamMultiplier(baseXp, memberCount ?? 1, maxTeamMembers);
   }
 
   const status = action === "approve" ? "approved" : "rejected";

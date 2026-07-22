@@ -186,7 +186,13 @@ export default async function InstructorPage() {
       lastUnlockedAchievement={lastUnlockedAchievement ? { id: lastUnlockedAchievement.id, title: lastUnlockedAchievement.title } : null}
       sessionAchievements={sessionAchievements}
       chatEnabled={chatEnabled}
-      cohort={{ id: cohort.id, name: cohort.name, join_code: cohort.join_code }}
+      cohort={{
+        id: cohort.id,
+        name: cohort.name,
+        join_code: cohort.join_code,
+        max_teams: cohort.max_teams ?? 5,
+        max_team_members: cohort.max_team_members ?? 3,
+      }}
     />
   );
 }

@@ -36,11 +36,19 @@ export async function POST(request: Request) {
 
   const teamId = student.team_id;
 
-  // Team size at this moment — used for fairness multiplier
+  // Team size at this moment — used for fairness multiplier (relative to the
+  // cohort's configured max team size)
   const { count: memberCount } = await supabase
     .from("team_members")
     .select("*", { count: "exact", head: true })
     .eq("team_id", teamId);
+
+  const { data: cohortLimits } = await supabase
+    .from("cohorts")
+    .select("max_team_members")
+    .eq("id", student.cohort_id)
+    .single();
+  const maxTeamMembers = cohortLimits?.max_team_members ?? 3;
 
   // Load achievement (per-cohort: scope to the student's cohort)
   const { data: achievement } = await supabase
@@ -101,7 +109,7 @@ export async function POST(request: Request) {
       baseXp = achievement.xp;
     }
     // Base only here; rerankAchievement adds the rank bonus.
-    xpAwarded = applyTeamMultiplier(baseXp, memberCount ?? 1);
+    xpAwarded = applyTeamMultiplier(baseXp, memberCount ?? 1, maxTeamMembers);
   } else {
     return NextResponse.json({ error: validationResult.reason }, { status: 422 });
   }

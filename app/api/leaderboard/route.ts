@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   // Resolve the cohort by its join code (case-insensitive).
   const { data: cohort } = await supabase
     .from("cohorts")
-    .select("id, name, join_code, active_session_id")
+    .select("id, name, join_code, active_session_id, max_team_members")
     .eq("join_code", cohortCode.toUpperCase())
     .maybeSingle();
 
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (!teams || teams.length === 0) {
-    return NextResponse.json({ teams: [], session, cohort: { name: cohort.name, join_code: cohort.join_code } });
+    return NextResponse.json({ teams: [], session, cohort: { name: cohort.name, join_code: cohort.join_code, max_team_members: cohort.max_team_members ?? 3 } });
   }
 
   const teamIds = teams.map((t) => t.id);
@@ -120,6 +120,6 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     teams: rows,
     session,
-    cohort: { name: cohort.name, join_code: cohort.join_code },
+    cohort: { name: cohort.name, join_code: cohort.join_code, max_team_members: cohort.max_team_members ?? 3 },
   });
 }
