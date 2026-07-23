@@ -1054,8 +1054,6 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
           <div>
             {!activeSession ? (
               <p className="text-zinc-500 text-sm">No active session.</p>
-            ) : localAchievements.length === 0 ? (
-              <p className="text-zinc-500 text-sm">No achievements for this session.</p>
             ) : (
               <>
                 <div className="flex items-center justify-between mb-5">
@@ -1063,7 +1061,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                     Drag rows to reorder within a block. Use <span className="text-zinc-300">Edit</span> to change title, description, or move to a different block.
                   </p>
                   <div className="flex items-center gap-2 shrink-0 ml-4">
-                    {(() => {
+                    {localAchievements.length > 0 && (() => {
                       const anyUnlocked = localAchievements.some((a) => a.is_unlocked);
                       const action = anyUnlocked ? "lock_all" : "unlock_all";
                       return (
@@ -1416,6 +1414,9 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                   </div>
                 )}
 
+                {localAchievements.length === 0 ? (
+                  <p className="text-zinc-500 text-sm">No achievements yet for this session — create one above.</p>
+                ) : (
                 <div className="flex flex-col gap-8">
                   {achievementBlocks.map(({ blockNum, items }) => (
                     <div key={blockNum}>
@@ -1559,6 +1560,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                     </div>
                   ))}
                 </div>
+                )}
               </>
             )}
           </div>
