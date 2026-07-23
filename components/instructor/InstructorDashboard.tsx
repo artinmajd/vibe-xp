@@ -492,6 +492,16 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
       setSessionDragOverIdx(null);
       return;
     }
+
+    const moving = localSessions[sessionDragIdx];
+    const targetNumber = dropIdx + 1; // 1-based session_number the moved session will take over
+
+    if (!confirm(`Move "Session ${moving.session_number} — ${moving.title}" to Session ${targetNumber}? Every other session shifts to make room.`)) {
+      setSessionDragIdx(null);
+      setSessionDragOverIdx(null);
+      return;
+    }
+
     const reordered = [...localSessions];
     const [moved] = reordered.splice(sessionDragIdx, 1);
     reordered.splice(dropIdx, 0, moved);
