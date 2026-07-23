@@ -117,17 +117,19 @@ export default async function InstructorPage() {
     })
   );
 
-  // All sessions (shared catalog). is_active is derived from the cohort.
+  // This cohort's own sessions (per-cohort now). is_active is derived from
+  // the cohort's active_session_id, matched by session_number.
   const { data: sessionsRaw } = await supabase
     .from("sessions")
-    .select("id, title, unlocked_through")
-    .order("id");
+    .select("id, session_number, title")
+    .eq("cohort_id", cohort.id)
+    .order("session_number");
 
   const sessions = (sessionsRaw ?? []).map((s) => ({
     id: s.id,
+    session_number: s.session_number,
     title: s.title,
-    is_active: s.id === cohort.active_session_id,
-    unlocked_through: s.unlocked_through ?? 0,
+    is_active: s.session_number === cohort.active_session_id,
   }));
 
   const activeSession = sessions.find((s) => s.is_active) ?? null;
@@ -149,7 +151,7 @@ export default async function InstructorPage() {
         .from("achievements")
         .select("id, title, description, xp, is_secret, sort_order, block_number, is_unlocked")
         .eq("cohort_id", cohort.id)
-        .eq("session_number", activeSession.id)
+        .eq("session_number", activeSession.session_number)
         .eq("is_active", true)
         .order("sort_order")
         .order("id")

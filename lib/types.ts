@@ -67,7 +67,9 @@ export type Submission = {
 };
 
 export type Session = {
-  id: number;
+  id: string;
+  cohort_id: string;
+  session_number: number;
   title: string;
 };
 

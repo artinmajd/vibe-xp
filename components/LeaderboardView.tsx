@@ -20,7 +20,7 @@ type TeamRow = {
 
 type LeaderboardData = {
   teams: TeamRow[];
-  session: { id: number; title: string } | null;
+  session: { session_number: number; title: string } | null;
   cohort: { name: string; join_code: string; max_team_members?: number } | null;
 };
 
@@ -113,7 +113,7 @@ function LeaderboardInner({ code }: { code: string }) {
             </h1>
             {data.session && (
               <p className="text-white/50 text-lg mt-1">
-                Session {data.session.id} — {data.session.title}
+                Session {data.session.session_number} — {data.session.title}
               </p>
             )}
           </div>

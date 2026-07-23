@@ -25,7 +25,7 @@ export default async function SubmissionsPage() {
 
   const { data: student } = await supabase
     .from("students")
-    .select("team_id, teams(name, emoji)")
+    .select("team_id, cohort_id, teams(name, emoji)")
     .eq("id", user.id)
     .single();
 
@@ -39,8 +39,12 @@ export default async function SubmissionsPage() {
     .eq("team_id", student.team_id)
     .order("submitted_at", { ascending: false });
 
-  const { data: sessionsRaw } = await supabase.from("sessions").select("id, title");
-  const sessionTitle = new Map((sessionsRaw ?? []).map((s) => [s.id, s.title]));
+  // Sessions are per-cohort now — scope to the student's cohort, key by session_number.
+  const { data: sessionsRaw } = await supabase
+    .from("sessions")
+    .select("session_number, title")
+    .eq("cohort_id", student.cohort_id);
+  const sessionTitle = new Map((sessionsRaw ?? []).map((s) => [s.session_number, s.title]));
 
   const subs = (subsRaw ?? []).map((s) => {
     const ach = s.achievements as unknown as { title: string; session_number: number } | null;

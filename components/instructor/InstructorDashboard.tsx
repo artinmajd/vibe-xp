@@ -30,10 +30,10 @@ type TeamInfo = {
 };
 
 type SessionInfo = {
-  id: number;
+  id: string;
+  session_number: number;
   title: string;
   is_active: boolean;
-  unlocked_through: number;
 };
 
 type AchievementPreview = { id: string; title: string };
@@ -367,14 +367,97 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
     router.refresh();
   }
 
-  async function handleSwitchSession(sessionId: number) {
-    setBusy(`session-${sessionId}`);
+  async function handleSwitchSession(sessionNumber: number) {
+    setBusy(`session-${sessionNumber}`);
     await fetch("/api/instructor/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId }),
+      body: JSON.stringify({ session_id: sessionNumber }),
     });
     setBusy(null);
+    router.refresh();
+  }
+
+  // ── Add / remove sessions ──────────────────────────────────────────────
+  const [addingSession, setAddingSession] = useState(false);
+  const [newSessionTitle, setNewSessionTitle] = useState("");
+  const [availableCohorts, setAvailableCohorts] = useState<{ id: string; name: string }[] | null>(null);
+  const [copySourceCohortId, setCopySourceCohortId] = useState("");
+  const [sourceCohortSessions, setSourceCohortSessions] = useState<{ session_number: number; title: string }[]>([]);
+  const [copySourceSessionNumber, setCopySourceSessionNumber] = useState<number | "">("");
+  const [sessionBusy, setSessionBusy] = useState<string | null>(null);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+
+  async function loadAvailableCohorts() {
+    if (availableCohorts) return;
+    const res = await fetch("/api/instructor/cohort");
+    const body = await res.json().catch(() => ({}));
+    if (res.ok) {
+      type CohortRow = { id: string; name: string; is_archived: boolean };
+      setAvailableCohorts(
+        (body.cohorts as CohortRow[] ?? []).filter((c) => c.id !== cohort.id && !c.is_archived)
+      );
+    }
+  }
+
+  async function handlePickCopySource(sourceCohortId: string) {
+    setCopySourceCohortId(sourceCohortId);
+    setCopySourceSessionNumber("");
+    setSourceCohortSessions([]);
+    if (!sourceCohortId) return;
+    const res = await fetch(`/api/instructor/sessions?cohort_id=${sourceCohortId}`);
+    const body = await res.json().catch(() => ({}));
+    if (res.ok) setSourceCohortSessions(body.sessions ?? []);
+  }
+
+  function resetAddSessionForm() {
+    setAddingSession(false);
+    setNewSessionTitle("");
+    setCopySourceCohortId("");
+    setSourceCohortSessions([]);
+    setCopySourceSessionNumber("");
+  }
+
+  async function handleAddSession() {
+    if (!newSessionTitle.trim()) return;
+    setSessionBusy("add");
+    setSessionError(null);
+    const res = await fetch("/api/instructor/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: newSessionTitle.trim(),
+        source_cohort_id: copySourceCohortId || undefined,
+        source_session_number: copySourceSessionNumber === "" ? undefined : copySourceSessionNumber,
+      }),
+    });
+    const body = await res.json().catch(() => ({}));
+    setSessionBusy(null);
+    if (!res.ok) {
+      setSessionError(body.error ?? "Something broke. Try again.");
+      return;
+    }
+    resetAddSessionForm();
+    router.refresh();
+  }
+
+  async function handleRemoveSession(sessionNumber: number, title: string) {
+    if (!confirm(`Remove "Session ${sessionNumber} — ${title}"? This deletes its achievements too. Blocked if students already submitted something for it.`)) {
+      return;
+    }
+    setSessionBusy(`remove-${sessionNumber}`);
+    setSessionError(null);
+    const res = await fetch("/api/instructor/sessions", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_number: sessionNumber }),
+    });
+    const body = await res.json().catch(() => ({}));
+    setSessionBusy(null);
+    if (!res.ok) {
+      setSessionError(body.error ?? "Something broke. Try again.");
+      return;
+    }
     router.refresh();
   }
 
@@ -642,7 +725,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
             </a>
           </div>
           {activeSession && (
-            <p className="text-xs text-zinc-500">Active: Session {activeSession.id} — {activeSession.title}</p>
+            <p className="text-xs text-zinc-500">Active: Session {activeSession.session_number} — {activeSession.title}</p>
           )}
         </div>
 
@@ -1649,8 +1732,17 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
           <div>
             <p className="text-sm text-zinc-400 mb-6">
               Switching the active session changes which achievements students see on their dashboard. Only one session can be active at a time.
+              Sessions are independent per cohort — adding or removing one here only affects this cohort.
             </p>
-            <div className="flex flex-col gap-3">
+
+            {sessionError && (
+              <div className="flex items-center justify-between bg-rose-950 border border-rose-800 rounded-lg px-4 py-3 mb-4 text-sm text-rose-300">
+                <span>{sessionError}</span>
+                <button onClick={() => setSessionError(null)} className="text-rose-500 hover:text-rose-300 ml-4 text-xs">Dismiss</button>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-3 mb-4">
               {sessions.map((s) => (
                 <div
                   key={s.id}
@@ -1662,22 +1754,104 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                 >
                   <div>
                     <p className={`text-sm font-semibold ${s.is_active ? "text-indigo-300" : "text-white"}`}>
-                      Session {s.id} — {s.title}
+                      Session {s.session_number} — {s.title}
                     </p>
                     {s.is_active && <p className="text-xs text-indigo-500 mt-0.5">Currently active</p>}
                   </div>
-                  {!s.is_active && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    {!s.is_active && (
+                      <button
+                        disabled={busy === `session-${s.session_number}`}
+                        onClick={() => handleSwitchSession(s.session_number)}
+                        className="cursor-pointer bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                      >
+                        {busy === `session-${s.session_number}` ? "Switching..." : "Make active"}
+                      </button>
+                    )}
                     <button
-                      disabled={busy === `session-${s.id}`}
-                      onClick={() => handleSwitchSession(s.id)}
-                      className="bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                      disabled={sessionBusy === `remove-${s.session_number}`}
+                      onClick={() => handleRemoveSession(s.session_number, s.title)}
+                      className="cursor-pointer text-xs text-zinc-500 hover:text-rose-400 disabled:opacity-50 px-2 py-2 transition-colors"
                     >
-                      {busy === `session-${s.id}` ? "Switching..." : "Make active"}
+                      {sessionBusy === `remove-${s.session_number}` ? "Removing…" : "Remove"}
                     </button>
-                  )}
+                  </div>
                 </div>
               ))}
+              {sessions.length === 0 && (
+                <p className="text-zinc-500 text-sm">No sessions yet for this cohort — add one below.</p>
+              )}
             </div>
+
+            {/* ── Add Session ── */}
+            {addingSession ? (
+              <div className="bg-zinc-900 border border-indigo-600/40 rounded-xl p-5">
+                <p className="text-sm font-bold text-white mb-4">New Session</p>
+                <div className="flex flex-col gap-3">
+                  <input
+                    type="text"
+                    value={newSessionTitle}
+                    onChange={(e) => setNewSessionTitle(e.target.value)}
+                    placeholder="Session title"
+                    className="bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 w-full"
+                  />
+
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xs text-zinc-500">Copy achievements from another cohort's session (optional)</p>
+                    <div className="flex gap-2 flex-wrap">
+                      <select
+                        value={copySourceCohortId}
+                        onFocus={loadAvailableCohorts}
+                        onChange={(e) => handlePickCopySource(e.target.value)}
+                        className="bg-zinc-800 text-zinc-200 text-xs rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer border border-zinc-700"
+                      >
+                        <option value="">Skip — start empty</option>
+                        {(availableCohorts ?? []).map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                      {copySourceCohortId && (
+                        <select
+                          value={copySourceSessionNumber}
+                          onChange={(e) => setCopySourceSessionNumber(e.target.value ? parseInt(e.target.value) : "")}
+                          className="bg-zinc-800 text-zinc-200 text-xs rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer border border-zinc-700"
+                        >
+                          <option value="">Which session?</option>
+                          {sourceCohortSessions.map((s) => (
+                            <option key={s.session_number} value={s.session_number}>
+                              Session {s.session_number} — {s.title}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-1">
+                    <button
+                      disabled={sessionBusy === "add" || !newSessionTitle.trim()}
+                      onClick={handleAddSession}
+                      className="cursor-pointer bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                    >
+                      {sessionBusy === "add" ? "Creating…" : "Create Session"}
+                    </button>
+                    <button
+                      onClick={resetAddSessionForm}
+                      className="cursor-pointer text-zinc-500 hover:text-zinc-300 text-xs px-3 py-2 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAddingSession(true)}
+                className="cursor-pointer text-xs font-semibold bg-indigo-700 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg transition-colors"
+              >
+                + Add Session
+              </button>
+            )}
           </div>
         )}
 

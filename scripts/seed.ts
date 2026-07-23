@@ -13,19 +13,21 @@ const shouldReset = process.argv.includes("--reset");
 
 // ─── Sessions ────────────────────────────────────────────────────────────────
 
-// Sessions are a shared catalog. Which one is "active" is per-cohort now
-// (cohorts.active_session_id), so there is no is_active flag here.
+// Sessions are per-cohort now (like achievements). This seeds the TEMPLATE
+// cohort's (test-cohort) session list — new cohorts copy from it, or start
+// with a single default session and grow from there via the instructor
+// dashboard's "Add Session".
 const sessions = [
-  { id: 1, title: "What is AI & How Does It Think?" },
-  { id: 2, title: "Prompting Like a Pro" },
-  { id: 3, title: "Building Your First App" },
-  { id: 4, title: "Adding Features" },
-  { id: 5, title: "Think in Pieces, Build in Pieces" },
-  { id: 6, title: "Everything Breaks (and How Pros Fix It Fast)" },
-  { id: 7, title: "Teach Cursor How You Work" },
-  { id: 8, title: "Taking It Live" },
-  { id: 9, title: "The Build Sprint" },
-  { id: 10, title: "The Finish Line" },
+  { session_number: 1, title: "What is AI & How Does It Think?" },
+  { session_number: 2, title: "Prompting Like a Pro" },
+  { session_number: 3, title: "Building Your First App" },
+  { session_number: 4, title: "Adding Features" },
+  { session_number: 5, title: "Think in Pieces, Build in Pieces" },
+  { session_number: 6, title: "Everything Breaks (and How Pros Fix It Fast)" },
+  { session_number: 7, title: "Teach Cursor How You Work" },
+  { session_number: 8, title: "Taking It Live" },
+  { session_number: 9, title: "The Build Sprint" },
+  { session_number: 10, title: "The Finish Line" },
 ];
 
 // ─── Achievements ─────────────────────────────────────────────────────────────
@@ -3493,11 +3495,12 @@ async function main() {
     console.log("Achievements cleared.");
   }
 
-  // Upsert sessions
+  // Upsert sessions into the template cohort (unique key: cohort_id + session_number).
   console.log("Seeding sessions...");
+  const sessionsWithCohort = sessions.map((s) => ({ ...s, cohort_id: cohortId }));
   const { error: sessionsError } = await supabase
     .from("sessions")
-    .upsert(sessions, { onConflict: "id" });
+    .upsert(sessionsWithCohort, { onConflict: "cohort_id,session_number" });
 
   if (sessionsError) {
     console.error("Failed to seed sessions:", sessionsError.message);

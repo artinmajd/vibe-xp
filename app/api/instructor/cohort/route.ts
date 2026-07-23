@@ -1,6 +1,6 @@
 import { requireInstructor } from "@/lib/require-instructor";
 import { createServerClient } from "@/lib/supabase-server";
-import { INSTRUCTOR_COHORT_COOKIE } from "@/lib/cohort";
+import { INSTRUCTOR_COHORT_COOKIE, copyCohortContent } from "@/lib/cohort";
 import { NextRequest, NextResponse } from "next/server";
 
 const WORDS = [
@@ -14,37 +14,6 @@ function generateJoinCode(): string {
   return `${word}-${digits}`;
 }
 
-// Replace the target cohort's achievements with a fresh copy of the source
-// cohort's. Copies start LOCKED (is_unlocked = false). Overwrites: any existing
-// achievements in the target — and submissions against them — are removed.
-async function copyAchievements(
-  supabase: ReturnType<typeof createServerClient>,
-  sourceCohortId: string,
-  targetCohortId: string
-) {
-  const { data: source } = await supabase
-    .from("achievements")
-    .select("slug, session_number, block_number, title, description, xp, proof_type, proof_config, is_secret, is_active, sort_order")
-    .eq("cohort_id", sourceCohortId);
-
-  // Clear the target: remove submissions tied to its achievements, then the rows.
-  const { data: targetAch } = await supabase
-    .from("achievements")
-    .select("id")
-    .eq("cohort_id", targetCohortId);
-  const targetAchIds = (targetAch ?? []).map((a) => a.id);
-  if (targetAchIds.length > 0) {
-    await supabase.from("submissions").delete().in("achievement_id", targetAchIds);
-    await supabase.from("achievements").delete().eq("cohort_id", targetCohortId);
-  }
-
-  if (source && source.length > 0) {
-    const copies = source.map((a) => ({ ...a, cohort_id: targetCohortId, is_unlocked: false }));
-    const { error } = await supabase.from("achievements").insert(copies);
-    if (error) throw new Error(error.message);
-  }
-}
-
 // GET — list all cohorts (with counts + current session) + the selected id.
 export async function GET() {
   await requireInstructor();
@@ -55,20 +24,20 @@ export async function GET() {
     .select("id, name, join_code, active_session_id, chat_enabled, is_archived, created_at")
     .order("created_at", { ascending: true });
 
-  const { data: sessions } = await supabase.from("sessions").select("id, title");
-  const sessionTitle = new Map((sessions ?? []).map((s) => [s.id, s.title]));
-
   const rows = await Promise.all(
     (cohorts ?? []).map(async (c) => {
-      const [{ count: studentCount }, { count: teamCount }] = await Promise.all([
+      const [{ count: studentCount }, { count: teamCount }, { data: activeSessionRow }] = await Promise.all([
         supabase.from("students").select("*", { count: "exact", head: true }).eq("cohort_id", c.id),
         supabase.from("teams").select("*", { count: "exact", head: true }).eq("cohort_id", c.id),
+        c.active_session_id
+          ? supabase.from("sessions").select("title").eq("cohort_id", c.id).eq("session_number", c.active_session_id).maybeSingle()
+          : Promise.resolve({ data: null }),
       ]);
       return {
         ...c,
         studentCount: studentCount ?? 0,
         teamCount: teamCount ?? 0,
-        activeSessionTitle: c.active_session_id ? sessionTitle.get(c.active_session_id) ?? null : null,
+        activeSessionTitle: activeSessionRow?.title ?? null,
       };
     })
   );
@@ -139,16 +108,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Optionally seed the new cohort's catalog from an existing one.
+    // Seed the new cohort's sessions + achievements from an existing cohort,
+    // or — with nothing to copy from — start with exactly one default session.
     if (copy_from_cohort_id) {
       try {
-        await copyAchievements(supabase, copy_from_cohort_id, created.id);
+        await copyCohortContent(supabase, copy_from_cohort_id, created.id);
       } catch (e) {
         return NextResponse.json(
-          { error: `Cohort created, but copying achievements failed: ${(e as Error).message}` },
+          { error: `Cohort created, but copying content failed: ${(e as Error).message}` },
           { status: 500 }
         );
       }
+    } else {
+      const { error: sessErr } = await supabase
+        .from("sessions")
+        .insert({ cohort_id: created.id, session_number: 1, title: "Session 1" });
+      if (sessErr) {
+        return NextResponse.json(
+          { error: `Cohort created, but the default session failed: ${sessErr.message}` },
+          { status: 500 }
+        );
+      }
+      await supabase.from("cohorts").update({ active_session_id: 1 }).eq("id", created.id);
     }
 
     return NextResponse.json({ ok: true, cohort: created });
@@ -163,7 +144,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Can't copy a cohort onto itself." }, { status: 400 });
     }
     try {
-      await copyAchievements(supabase, source_cohort_id, cohort_id);
+      await copyCohortContent(supabase, source_cohort_id, cohort_id);
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message }, { status: 500 });
     }

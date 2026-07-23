@@ -18,15 +18,15 @@ export default async function CohortsPage() {
     .select("id, name, join_code, active_session_id, chat_enabled, is_archived, created_at")
     .order("created_at", { ascending: true });
 
-  const { data: sessions } = await supabase.from("sessions").select("id, title");
-  const sessionTitle = new Map((sessions ?? []).map((s) => [s.id, s.title]));
-
   const rows = await Promise.all(
     (cohorts ?? []).map(async (c) => {
-      const [{ count: studentCount }, { count: teamCount }, { count: achievementCount }] = await Promise.all([
+      const [{ count: studentCount }, { count: teamCount }, { count: achievementCount }, { data: activeSessionRow }] = await Promise.all([
         supabase.from("students").select("*", { count: "exact", head: true }).eq("cohort_id", c.id),
         supabase.from("teams").select("*", { count: "exact", head: true }).eq("cohort_id", c.id),
         supabase.from("achievements").select("*", { count: "exact", head: true }).eq("cohort_id", c.id),
+        c.active_session_id
+          ? supabase.from("sessions").select("title").eq("cohort_id", c.id).eq("session_number", c.active_session_id).maybeSingle()
+          : Promise.resolve({ data: null }),
       ]);
       return {
         id: c.id,
@@ -38,7 +38,7 @@ export default async function CohortsPage() {
         studentCount: studentCount ?? 0,
         teamCount: teamCount ?? 0,
         achievementCount: achievementCount ?? 0,
-        activeSessionTitle: c.active_session_id ? sessionTitle.get(c.active_session_id) ?? null : null,
+        activeSessionTitle: activeSessionRow?.title ?? null,
       };
     })
   );

@@ -25,12 +25,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ teams: [], session: null, cohort: null });
   }
 
-  // The cohort's current session.
+  // The cohort's current session (sessions are per-cohort now).
   const { data: session } = cohort.active_session_id
     ? await supabase
         .from("sessions")
-        .select("id, title")
-        .eq("id", cohort.active_session_id)
+        .select("session_number, title")
+        .eq("cohort_id", cohort.id)
+        .eq("session_number", cohort.active_session_id)
         .maybeSingle()
     : { data: null };
 
@@ -78,7 +79,7 @@ export async function GET(request: NextRequest) {
         .from("achievements")
         .select("id")
         .eq("cohort_id", cohort.id)
-        .eq("session_number", session.id)
+        .eq("session_number", session.session_number)
     : { data: [] };
 
   const sessionAchievementIds = new Set((sessionAchievements ?? []).map((a) => a.id));

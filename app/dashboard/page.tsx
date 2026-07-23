@@ -57,11 +57,13 @@ export default async function DashboardPage() {
     .eq("id", student.cohort_id)
     .maybeSingle();
 
+  // Sessions are per-cohort now — scope by cohort_id, match by session_number.
   const { data: session } = cohort?.active_session_id
     ? await supabase
         .from("sessions")
-        .select("id, title")
-        .eq("id", cohort.active_session_id)
+        .select("session_number, title")
+        .eq("cohort_id", cohort.id)
+        .eq("session_number", cohort.active_session_id)
         .maybeSingle()
     : { data: null };
 
@@ -71,7 +73,7 @@ export default async function DashboardPage() {
         .from("achievements")
         .select("*")
         .eq("cohort_id", cohort.id)
-        .eq("session_number", session?.id ?? 1)
+        .eq("session_number", session?.session_number ?? 1)
         .eq("is_secret", false)
         .eq("is_active", true)
         .order("sort_order")
@@ -267,7 +269,7 @@ export default async function DashboardPage() {
           >
             <span className="text-lg">📅</span>
             <p className="text-white text-sm font-semibold">
-              Session {session.id} — {session.title}
+              Session {session.session_number} — {session.title}
             </p>
           </div>
         )}
