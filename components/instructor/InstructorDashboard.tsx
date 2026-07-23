@@ -186,6 +186,15 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
   const [chatEnabled, setChatEnabled] = useState(initialChatEnabled);
   const [groupBy, setGroupBy] = useState<GroupBy>("team");
 
+  // Session tab: local order for drag-and-drop (synced from server below)
+  const [localSessions, setLocalSessions] = useState<SessionInfo[]>(sessions);
+  const [sessionDragIdx, setSessionDragIdx] = useState<number | null>(null);
+  const [sessionDragOverIdx, setSessionDragOverIdx] = useState<number | null>(null);
+
+  useEffect(() => {
+    setLocalSessions(sessions);
+  }, [sessions]);
+
   // Achievements tab state
   const [localAchievements, setLocalAchievements] = useState<AchievementRow[]>(sessionAchievements);
   const [editingAchId, setEditingAchId] = useState<string | null>(null);
@@ -459,6 +468,42 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
       return;
     }
     router.refresh();
+  }
+
+  async function persistSessionOrder(newList: SessionInfo[]) {
+    setSessionError(null);
+    const res = await fetch("/api/instructor/sessions", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ordered_session_ids: newList.map((s) => s.id) }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setSessionError(body.error ?? "Something broke reordering sessions. Try again.");
+      setLocalSessions(sessions); // revert to last known-good server order
+      return;
+    }
+    router.refresh();
+  }
+
+  function handleSessionDrop(dropIdx: number) {
+    if (sessionDragIdx === null || sessionDragIdx === dropIdx) {
+      setSessionDragIdx(null);
+      setSessionDragOverIdx(null);
+      return;
+    }
+    const reordered = [...localSessions];
+    const [moved] = reordered.splice(sessionDragIdx, 1);
+    reordered.splice(dropIdx, 0, moved);
+
+    // Renumber locally so the UI reflects the new order immediately, ahead
+    // of the server round-trip (session_number is 1-based, in list order).
+    const renumbered = reordered.map((s, i) => ({ ...s, session_number: i + 1 }));
+
+    setLocalSessions(renumbered);
+    setSessionDragIdx(null);
+    setSessionDragOverIdx(null);
+    persistSessionOrder(renumbered);
   }
 
   async function handleLogout() {
@@ -1732,7 +1777,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
           <div>
             <p className="text-sm text-zinc-400 mb-6">
               Switching the active session changes which achievements students see on their dashboard. Only one session can be active at a time.
-              Sessions are independent per cohort — adding or removing one here only affects this cohort.
+              Sessions are independent per cohort — adding, removing, or reordering here only affects this cohort. Drag a row to reorder.
             </p>
 
             {sessionError && (
@@ -1743,42 +1788,59 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
             )}
 
             <div className="flex flex-col gap-3 mb-4">
-              {sessions.map((s) => (
-                <div
-                  key={s.id}
-                  className={`flex items-center justify-between rounded-xl px-5 py-4 border ${
-                    s.is_active
-                      ? "bg-indigo-950 border-indigo-700"
-                      : "bg-zinc-900 border-zinc-800"
-                  }`}
-                >
-                  <div>
-                    <p className={`text-sm font-semibold ${s.is_active ? "text-indigo-300" : "text-white"}`}>
-                      Session {s.session_number} — {s.title}
-                    </p>
-                    {s.is_active && <p className="text-xs text-indigo-500 mt-0.5">Currently active</p>}
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {!s.is_active && (
+              {localSessions.map((s, idx) => {
+                const isDragging = sessionDragIdx === idx;
+                const isDragOver = sessionDragOverIdx === idx && !isDragging;
+                return (
+                  <div
+                    key={s.id}
+                    draggable
+                    onDragStart={() => setSessionDragIdx(idx)}
+                    onDragOver={(e) => { e.preventDefault(); setSessionDragOverIdx(idx); }}
+                    onDragLeave={() => setSessionDragOverIdx(null)}
+                    onDrop={() => handleSessionDrop(idx)}
+                    onDragEnd={() => { setSessionDragIdx(null); setSessionDragOverIdx(null); }}
+                    className={`flex items-center justify-between rounded-xl px-5 py-4 border cursor-grab active:cursor-grabbing transition-all ${
+                      isDragOver
+                        ? "border-indigo-500 scale-[1.01]"
+                        : isDragging
+                        ? "border-zinc-600 opacity-50"
+                        : s.is_active
+                        ? "bg-indigo-950 border-indigo-700"
+                        : "bg-zinc-900 border-zinc-800"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-zinc-600 text-sm select-none">⠿</span>
+                      <div>
+                        <p className={`text-sm font-semibold ${s.is_active ? "text-indigo-300" : "text-white"}`}>
+                          Session {s.session_number} — {s.title}
+                        </p>
+                        {s.is_active && <p className="text-xs text-indigo-500 mt-0.5">Currently active</p>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {!s.is_active && (
+                        <button
+                          disabled={busy === `session-${s.session_number}`}
+                          onClick={() => handleSwitchSession(s.session_number)}
+                          className="cursor-pointer bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                        >
+                          {busy === `session-${s.session_number}` ? "Switching..." : "Make active"}
+                        </button>
+                      )}
                       <button
-                        disabled={busy === `session-${s.session_number}`}
-                        onClick={() => handleSwitchSession(s.session_number)}
-                        className="cursor-pointer bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                        disabled={sessionBusy === `remove-${s.session_number}`}
+                        onClick={() => handleRemoveSession(s.session_number, s.title)}
+                        className="cursor-pointer text-xs text-zinc-500 hover:text-rose-400 disabled:opacity-50 px-2 py-2 transition-colors"
                       >
-                        {busy === `session-${s.session_number}` ? "Switching..." : "Make active"}
+                        {sessionBusy === `remove-${s.session_number}` ? "Removing…" : "Remove"}
                       </button>
-                    )}
-                    <button
-                      disabled={sessionBusy === `remove-${s.session_number}`}
-                      onClick={() => handleRemoveSession(s.session_number, s.title)}
-                      className="cursor-pointer text-xs text-zinc-500 hover:text-rose-400 disabled:opacity-50 px-2 py-2 transition-colors"
-                    >
-                      {sessionBusy === `remove-${s.session_number}` ? "Removing…" : "Remove"}
-                    </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-              {sessions.length === 0 && (
+                );
+              })}
+              {localSessions.length === 0 && (
                 <p className="text-zinc-500 text-sm">No sessions yet for this cohort — add one below.</p>
               )}
             </div>

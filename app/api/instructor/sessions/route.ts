@@ -70,6 +70,42 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true, session: created });
 }
 
+// PUT /api/instructor/sessions — reorder the managed cohort's sessions.
+// body: { ordered_session_ids: string[] } — every session id for this
+// cohort, in the new desired order. Renumbering cascades to achievements'
+// session_number and the cohort's active_session_id in one atomic DB call.
+export async function PUT(req: NextRequest) {
+  await requireInstructor();
+  const cohort = await getInstructorCohort();
+  if (!cohort) return NextResponse.json({ error: "Pick a cohort first." }, { status: 400 });
+
+  const { ordered_session_ids } = await req.json() as { ordered_session_ids?: string[] };
+  if (!Array.isArray(ordered_session_ids) || ordered_session_ids.length === 0) {
+    return NextResponse.json({ error: "Missing ordered_session_ids." }, { status: 400 });
+  }
+
+  const supabase = createServerClient();
+
+  const { count } = await supabase
+    .from("sessions")
+    .select("*", { count: "exact", head: true })
+    .eq("cohort_id", cohort.id);
+  if (count !== ordered_session_ids.length) {
+    return NextResponse.json(
+      { error: "The reorder list doesn't match this cohort's current sessions. Refresh and try again." },
+      { status: 400 }
+    );
+  }
+
+  const { error } = await supabase.rpc("reorder_cohort_sessions", {
+    p_cohort_id: cohort.id,
+    p_ordered_ids: ordered_session_ids,
+  });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ ok: true });
+}
+
 // DELETE /api/instructor/sessions — remove a session from the managed cohort.
 // body: { session_number: number }
 // Blocked if any submissions exist against that session's achievements.
