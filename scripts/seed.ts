@@ -17,15 +17,18 @@ const shouldReset = process.argv.includes("--reset");
 // cohort's (test-cohort) session list — new cohorts copy from it, or start
 // with a single default session and grow from there via the instructor
 // dashboard's "Add Session".
+//
+// Curriculum reorder: "Taking It Live" moved from position 8 to position 2
+// (per the final slide decks), so sessions 2-7 each shifted down by one.
 const sessions = [
   { session_number: 1, title: "What is AI & How Does It Think?" },
-  { session_number: 2, title: "Prompting Like a Pro" },
-  { session_number: 3, title: "Building Your First App" },
-  { session_number: 4, title: "Adding Features" },
-  { session_number: 5, title: "Think in Pieces, Build in Pieces" },
-  { session_number: 6, title: "Everything Breaks (and How Pros Fix It Fast)" },
-  { session_number: 7, title: "Teach Cursor How You Work" },
-  { session_number: 8, title: "Taking It Live" },
+  { session_number: 2, title: "Taking It Live" },
+  { session_number: 3, title: "Prompting Like a Pro" },
+  { session_number: 4, title: "Building Your First App" },
+  { session_number: 5, title: "Adding Features" },
+  { session_number: 6, title: "Think in Pieces, Build in Pieces" },
+  { session_number: 7, title: "Everything Breaks (and How Pros Fix It Fast)" },
+  { session_number: 8, title: "Teach Cursor How You Work" },
   { session_number: 9, title: "The Build Sprint" },
   { session_number: 10, title: "The Finish Line" },
 ];
@@ -256,12 +259,12 @@ const achievements = [
     is_secret: false,
   },
 
-  // ─── Session 2 — From Prompt to Page ────────────────────────────────────────
+  // ─── Session 3 — From Prompt to Page ────────────────────────────────────────
 
   // Block 0 — Setup & Team Check-In
   {
     slug: "s2-team-check-in",
-    session_number: 2,
+    session_number: 3,
     block_number: 0,
     title: "Team Check-In",
     description: "Confirm your team is here and ready — tick the box to log in for the day.",
@@ -276,7 +279,7 @@ const achievements = [
   // Block 1 — Cursor Basics & Your First Page
   {
     slug: "s2-everyones-in",
-    session_number: 2,
+    session_number: 3,
     block_number: 1,
     title: "Everyone's In",
     description: "Every member has Cursor open, signed in, the session-2-build folder created, and the chat panel open.",
@@ -294,7 +297,7 @@ const achievements = [
   },
   {
     slug: "s2-first-page-live",
-    session_number: 2,
+    session_number: 3,
     block_number: 1,
     title: "First Page Live",
     description: "Your name/nickname page renders in the browser. Screenshot it — this is your \"before\" picture for the whole day.",
@@ -305,7 +308,7 @@ const achievements = [
   },
   {
     slug: "s2-spot-the-guesses",
-    session_number: 2,
+    session_number: 3,
     block_number: 1,
     title: "Spot the Guesses",
     description: "After your first page appears, list three things Cursor chose on its own — without you telling it.",
@@ -325,7 +328,7 @@ const achievements = [
   // Block 2 — Vague vs. Specific Prompts
   {
     slug: "s2-the-lazy-page",
-    session_number: 2,
+    session_number: 3,
     block_number: 2,
     title: "The Lazy Page",
     description: "Build the vague pizza page (\"Make a page about pizza.\") and screenshot it — leave it untouched.",
@@ -336,7 +339,7 @@ const achievements = [
   },
   {
     slug: "s2-diagnosis",
-    session_number: 2,
+    session_number: 3,
     block_number: 2,
     title: "Diagnosis",
     description: "List six things Cursor had to guess on the vague pizza page because you didn't say.",
@@ -357,7 +360,7 @@ const achievements = [
   },
   {
     slug: "s2-the-directed-page",
-    session_number: 2,
+    session_number: 3,
     block_number: 2,
     title: "The Directed Page",
     description: "Build the specific pizza page from the fully loaded prompt and screenshot it.",
@@ -368,7 +371,7 @@ const achievements = [
   },
   {
     slug: "s2-seven-ingredients",
-    session_number: 2,
+    session_number: 3,
     block_number: 2,
     title: "Seven Ingredients",
     description: "Rewrite the weak dog prompt so it includes all seven ingredients — tick each one you used.",
@@ -392,7 +395,7 @@ const achievements = [
   // Block 3 — Improving Without Restarting
   {
     slug: "s2-no-restart-remake",
-    session_number: 2,
+    session_number: 3,
     block_number: 3,
     title: "No-Restart Remake",
     description: "Transform the vague pizza page using four follow-up prompts — one of each type — without restarting.",
@@ -411,7 +414,7 @@ const achievements = [
   },
   {
     slug: "s2-before-after",
-    session_number: 2,
+    session_number: 3,
     block_number: 3,
     title: "Before & After",
     description: "Upload your before (vague pizza page) and after (transformed page) screenshots in one submission.",
@@ -424,7 +427,7 @@ const achievements = [
   // Block 4 — Build Your Own Page
   {
     slug: "s2-safe-and-sound",
-    session_number: 2,
+    session_number: 3,
     block_number: 4,
     title: "Safe & Sound",
     description: "Confirm your page uses first names or nicknames only — no private information.",
@@ -439,7 +442,7 @@ const achievements = [
   },
   {
     slug: "s2-design-canvas",
-    session_number: 2,
+    session_number: 3,
     block_number: 4,
     title: "Design Canvas",
     description: "Fill all eight fields of your build canvas before you write the first prompt.",
@@ -462,7 +465,7 @@ const achievements = [
   },
   {
     slug: "s2-its-alive",
-    session_number: 2,
+    session_number: 3,
     block_number: 4,
     title: "It's Alive",
     description: "The first version of your own page renders in the browser — screenshot it.",
@@ -473,7 +476,7 @@ const achievements = [
   },
   {
     slug: "s2-upgrade-visual-identity",
-    session_number: 2,
+    session_number: 3,
     block_number: 4,
     title: "Upgrade: Visual Identity",
     description: "Make the visual theme stronger — more consistent colors, better spacing, a title style that matches.",
@@ -484,7 +487,7 @@ const achievements = [
   },
   {
     slug: "s2-upgrade-content",
-    session_number: 2,
+    session_number: 3,
     block_number: 4,
     title: "Upgrade: Content",
     description: "Improve the text so it is more interesting, specific, and fun to read — short and clear.",
@@ -495,7 +498,7 @@ const achievements = [
   },
   {
     slug: "s2-upgrade-layout",
-    session_number: 2,
+    session_number: 3,
     block_number: 4,
     title: "Upgrade: Layout",
     description: "Organize the page into clean sections or cards — make the layout easier to scan.",
@@ -506,7 +509,7 @@ const achievements = [
   },
   {
     slug: "s2-upgrade-interaction",
-    session_number: 2,
+    session_number: 3,
     block_number: 4,
     title: "Upgrade: Interaction",
     description: "Make the interactive feature more useful and fun — it should change something on the page when clicked.",
@@ -517,7 +520,7 @@ const achievements = [
   },
   {
     slug: "s2-upgrade-polish",
-    session_number: 2,
+    session_number: 3,
     block_number: 4,
     title: "Upgrade: Polish",
     description: "Make the page feel finished — improve spacing, headings, contrast, and small visual details.",
@@ -528,7 +531,7 @@ const achievements = [
   },
   {
     slug: "s2-working-feature",
-    session_number: 2,
+    session_number: 3,
     block_number: 4,
     title: "Working Feature",
     description: "Screenshot your interactive feature on the page — it must visibly do something.",
@@ -539,7 +542,7 @@ const achievements = [
   },
   {
     slug: "s2-checkpoint",
-    session_number: 2,
+    session_number: 3,
     block_number: 4,
     title: "Checkpoint",
     description: "Submit your best prompt so far and one thing you still want to improve.",
@@ -558,7 +561,7 @@ const achievements = [
   // Block 5 — Debugging & Remixing
   {
     slug: "s2-good-bug-report",
-    session_number: 2,
+    session_number: 3,
     block_number: 5,
     title: "Good Bug Report",
     description: "Pick the most useful way to describe a broken button.",
@@ -582,7 +585,7 @@ const achievements = [
   },
   {
     slug: "s2-bug-hunt",
-    session_number: 2,
+    session_number: 3,
     block_number: 5,
     title: "Bug Hunt",
     description: "Find one real weakness on your page, write a fix prompt using the formula, and upload a before-and-after screenshot.",
@@ -593,7 +596,7 @@ const achievements = [
   },
   {
     slug: "s2-remix-applied",
-    session_number: 2,
+    session_number: 3,
     block_number: 5,
     title: "Remix Applied",
     description: "Apply your drawn Remix Card using prompts only and screenshot the result.",
@@ -604,7 +607,7 @@ const achievements = [
   },
   {
     slug: "s2-peer-test",
-    session_number: 2,
+    session_number: 3,
     block_number: 5,
     title: "Peer Test",
     description: "Test a neighboring team's page and fill the four peer-test fields.",
@@ -623,7 +626,7 @@ const achievements = [
   },
   {
     slug: "s2-got-tested",
-    session_number: 2,
+    session_number: 3,
     block_number: 5,
     title: "Got Tested",
     description: "Another team tested your page — enter their team name as proof the feedback happened.",
@@ -637,7 +640,7 @@ const achievements = [
   },
   {
     slug: "s2-final-fix",
-    session_number: 2,
+    session_number: 3,
     block_number: 5,
     title: "Final Fix",
     description: "Apply one repair or polish prompt based on the peer feedback you received and upload the result.",
@@ -650,7 +653,7 @@ const achievements = [
   // Block 6 — Showcase & Wrap
   {
     slug: "s2-ship-it",
-    session_number: 2,
+    session_number: 3,
     block_number: 6,
     title: "Ship It",
     description: "Tick every box on the finish-line checklist — an instructor confirms before XP awards.",
@@ -673,7 +676,7 @@ const achievements = [
   },
   {
     slug: "s2-final-page",
-    session_number: 2,
+    session_number: 3,
     block_number: 6,
     title: "Final Page",
     description: "Upload your final screenshot and fill the submission card.",
@@ -693,7 +696,7 @@ const achievements = [
   },
   {
     slug: "s2-we-showed-it",
-    session_number: 2,
+    session_number: 3,
     block_number: 6,
     title: "We Showed It",
     description: "Your team presented its page in the showcase.",
@@ -707,7 +710,7 @@ const achievements = [
   },
   {
     slug: "s2-one-thing-i-learned",
-    session_number: 2,
+    session_number: 3,
     block_number: 6,
     title: "One Thing I Learned",
     description: "Finish the line: \"When building with AI, I should ___.\"",
@@ -720,14 +723,14 @@ const achievements = [
     is_secret: false,
   },
 
-  // ─── Session 3 — The Art of Prompting ────────────────────────────────────────
+  // ─── Session 4 — The Art of Prompting ────────────────────────────────────────
   // Four more (Before & After, Reference Confirmed, Upgrade Menu, Card Complete)
   // still need product decisions before they can be added.
 
   // Block 0 — Launch & Setup
   {
     slug: "s3-ready-check",
-    session_number: 3,
+    session_number: 4,
     block_number: 0,
     title: "Ready Check",
     description: "You're set up and ready to build — tick all four to log in for the day.",
@@ -747,7 +750,7 @@ const achievements = [
   // Block 1 — The Gap Game
   {
     slug: "s3-gap-page",
-    session_number: 3,
+    session_number: 4,
     block_number: 1,
     title: "Same Sentence, Different Page",
     description: "Everyone typed the same sentence — upload a screenshot of the page Cursor gave you.",
@@ -758,7 +761,7 @@ const achievements = [
   },
   {
     slug: "s3-spot-the-gaps",
-    session_number: 3,
+    session_number: 4,
     block_number: 1,
     title: "Spot the Gaps",
     description: "List 5 things Cursor decided on its own — font, colors, background, mood, spacing…",
@@ -771,7 +774,7 @@ const achievements = [
   // Block 2 — Vague vs. Decided
   {
     slug: "s3-guess-list",
-    session_number: 3,
+    session_number: 4,
     block_number: 2,
     title: "Guess-List",
     description: "List 6 things the lazy \"Make tic-tac-toe.\" prompt left for Cursor to guess.",
@@ -782,7 +785,7 @@ const achievements = [
   },
   {
     slug: "s3-decided-build",
-    session_number: 3,
+    session_number: 4,
     block_number: 2,
     title: "The Decided Build",
     description: "Screenshot your styled tic-tac-toe that matches the decided prompt you wrote.",
@@ -793,7 +796,7 @@ const achievements = [
   },
   {
     slug: "s3-goldilocks-sort",
-    session_number: 3,
+    session_number: 4,
     block_number: 2,
     title: "Goldilocks Sort",
     description: "For each prompt, decide: too vague, too much, or just right?",
@@ -814,7 +817,7 @@ const achievements = [
   // Block 3 — Nudging
   {
     slug: "s3-before-after",
-    session_number: 3,
+    session_number: 4,
     block_number: 3,
     title: "Before & After",
     description: "Upload two screenshots: your 'before' (the Block 1 page) and your 'after' (transformed with five nudges).",
@@ -825,7 +828,7 @@ const achievements = [
   },
   {
     slug: "s3-five-lanes",
-    session_number: 3,
+    session_number: 4,
     block_number: 3,
     title: "Five Lanes",
     description: "Used all five kinds of nudge — tick each one you steered with.",
@@ -836,7 +839,7 @@ const achievements = [
   },
   {
     slug: "s3-broke-it-fixed-it",
-    session_number: 3,
+    session_number: 4,
     block_number: 3,
     title: "Broke It, Fixed It",
     description: "Something broke and you fixed it — screenshot a repair prompt (a described symptom or a pasted error with \"fix this\").",
@@ -849,7 +852,7 @@ const achievements = [
   // Block 4 — Reference Prompting
   {
     slug: "s3-caught-it-wrong",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "Caught It Wrong",
     description: "Cursor confidently botched the reference — screenshot the wrong result you caught.",
@@ -860,7 +863,7 @@ const achievements = [
   },
   {
     slug: "s3-restyle",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "The Restyle",
     description: "Screenshot your page after restyling it with one named reference look.",
@@ -871,7 +874,7 @@ const achievements = [
   },
   {
     slug: "s3-reference-confirmed",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "Reference Confirmed",
     description: "Upload a screenshot of your reference-styled page, then record what the neighbor team guessed — an instructor confirms the match.",
@@ -886,7 +889,7 @@ const achievements = [
   },
   {
     slug: "s3-double-style",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "Double Style",
     description: "Stack two references on one page so it still reads clearly — screenshot it and name both references.",
@@ -903,7 +906,7 @@ const achievements = [
   // Block 5 — Build Your Trading Card
   {
     slug: "s3-card-canvas",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Card Canvas",
     description: "Decide on paper first — fill in all 8 fields of your Card Design Canvas before you prompt.",
@@ -926,7 +929,7 @@ const achievements = [
   },
   {
     slug: "s3-first-card",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "First Card",
     description: "Screenshot your trading card right after your first build prompt.",
@@ -938,7 +941,7 @@ const achievements = [
   // Upgrade Menu — five à-la-carte lanes, +3 each, instructor-approved (no cap).
   {
     slug: "s3-upgrade-stronger-style",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Upgrade: Stronger Style",
     description: "Sharpen the border, title font, and badge so the card reads like a real one.",
@@ -949,7 +952,7 @@ const achievements = [
   },
   {
     slug: "s3-upgrade-stat-drama",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Upgrade: Stat Drama",
     description: "Make the stats look like meters or bars that fill up, and highlight the highest one.",
@@ -960,7 +963,7 @@ const achievements = [
   },
   {
     slug: "s3-upgrade-layout",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Upgrade: Layout",
     description: "Tidy the layout — everything aligned, nothing cramped, easy to read at a glance.",
@@ -971,7 +974,7 @@ const achievements = [
   },
   {
     slug: "s3-upgrade-personality",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Upgrade: Personality",
     description: "Make the card feel less generic — a stronger title, a small catchphrase, a detail nobody else would have.",
@@ -982,7 +985,7 @@ const achievements = [
   },
   {
     slug: "s3-upgrade-polish",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Upgrade: Polish",
     description: "Make it feel finished — spacing, contrast, and one subtle premium detail.",
@@ -994,7 +997,7 @@ const achievements = [
 
   {
     slug: "s3-card-complete",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Card Complete",
     description: "Your card is finished and meets every requirement. An instructor checks it off.",
@@ -1019,7 +1022,7 @@ const achievements = [
   // Block 6 — Showcase & Wrap
   {
     slug: "s3-showed-card",
-    session_number: 3,
+    session_number: 4,
     block_number: 6,
     title: "We Showed Our Card",
     description: "Your team presented its card on the projector.",
@@ -1030,7 +1033,7 @@ const achievements = [
   },
   {
     slug: "s3-takeaway",
-    session_number: 3,
+    session_number: 4,
     block_number: 6,
     title: "One-Line Takeaway",
     description: "Finish the line: \"Today I learned that when steering Cursor, I should ___.\"",
@@ -1041,7 +1044,7 @@ const achievements = [
   },
   {
     slug: "s3-recap-check",
-    session_number: 3,
+    session_number: 4,
     block_number: 6,
     title: "Recap Check",
     description: "Quick myth-or-fact check on today's moves.",
@@ -1056,12 +1059,12 @@ const achievements = [
     is_secret: false,
   },
 
-  // ─── Session 4 — Plan Before You Build ───────────────────────────────────────
+  // ─── Session 5 — Plan Before You Build ───────────────────────────────────────
 
   // Block 0 — Kickoff
   {
     slug: "s4-ready-check",
-    session_number: 4,
+    session_number: 5,
     block_number: 0,
     title: "Ready Check",
     description: "You're set up and ready to build — tick all four to log in for the day.",
@@ -1081,7 +1084,7 @@ const achievements = [
   // Block 1 — One-Sentence Site
   {
     slug: "s4-the-wreck",
-    session_number: 4,
+    session_number: 5,
     block_number: 1,
     title: "The Wreck",
     description: "Screenshot your one-shot site — left completely untouched. Wrecks score; repaired wrecks don't.",
@@ -1092,7 +1095,7 @@ const achievements = [
   },
   {
     slug: "s4-wreck-hunt",
-    session_number: 4,
+    session_number: 5,
     block_number: 1,
     title: "Wreck Hunt",
     description: "Inspect the one-shot site by clicking and list 6 things that broke or drifted.",
@@ -1113,7 +1116,7 @@ const achievements = [
   },
   {
     slug: "s4-dead-link-found",
-    session_number: 4,
+    session_number: 5,
     block_number: 1,
     title: "Dead Link Found",
     description: "Screenshot a broken or missing nav link you found by actually clicking it.",
@@ -1126,7 +1129,7 @@ const achievements = [
   // Block 2 — Plan in Four Zoom Levels
   {
     slug: "s4-zoom-sheet",
-    session_number: 4,
+    session_number: 5,
     block_number: 2,
     title: "Zoom Sheet",
     description: "Complete all four zoom levels (Idea → Visitor → Pages → Details) for your real project.",
@@ -1156,7 +1159,7 @@ const achievements = [
   },
   {
     slug: "s4-zero-questions",
-    session_number: 4,
+    session_number: 5,
     block_number: 2,
     title: "Zero Questions",
     description: "A neighbor reads your Zoom Sheet cold and confirms they could build from it without asking anything.",
@@ -1175,7 +1178,7 @@ const achievements = [
   // Block 3 — Write the Brief
   {
     slug: "s4-brief-canvas",
-    session_number: 4,
+    session_number: 5,
     block_number: 3,
     title: "Brief Canvas",
     description: "Upload a photo of your completed Brief Canvas (all fields, page map, three Always + two Never rules).",
@@ -1190,7 +1193,7 @@ const achievements = [
   },
   {
     slug: "s4-identity-locked",
-    session_number: 4,
+    session_number: 5,
     block_number: 3,
     title: "Identity Locked",
     description: "Your organization's identity is fully decided — name, slogan, mascot, and colors.",
@@ -1206,7 +1209,7 @@ const achievements = [
   // Block 4 — Cursor Plan Mode
   {
     slug: "s4-plan-generated",
-    session_number: 4,
+    session_number: 5,
     block_number: 4,
     title: "Plan Generated",
     description: "Screenshot Cursor's plan from Plan Mode, generated from your brief — nothing built yet.",
@@ -1217,7 +1220,7 @@ const achievements = [
   },
   {
     slug: "s4-patch-the-gaps",
-    session_number: 4,
+    session_number: 5,
     block_number: 4,
     title: "Patch the Gaps",
     description: "List each clarifying question Cursor asked and how you answered it. If it asked none, write \"zero questions.\"",
@@ -1231,7 +1234,7 @@ const achievements = [
   },
   {
     slug: "s4-plan-inspection",
-    session_number: 4,
+    session_number: 5,
     block_number: 4,
     title: "Plan Inspection",
     description: "Complete the Plan Inspection Card — all eight checks ticked, any fix logged. The Debugger leads.",
@@ -1256,7 +1259,7 @@ const achievements = [
   },
   {
     slug: "s4-read-before-approve",
-    session_number: 4,
+    session_number: 5,
     block_number: 4,
     title: "Read Before Approve",
     description: "Screenshot the chat showing your approval message came after the inspection notes — never approve a plan you haven't read.",
@@ -1267,7 +1270,7 @@ const achievements = [
   },
   {
     slug: "s4-home-page-from-the-plan",
-    session_number: 4,
+    session_number: 5,
     block_number: 4,
     title: "Home Page From the Plan",
     description: "Screenshot the home page built from the approved plan — identity visible (name, slogan, mascot) and a working nav with all three page links.",
@@ -1280,7 +1283,7 @@ const achievements = [
   // Block 5 — New Chat Amnesia
   {
     slug: "s4-caught-the-drift",
-    session_number: 4,
+    session_number: 5,
     block_number: 5,
     title: "Caught the Drift",
     description: "Screenshot the home page and page two side by side, showing the mismatch after the fresh-chat wipe.",
@@ -1291,7 +1294,7 @@ const achievements = [
   },
   {
     slug: "s4-cursor-forgot",
-    session_number: 4,
+    session_number: 5,
     block_number: 5,
     title: "Cursor Forgot ___",
     description: "In one sentence, name what the fresh chat forgot.",
@@ -1305,7 +1308,7 @@ const achievements = [
   },
   {
     slug: "s4-agents-md-exists",
-    session_number: 4,
+    session_number: 5,
     block_number: 5,
     title: "agents.md Exists",
     description: "Screenshot the contents of your agents.md — all required sections present, created and edited by prompts only.",
@@ -1316,7 +1319,7 @@ const achievements = [
   },
   {
     slug: "s4-snap-back-confirmed",
-    session_number: 4,
+    session_number: 5,
     block_number: 5,
     title: "Snap-Back Confirmed",
     description: "After \"make every page match agents.md\", a rival team clicks through and confirms the drifted page now matches.",
@@ -1333,7 +1336,7 @@ const achievements = [
   },
   {
     slug: "s4-page-three-confirmed",
-    session_number: 4,
+    session_number: 5,
     block_number: 5,
     title: "Page Three Confirmed",
     description: "A rival team confirms page three (built post-wipe from agents.md) matches the site map and the rest of the site, with nav updated everywhere.",
@@ -1350,7 +1353,7 @@ const achievements = [
   },
   {
     slug: "s4-two-wipes",
-    session_number: 4,
+    session_number: 5,
     block_number: 5,
     title: "Two Wipes",
     description: "In one sentence, compare Wipe #1 (the drift) with Wipe #2 (the snap-back). What changed?",
@@ -1366,7 +1369,7 @@ const achievements = [
   // Block 6 — Remix Round
   {
     slug: "s4-file-first",
-    session_number: 4,
+    session_number: 5,
     block_number: 6,
     title: "File First",
     description: "Screenshot the chat showing you updated agents.md before sending the remix prompt to the pages.",
@@ -1377,7 +1380,7 @@ const achievements = [
   },
   {
     slug: "s4-remix-everywhere",
-    session_number: 4,
+    session_number: 5,
     block_number: 6,
     title: "Remix Everywhere",
     description: "A rival team runs the Site-Check Card and confirms the remix landed on every page and nothing else broke.",
@@ -1394,7 +1397,7 @@ const achievements = [
   },
   {
     slug: "s4-broke-it-fixed-it",
-    session_number: 4,
+    session_number: 5,
     block_number: 6,
     title: "Broke It, Fixed It",
     description: "Screenshot a repair prompt you used — a described symptom or an error pasted with \"fix this.\" (Optional)",
@@ -1407,7 +1410,7 @@ const achievements = [
   // Block 7 — Showcase & Wrap
   {
     slug: "s4-site-complete",
-    session_number: 4,
+    session_number: 5,
     block_number: 7,
     title: "Site Complete",
     description: "Tick every box on the completion checklist — an instructor confirms before XP awards.",
@@ -1430,7 +1433,7 @@ const achievements = [
   },
   {
     slug: "s4-we-toured-our-site",
-    session_number: 4,
+    session_number: 5,
     block_number: 7,
     title: "We Toured Our Site",
     description: "Your team gave the fifteen-second nav tour on the projector.",
@@ -1444,7 +1447,7 @@ const achievements = [
   },
   {
     slug: "s4-one-line-takeaway",
-    session_number: 4,
+    session_number: 5,
     block_number: 7,
     title: "One-Line Takeaway",
     description: "Finish the line: \"Today I learned that before I build, I should ___.\"",
@@ -1458,7 +1461,7 @@ const achievements = [
   },
   {
     slug: "s4-recap-check",
-    session_number: 4,
+    session_number: 5,
     block_number: 7,
     title: "Recap Check",
     description: "Quick myth-or-fact check on today's big ideas. +1 per correct answer.",
@@ -1483,12 +1486,12 @@ const achievements = [
     is_secret: false,
   },
 
-  // ─── Session 5 — Think in Pieces, Build in Pieces ────────────────────────────
+  // ─── Session 6 — Think in Pieces, Build in Pieces ────────────────────────────
 
   // Block 0 — Setup & Ready Check
   {
     slug: "s5-ready-check",
-    session_number: 5,
+    session_number: 6,
     block_number: 0,
     title: "Ready Check",
     description: "You're set up and ready to build — tick all five to log in for the day.",
@@ -1509,7 +1512,7 @@ const achievements = [
   // Block 1 — The One-Shot Game
   {
     slug: "s5-one-shot-untouched",
-    session_number: 5,
+    session_number: 6,
     block_number: 1,
     title: "One-Shot, Untouched",
     description: "Run the exact Mario-style prompt once and don't touch the result — screenshot it as-is.",
@@ -1520,7 +1523,7 @@ const achievements = [
   },
   {
     slug: "s5-bug-hunt",
-    session_number: 5,
+    session_number: 6,
     block_number: 1,
     title: "Bug Hunt",
     description: "Playtest the one-shot game hard and list at least six symptoms in plain English.",
@@ -1541,7 +1544,7 @@ const achievements = [
   },
   {
     slug: "s5-whack-a-mole",
-    session_number: 5,
+    session_number: 6,
     block_number: 1,
     title: "Whack-a-Mole",
     description: "Send one repair prompt, re-playtest everything, and upload before-and-after screenshots showing what else changed.",
@@ -1552,7 +1555,7 @@ const achievements = [
   },
   {
     slug: "s5-weight-limit",
-    session_number: 5,
+    session_number: 6,
     block_number: 1,
     title: "Weight Limit",
     description: "Why did the one-shot game break — even though the prompt was good?",
@@ -1578,7 +1581,7 @@ const achievements = [
   // Block 2 — Rebuild the Game Piece by Piece
   {
     slug: "s5-game-piece-world",
-    session_number: 5,
+    session_number: 6,
     block_number: 2,
     title: "Game Piece: World",
     description: "Build the game world — sky background and solid ground strip. Screenshot it working.",
@@ -1589,7 +1592,7 @@ const achievements = [
   },
   {
     slug: "s5-game-piece-hero",
-    session_number: 5,
+    session_number: 6,
     block_number: 2,
     title: "Game Piece: Hero",
     description: "Add the hero — moves left and right, can't leave the screen. Screenshot it working.",
@@ -1600,7 +1603,7 @@ const achievements = [
   },
   {
     slug: "s5-game-piece-gravity-jump",
-    session_number: 5,
+    session_number: 6,
     block_number: 2,
     title: "Game Piece: Gravity + Jump",
     description: "Add gravity and jumping — space bar jumps, hero falls back naturally, one jump at a time. Screenshot it working.",
@@ -1611,7 +1614,7 @@ const achievements = [
   },
   {
     slug: "s5-game-piece-platforms",
-    session_number: 5,
+    session_number: 6,
     block_number: 2,
     title: "Game Piece: Platforms",
     description: "Add three floating platforms — hero lands on top and falls off edges. Screenshot it working.",
@@ -1622,7 +1625,7 @@ const achievements = [
   },
   {
     slug: "s5-game-piece-coins-score",
-    session_number: 5,
+    session_number: 6,
     block_number: 2,
     title: "Game Piece: Coins + Score",
     description: "Add five gold coins and a score counter — touching a coin collects it and the score goes up. Screenshot it working.",
@@ -1633,7 +1636,7 @@ const achievements = [
   },
   {
     slug: "s5-game-piece-flag",
-    session_number: 5,
+    session_number: 6,
     block_number: 2,
     title: "Game Piece: Flag",
     description: "Add the flag — reaching it shows YOU WIN and a play-again button. Screenshot it working.",
@@ -1644,7 +1647,7 @@ const achievements = [
   },
   {
     slug: "s5-one-shot-vs-pieces",
-    session_number: 5,
+    session_number: 6,
     block_number: 2,
     title: "One-Shot vs. Pieces",
     description: "Submit one sentence: \"The difference was ___.\"",
@@ -1660,7 +1663,7 @@ const achievements = [
   // Block 3 — Wireframing
   {
     slug: "s5-spot-the-pieces",
-    session_number: 5,
+    session_number: 6,
     block_number: 3,
     title: "Spot the Pieces",
     description: "List at least eight components you can see across the two projected screens.",
@@ -1683,7 +1686,7 @@ const achievements = [
   },
   {
     slug: "s5-wireframe-done",
-    session_number: 5,
+    session_number: 6,
     block_number: 3,
     title: "Wireframe Done",
     description: "All six dashboard pieces boxed, labeled, and numbered with a build order — upload a photo of the paper.",
@@ -1694,7 +1697,7 @@ const achievements = [
   },
   {
     slug: "s5-safe-stats",
-    session_number: 5,
+    session_number: 6,
     block_number: 3,
     title: "Safe Stats",
     description: "Confirm your dashboard uses invented or harmless numbers only — no real schedules, locations, or school details.",
@@ -1709,7 +1712,7 @@ const achievements = [
   },
   {
     slug: "s5-rival-sign-off",
-    session_number: 5,
+    session_number: 6,
     block_number: 3,
     title: "Rival Sign-Off",
     description: "A rival reads your wireframe cold and confirms they could place every piece from the sketch alone.",
@@ -1725,7 +1728,7 @@ const achievements = [
   // Block 4 — Naming the Tool
   {
     slug: "s5-name-a-tool",
-    session_number: 5,
+    session_number: 6,
     block_number: 4,
     title: "Name a Tool",
     description: "Run the same piece twice — plain vs. with a named tool (a font or chart) — and upload before-and-after screenshots.",
@@ -1736,7 +1739,7 @@ const achievements = [
   },
   {
     slug: "s5-name-drop-dont-read",
-    session_number: 5,
+    session_number: 6,
     block_number: 4,
     title: "Name-Drop, Don't Read",
     description: "Do you need to understand what Chart.js is in order to use it in a prompt?",
@@ -1761,7 +1764,7 @@ const achievements = [
   // Block 5 — Build the Dashboard, Part 1
   {
     slug: "s5-rulebook-ritual",
-    session_number: 5,
+    session_number: 6,
     block_number: 5,
     title: "Rulebook Ritual",
     description: "Create agents.md for the dashboard, including a numbered \"The pieces\" section from your wireframe — screenshot the file.",
@@ -1772,7 +1775,7 @@ const achievements = [
   },
   {
     slug: "s5-dashboard-piece-1",
-    session_number: 5,
+    session_number: 6,
     block_number: 5,
     title: "Dashboard Piece 1",
     description: "Build piece 1 from your wireframe in one prompt, check it matches, and screenshot it.",
@@ -1783,7 +1786,7 @@ const achievements = [
   },
   {
     slug: "s5-dashboard-piece-2",
-    session_number: 5,
+    session_number: 6,
     block_number: 5,
     title: "Dashboard Piece 2",
     description: "Build piece 2 from your wireframe in one prompt, check it matches, and screenshot it.",
@@ -1794,7 +1797,7 @@ const achievements = [
   },
   {
     slug: "s5-dashboard-piece-3",
-    session_number: 5,
+    session_number: 6,
     block_number: 5,
     title: "Dashboard Piece 3",
     description: "Build piece 3 from your wireframe in one prompt, check it matches, and screenshot it.",
@@ -1805,7 +1808,7 @@ const achievements = [
   },
   {
     slug: "s5-surgical-phrasing",
-    session_number: 5,
+    session_number: 6,
     block_number: 5,
     title: "Surgical Phrasing",
     description: "Screenshot your chat showing piece-sized prompts that use \"only\" and \"do not touch anything else.\"",
@@ -1816,7 +1819,7 @@ const achievements = [
   },
   {
     slug: "s5-wireframe-in-the-loop",
-    session_number: 5,
+    session_number: 6,
     block_number: 5,
     title: "Wireframe in the Loop",
     description: "Drop a photo of your wireframe into the Cursor chat as a build reference — screenshot it in the chat.",
@@ -1827,7 +1830,7 @@ const achievements = [
   },
   {
     slug: "s5-halftime-checkpoint",
-    session_number: 5,
+    session_number: 6,
     block_number: 5,
     title: "Halftime Checkpoint",
     description: "Screenshot the half-built dashboard next to the wireframe.",
@@ -1840,7 +1843,7 @@ const achievements = [
   // Block 6 — Surgical Changes, Then Finish
   {
     slug: "s5-surgical-strike",
-    session_number: 5,
+    session_number: 6,
     block_number: 6,
     title: "Surgical Strike",
     description: "Draw a Strike Card, transform one piece with \"change only / don't touch anything else,\" and upload before-and-after screenshots of the whole dashboard.",
@@ -1851,7 +1854,7 @@ const achievements = [
   },
   {
     slug: "s5-nothing-else-moved",
-    session_number: 5,
+    session_number: 6,
     block_number: 6,
     title: "Nothing Else Moved",
     description: "A rival walks every non-target piece against your before screenshot and confirms they're unchanged.",
@@ -1865,7 +1868,7 @@ const achievements = [
   },
   {
     slug: "s5-dashboard-piece-4",
-    session_number: 5,
+    session_number: 6,
     block_number: 6,
     title: "Dashboard Piece 4",
     description: "Build piece 4 from your wireframe in one prompt, check it matches, and screenshot it.",
@@ -1876,7 +1879,7 @@ const achievements = [
   },
   {
     slug: "s5-dashboard-piece-5",
-    session_number: 5,
+    session_number: 6,
     block_number: 6,
     title: "Dashboard Piece 5",
     description: "Build piece 5 from your wireframe in one prompt, check it matches, and screenshot it.",
@@ -1887,7 +1890,7 @@ const achievements = [
   },
   {
     slug: "s5-dashboard-piece-6",
-    session_number: 5,
+    session_number: 6,
     block_number: 6,
     title: "Dashboard Piece 6",
     description: "Build piece 6 from your wireframe in one prompt, check it matches, and screenshot it.",
@@ -1898,7 +1901,7 @@ const achievements = [
   },
   {
     slug: "s5-named-tool-live",
-    session_number: 5,
+    session_number: 6,
     block_number: 6,
     title: "Named Tool, Live",
     description: "A real animated chart (Chart.js or equivalent named tool) is live on the dashboard — screenshot it.",
@@ -1909,7 +1912,7 @@ const achievements = [
   },
   {
     slug: "s5-working-button",
-    session_number: 5,
+    session_number: 6,
     block_number: 6,
     title: "Working Button",
     description: "Upload before-and-after screenshots showing your button visibly changing something on the page.",
@@ -1920,7 +1923,7 @@ const achievements = [
   },
   {
     slug: "s5-paper-to-pixels",
-    session_number: 5,
+    session_number: 6,
     block_number: 6,
     title: "Paper to Pixels",
     description: "A rival holds your wireframe next to the screen and confirms every numbered box is where the paper says.",
@@ -1936,7 +1939,7 @@ const achievements = [
   // Block 8 — All Session
   {
     slug: "s5-neighbor-assist",
-    session_number: 5,
+    session_number: 6,
     block_number: 8,
     title: "Neighbor Assist",
     description: "Help another team get unstuck — enter their team name to confirm it happened.",
@@ -1950,7 +1953,7 @@ const achievements = [
   },
   {
     slug: "s5-bonus-piece",
-    session_number: 5,
+    session_number: 6,
     block_number: 8,
     title: "Bonus Piece",
     description: "Fast finisher? Wireframe an extra component first, then build it in one prompt — screenshot the result.",
@@ -1963,7 +1966,7 @@ const achievements = [
   // Block 7 — Showcase & Wrap
   {
     slug: "s5-ship-it",
-    session_number: 5,
+    session_number: 6,
     block_number: 7,
     title: "Ship It",
     description: "Tick every box on the finish-line checklist — an instructor confirms before XP awards.",
@@ -1986,7 +1989,7 @@ const achievements = [
   },
   {
     slug: "s5-final-submission",
-    session_number: 5,
+    session_number: 6,
     block_number: 7,
     title: "Final Submission",
     description: "Upload your final dashboard screenshot and fill the two anchor fields.",
@@ -2004,7 +2007,7 @@ const achievements = [
   },
   {
     slug: "s5-we-showed-it",
-    session_number: 5,
+    session_number: 6,
     block_number: 7,
     title: "We Showed It",
     description: "Your team presented in the showcase.",
@@ -2018,7 +2021,7 @@ const achievements = [
   },
   {
     slug: "s5-one-thing-i-learned",
-    session_number: 5,
+    session_number: 6,
     block_number: 7,
     title: "One Thing I Learned",
     description: "Finish the line: \"Big builds are really ___.\"",
@@ -2031,12 +2034,12 @@ const achievements = [
     is_secret: false,
   },
 
-  // ─── Session 6 — Everything Breaks (and How Pros Fix It Fast) ────────────────
+  // ─── Session 7 — Everything Breaks (and How Pros Fix It Fast) ────────────────
 
   // Block 0 — Setup & Team Check-In
   {
     slug: "s6-ready-check",
-    session_number: 6,
+    session_number: 7,
     block_number: 0,
     title: "Ready Check",
     description: "You're set up and ready to debug — tick all four to log in for the day.",
@@ -2056,7 +2059,7 @@ const achievements = [
   // Block 1 — Everything Breaks: The Debugging Loop
   {
     slug: "s6-bug-report-check",
-    session_number: 6,
+    session_number: 7,
     block_number: 1,
     title: "Bug Report Check",
     description: "Two quick myth-or-fact questions about what makes a useful bug report.",
@@ -2082,7 +2085,7 @@ const achievements = [
   },
   {
     slug: "s6-first-fix",
-    session_number: 6,
+    session_number: 7,
     block_number: 1,
     title: "First Fix",
     description: "Build the tiny countdown timer, find one rough edge, and fix it by naming the symptom — upload before-and-after screenshots.",
@@ -2093,7 +2096,7 @@ const achievements = [
   },
   {
     slug: "s6-open-the-console",
-    session_number: 6,
+    session_number: 7,
     block_number: 1,
     title: "Open the Console",
     description: "Open the browser console on your page and screenshot it — this is where error messages live.",
@@ -2104,7 +2107,7 @@ const achievements = [
   },
   {
     slug: "s6-safe-paste",
-    session_number: 6,
+    session_number: 7,
     block_number: 1,
     title: "Safe Paste",
     description: "Confirm you'll never send personal info, passwords, or API keys to the AI when ferrying an error.",
@@ -2121,7 +2124,7 @@ const achievements = [
   // Block 2 — The Repair Kit: Search · Run · Roll Back
   {
     slug: "s6-ask-it-to-look-it-up",
-    session_number: 6,
+    session_number: 7,
     block_number: 2,
     title: "Ask It to Look It Up",
     description: "Ask the AI to search for something (a sound, an effect, a tool) and screenshot the result.",
@@ -2132,7 +2135,7 @@ const achievements = [
   },
   {
     slug: "s6-safety-net",
-    session_number: 6,
+    session_number: 7,
     block_number: 2,
     title: "Safety Net",
     description: "Make any change, then roll it back to the previous version — screenshot the restored state.",
@@ -2143,7 +2146,7 @@ const achievements = [
   },
   {
     slug: "s6-repair-kit-check",
-    session_number: 6,
+    session_number: 7,
     block_number: 2,
     title: "Repair Kit Check",
     description: "Your fix made things worse. What's the move?",
@@ -2169,7 +2172,7 @@ const achievements = [
   // Block 3 — Whack-a-Mole Lab: Build the Base
   {
     slug: "s6-whack-playfield",
-    session_number: 6,
+    session_number: 7,
     block_number: 3,
     title: "Whack-a-Mole: Playfield",
     description: "Build the game screen — a 3×3 grid of holes on a themed background, a title, and a score starting at 0. Screenshot it working.",
@@ -2180,7 +2183,7 @@ const achievements = [
   },
   {
     slug: "s6-whack-moles",
-    session_number: 6,
+    session_number: 7,
     block_number: 3,
     title: "Whack-a-Mole: Moles Pop Up",
     description: "Make a mole pop up in a random hole every second and disappear — one at a time. Screenshot it working.",
@@ -2191,7 +2194,7 @@ const achievements = [
   },
   {
     slug: "s6-whack-click-score",
-    session_number: 6,
+    session_number: 7,
     block_number: 3,
     title: "Whack-a-Mole: Click to Score",
     description: "Clicking a mole makes it disappear and adds one to the score — clicking an empty hole does nothing. Screenshot it working.",
@@ -2202,7 +2205,7 @@ const achievements = [
   },
   {
     slug: "s6-whack-timer",
-    session_number: 6,
+    session_number: 7,
     block_number: 3,
     title: "Whack-a-Mole: Timer",
     description: "Add a 30-second countdown — when it reaches zero, the game stops and shows the final score. Screenshot it working.",
@@ -2213,7 +2216,7 @@ const achievements = [
   },
   {
     slug: "s6-whack-game-over",
-    session_number: 6,
+    session_number: 7,
     block_number: 3,
     title: "Whack-a-Mole: Game Over",
     description: "When time runs out, show a GAME OVER screen with the final score and a Play Again button that restarts. Screenshot it working.",
@@ -2224,7 +2227,7 @@ const achievements = [
   },
   {
     slug: "s6-squash-one",
-    session_number: 6,
+    session_number: 7,
     block_number: 3,
     title: "Squash One",
     description: "Find one real bug in the base game, fix it by naming the symptom, and upload before-and-after screenshots.",
@@ -2237,7 +2240,7 @@ const achievements = [
   // Block 4 — Break It On Purpose: Add Features, Fix the Fallout
   {
     slug: "s6-power-speed-up",
-    session_number: 6,
+    session_number: 7,
     block_number: 4,
     title: "Power-Up: Speed Up",
     description: "Make the moles pop up faster every 10 seconds — fix whatever breaks, and upload before-and-after screenshots.",
@@ -2248,7 +2251,7 @@ const achievements = [
   },
   {
     slug: "s6-power-sound",
-    session_number: 6,
+    session_number: 7,
     block_number: 4,
     title: "Power-Up: Sound on Whack",
     description: "Play a short pop sound when a mole is whacked — fix whatever breaks, and upload before-and-after screenshots.",
@@ -2259,7 +2262,7 @@ const achievements = [
   },
   {
     slug: "s6-power-golden-mole",
-    session_number: 6,
+    session_number: 7,
     block_number: 4,
     title: "Power-Up: Golden Mole",
     description: "Add a rare golden mole worth 5 points instead of 1 — fix whatever breaks, and upload before-and-after screenshots.",
@@ -2270,7 +2273,7 @@ const achievements = [
   },
   {
     slug: "s6-power-combo",
-    session_number: 6,
+    session_number: 7,
     block_number: 4,
     title: "Power-Up: Combo / Streak",
     description: "Add a combo or streak bonus for hitting multiple moles in a row — fix whatever breaks, and upload before-and-after screenshots.",
@@ -2281,7 +2284,7 @@ const achievements = [
   },
   {
     slug: "s6-power-difficulty",
-    session_number: 6,
+    session_number: 7,
     block_number: 4,
     title: "Power-Up: Difficulty Buttons",
     description: "Add Easy / Medium / Hard buttons that change how fast moles appear — fix whatever breaks, and upload before-and-after screenshots.",
@@ -2292,7 +2295,7 @@ const achievements = [
   },
   {
     slug: "s6-power-two-at-once",
-    session_number: 6,
+    session_number: 7,
     block_number: 4,
     title: "Power-Up: Two at Once",
     description: "Make two moles appear at the same time — fix whatever breaks, and upload before-and-after screenshots.",
@@ -2303,7 +2306,7 @@ const achievements = [
   },
   {
     slug: "s6-power-splat",
-    session_number: 6,
+    session_number: 7,
     block_number: 4,
     title: "Power-Up: Splat Animation",
     description: "Add a splat or hit animation when a mole is whacked — fix whatever breaks, and upload before-and-after screenshots.",
@@ -2314,7 +2317,7 @@ const achievements = [
   },
   {
     slug: "s6-caught-the-ai",
-    session_number: 6,
+    session_number: 7,
     block_number: 4,
     title: "Caught the AI",
     description: "Find a change the AI made that you didn't ask for, name it as a symptom, and get it put back — upload before-and-after screenshots.",
@@ -2325,7 +2328,7 @@ const achievements = [
   },
   {
     slug: "s6-rolled-back",
-    session_number: 6,
+    session_number: 7,
     block_number: 4,
     title: "Rolled Back",
     description: "A fix made things worse, so you rolled back and tried a different description — screenshot the recovered state.",
@@ -2338,7 +2341,7 @@ const achievements = [
   // Block 5 — Peer QA: Playtest & Bug-Report
   {
     slug: "s6-qa-pass",
-    session_number: 6,
+    session_number: 7,
     block_number: 5,
     title: "QA Pass",
     description: "Playtest a rival team's game and file at least three plain-English symptoms — what you did, what happened.",
@@ -2356,7 +2359,7 @@ const achievements = [
   },
   {
     slug: "s6-got-qad",
-    session_number: 6,
+    session_number: 7,
     block_number: 5,
     title: "Got QA'd",
     description: "Another team playtested your game — enter their team name as proof.",
@@ -2370,7 +2373,7 @@ const achievements = [
   },
   {
     slug: "s6-fixed-from-the-field",
-    session_number: 6,
+    session_number: 7,
     block_number: 5,
     title: "Fixed From the Field",
     description: "Fix at least one bug from your peer QA report using the debugging loop — upload before-and-after screenshots.",
@@ -2383,7 +2386,7 @@ const achievements = [
   // Block 6 — Showcase & Wrap
   {
     slug: "s6-ship-it",
-    session_number: 6,
+    session_number: 7,
     block_number: 6,
     title: "Ship It",
     description: "Tick every box on the finish-line checklist — an instructor confirms before XP awards.",
@@ -2406,7 +2409,7 @@ const achievements = [
   },
   {
     slug: "s6-final-submission",
-    session_number: 6,
+    session_number: 7,
     block_number: 6,
     title: "Final Submission",
     description: "Upload your final game screenshot and tell your best bug-and-fix story.",
@@ -2425,7 +2428,7 @@ const achievements = [
   },
   {
     slug: "s6-we-showed-it",
-    session_number: 6,
+    session_number: 7,
     block_number: 6,
     title: "We Showed It",
     description: "Your team presented and others played your game.",
@@ -2439,7 +2442,7 @@ const achievements = [
   },
   {
     slug: "s6-one-thing-i-learned",
-    session_number: 6,
+    session_number: 7,
     block_number: 6,
     title: "One Thing I Learned",
     description: "Finish the line: \"When something breaks, I should ___.\"",
@@ -2455,7 +2458,7 @@ const achievements = [
   // Block 8 — All Session
   {
     slug: "s6-neighbor-assist",
-    session_number: 6,
+    session_number: 7,
     block_number: 8,
     title: "Neighbor Assist",
     description: "Help another team fix a bug — enter their team name to confirm it happened.",
@@ -2469,7 +2472,7 @@ const achievements = [
   },
   {
     slug: "s6-bonus-feature",
-    session_number: 6,
+    session_number: 7,
     block_number: 8,
     title: "Bonus Feature",
     description: "Fast finisher? Add an extra feature beyond the menu and fix whatever it breaks — upload before-and-after screenshots.",
@@ -2479,12 +2482,12 @@ const achievements = [
     is_secret: false,
   },
 
-  // ─── Session 7 — Teach Cursor How You Work ───────────────────────────────────
+  // ─── Session 8 — Teach Cursor How You Work ───────────────────────────────────
 
   // Block 0 — Setup & Team Check-In
   {
     slug: "s7-ready-check",
-    session_number: 7,
+    session_number: 8,
     block_number: 0,
     title: "Ready Check",
     description: "You're set up and ready to build your stack — tick all four to log in for the day.",
@@ -2504,7 +2507,7 @@ const achievements = [
   // Block 1 — Stop Repeating Yourself: The Three Tools
   {
     slug: "s7-when-does-it-fire",
-    session_number: 7,
+    session_number: 8,
     block_number: 1,
     title: "When Does It Fire?",
     description: "Three quick questions about when each tool fires — agents.md, rules, and skills.",
@@ -2536,7 +2539,7 @@ const achievements = [
   },
   {
     slug: "s7-feel-the-repeat",
-    session_number: 7,
+    session_number: 8,
     block_number: 1,
     title: "Feel the Repeat",
     description: "Build two mini-pages, typing the same style preference into both prompts — upload a screenshot of each.",
@@ -2549,7 +2552,7 @@ const achievements = [
   // Block 2 — Rules: Your Always-On Style
   {
     slug: "s7-set-a-rule",
-    session_number: 7,
+    session_number: 8,
     block_number: 2,
     title: "Set a Rule",
     description: "Adapt the template into a rule that captures a style you always want — screenshot the saved rule.",
@@ -2560,7 +2563,7 @@ const achievements = [
   },
   {
     slug: "s7-safety-rule",
-    session_number: 7,
+    session_number: 8,
     block_number: 2,
     title: "Safety Rule",
     description: "Add a standing \"never include real personal information\" rule so it's on in every project.",
@@ -2575,7 +2578,7 @@ const achievements = [
   },
   {
     slug: "s7-it-fired-by-itself",
-    session_number: 7,
+    session_number: 8,
     block_number: 2,
     title: "It Fired By Itself",
     description: "Build a brand-new thing without typing your style preference — screenshot it obeying the rule anyway.",
@@ -2588,7 +2591,7 @@ const achievements = [
   // Block 3 — Skills: Recipes You Summon
   {
     slug: "s7-build-a-skill",
-    session_number: 7,
+    session_number: 8,
     block_number: 3,
     title: "Build a Skill",
     description: "Adapt the trading-card recipe template into a skill — screenshot the saved skill file.",
@@ -2599,7 +2602,7 @@ const achievements = [
   },
   {
     slug: "s7-summon-it",
-    session_number: 7,
+    session_number: 8,
     block_number: 3,
     title: "Summon It",
     description: "Summon your card skill for any single subject and screenshot the result.",
@@ -2610,7 +2613,7 @@ const achievements = [
   },
   {
     slug: "s7-rule-or-skill",
-    session_number: 7,
+    session_number: 8,
     block_number: 3,
     title: "Rule or Skill?",
     description: "Always on automatically, or only when you call it by name?",
@@ -2632,7 +2635,7 @@ const achievements = [
   // Block 4 — Build the Card Set
   {
     slug: "s7-card-1",
-    session_number: 7,
+    session_number: 8,
     block_number: 4,
     title: "Card 1",
     description: "Summon your card skill for subject #1 — screenshot the finished card.",
@@ -2643,7 +2646,7 @@ const achievements = [
   },
   {
     slug: "s7-card-2",
-    session_number: 7,
+    session_number: 8,
     block_number: 4,
     title: "Card 2",
     description: "Summon your card skill for subject #2 — screenshot the finished card.",
@@ -2654,7 +2657,7 @@ const achievements = [
   },
   {
     slug: "s7-card-3",
-    session_number: 7,
+    session_number: 8,
     block_number: 4,
     title: "Card 3",
     description: "Summon your card skill for subject #3 — screenshot the finished card.",
@@ -2665,7 +2668,7 @@ const achievements = [
   },
   {
     slug: "s7-consistency-check",
-    session_number: 7,
+    session_number: 8,
     block_number: 4,
     title: "Consistency Check",
     description: "All three cards share a look you didn't re-describe each time — upload the full set in one screenshot.",
@@ -2676,7 +2679,7 @@ const achievements = [
   },
   {
     slug: "s7-upgrade-the-recipe",
-    session_number: 7,
+    session_number: 8,
     block_number: 4,
     title: "Upgrade the Recipe",
     description: "Improve your skill once (add a stat, a rarity gem, a foil effect), then summon it to show the upgrade — screenshot the result.",
@@ -2689,7 +2692,7 @@ const achievements = [
   // Block 5 — Share-Out & Peer Skill Swap
   {
     slug: "s7-show-the-set",
-    session_number: 7,
+    session_number: 8,
     block_number: 5,
     title: "Show the Set",
     description: "Your team showed its card set to the room.",
@@ -2703,7 +2706,7 @@ const achievements = [
   },
   {
     slug: "s7-borrow-a-skill",
-    session_number: 7,
+    session_number: 8,
     block_number: 5,
     title: "Borrow a Skill",
     description: "Get another team's card skill, summon it for your own subject, and screenshot the result.",
@@ -2714,7 +2717,7 @@ const achievements = [
   },
   {
     slug: "s7-lent-a-skill",
-    session_number: 7,
+    session_number: 8,
     block_number: 5,
     title: "Lent a Skill",
     description: "Another team borrowed your card skill — enter their team name as proof.",
@@ -2730,7 +2733,7 @@ const achievements = [
   // Block 6 — Final Project Kickoff & Wrap
   {
     slug: "s7-ship-it",
-    session_number: 7,
+    session_number: 8,
     block_number: 6,
     title: "Ship It",
     description: "Tick every box on the finish-line checklist — an instructor confirms before XP awards.",
@@ -2751,7 +2754,7 @@ const achievements = [
   },
   {
     slug: "s7-first-idea-down",
-    session_number: 7,
+    session_number: 8,
     block_number: 6,
     title: "First Idea Down",
     description: "Jot a one-sentence final-project idea for each team member — small, one-screen, one thing it does.",
@@ -2769,7 +2772,7 @@ const achievements = [
   },
   {
     slug: "s7-one-thing-i-learned",
-    session_number: 7,
+    session_number: 8,
     block_number: 6,
     title: "One Thing I Learned",
     description: "Finish the line: \"When I want Cursor to do something my way every time, I should ___.\"",
@@ -2785,7 +2788,7 @@ const achievements = [
   // Block 8 — All Session
   {
     slug: "s7-neighbor-assist",
-    session_number: 7,
+    session_number: 8,
     block_number: 8,
     title: "Neighbor Assist",
     description: "Help another team — enter their team name to confirm it happened.",
@@ -2799,7 +2802,7 @@ const achievements = [
   },
   {
     slug: "s7-bonus-skill",
-    session_number: 7,
+    session_number: 8,
     block_number: 8,
     title: "Bonus Skill",
     description: "Fast finisher? Build a second skill for something else (a quiz, a stat bar, a banner) and summon it — screenshot the result.",
@@ -2809,12 +2812,23 @@ const achievements = [
     is_secret: false,
   },
 
-  // ─── Session 8 — Taking It Live ──────────────────────────────────────────────
+  // ─── "Taking It Live" — now session_number 2 after the curriculum reorder ───
+  // Slugs keep their original "s8-" prefix (same rows, just renumbered/trimmed
+  // to match the final slide deck, which is now the source of truth for this
+  // session). 8 achievements with no deck counterpart were removed (0
+  // submissions existed against any of them) — the whole final-project-scoping
+  // set (What Counts as Done, Everyone Pitched, Scoped & Locked, Right Size,
+  // Launch Day Done, Build Plan, Neighbor Assist) isn't in this deck; it likely
+  // belongs to a later session once we review that deck. Read a URL was also
+  // dropped (no deck counterpart). Accounts Ready is new (the deck explicitly
+  // flagged it "SUGGESTED — NOT YET IN VIBE-XP"). Blocks realigned to the
+  // deck's structure (0-7): it added a new Block 3 (account creation) and
+  // moved the hands-on save-points work to a new Block 4.
 
-  // Block 0 — Setup & the Shift to Build Pods
+  // Block 0 — Setup & Welcome Back
   {
     slug: "s8-ready-check",
-    session_number: 8,
+    session_number: 2,
     block_number: 0,
     title: "Ready Check",
     description: "You're set up and ready to go live — tick all three to log in for the day.",
@@ -2833,7 +2847,7 @@ const achievements = [
   // Block 1 — How the Internet Actually Works
   {
     slug: "s8-internet-quiz",
-    session_number: 8,
+    session_number: 2,
     block_number: 1,
     title: "Internet Quiz",
     description: "Three myth-or-fact questions about how the web actually carries your work.",
@@ -2863,30 +2877,11 @@ const achievements = [
     },
     is_secret: false,
   },
-  {
-    slug: "s8-read-a-url",
-    session_number: 8,
-    block_number: 1,
-    title: "Read a URL",
-    description: "Break two real web addresses into their domain and their page path.",
-    xp: 3,
-    proof_type: "instructor_flag",
-    proof_config: {
-      form_type: "fields",
-      fields: [
-        "URL #1 — the full address you chose",
-        "URL #1 — what is the domain? (the building)",
-        "URL #2 — the full address you chose",
-        "URL #2 — what is the domain? (the building)",
-      ],
-    },
-    is_secret: false,
-  },
 
-  // Block 2 — Never Lose Your Work: Version Control & Git
+  // Block 2 — Git, GitHub & Deploying: The Big Picture
   {
     slug: "s8-save-point-check",
-    session_number: 8,
+    session_number: 2,
     block_number: 2,
     title: "Save-Point Check",
     description: "Two myth-or-fact questions about version control.",
@@ -2910,10 +2905,31 @@ const achievements = [
     },
     is_secret: false,
   },
+
+  // Block 3 — Create Your Accounts: GitHub & Vercel
+  {
+    slug: "s8-accounts-ready",
+    session_number: 2,
+    block_number: 3,
+    title: "Accounts Ready",
+    description: "Every member has a GitHub account, one repository created, and a Vercel account connected to GitHub.",
+    xp: 8,
+    proof_type: "checklist",
+    proof_config: {
+      items: [
+        "GitHub account created",
+        "One repository created",
+        "Vercel account connected to GitHub",
+      ],
+    },
+    is_secret: false,
+  },
+
+  // Block 4 — Never Lose Your Work: Save Points with Git
   {
     slug: "s8-first-save-points",
-    session_number: 8,
-    block_number: 2,
+    session_number: 2,
+    block_number: 4,
     title: "First Save Points",
     description: "Turn on version control and make at least two labeled commits — screenshot your version history.",
     xp: 6,
@@ -2923,8 +2939,8 @@ const achievements = [
   },
   {
     slug: "s8-time-travel",
-    session_number: 8,
-    block_number: 2,
+    session_number: 2,
+    block_number: 4,
     title: "Time Travel",
     description: "Make a change you don't like, then roll back to an earlier save point — screenshot the restored version.",
     xp: 6,
@@ -2933,11 +2949,11 @@ const achievements = [
     is_secret: false,
   },
 
-  // Block 3 — Take It Live: Deploy to a Real URL
+  // Block 5 — Take It Live: Deploy to a Real URL
   {
     slug: "s8-public-check",
-    session_number: 8,
-    block_number: 3,
+    session_number: 2,
+    block_number: 5,
     title: "Public Check",
     description: "Before deploying, confirm there's no real personal information anywhere on the page.",
     xp: 3,
@@ -2951,8 +2967,8 @@ const achievements = [
   },
   {
     slug: "s8-everyones-live",
-    session_number: 8,
-    block_number: 3,
+    session_number: 2,
+    block_number: 5,
     title: "Everyone's Live",
     description: "Every pod member has deployed a build to a real, working URL — submit each link.",
     xp: 12,
@@ -2969,8 +2985,8 @@ const achievements = [
   },
   {
     slug: "s8-deploy-again",
-    session_number: 8,
-    block_number: 3,
+    session_number: 2,
+    block_number: 5,
     title: "Deploy Again",
     description: "Make a change, commit it, and re-deploy so the live link updates — screenshot the updated live page.",
     xp: 3,
@@ -2979,11 +2995,11 @@ const achievements = [
     is_secret: false,
   },
 
-  // Block 4 — Share It With the World
+  // Block 6 — Share It With the World
   {
     slug: "s8-shared-it",
-    session_number: 8,
-    block_number: 4,
+    session_number: 2,
+    block_number: 6,
     title: "Shared It",
     description: "Every pod member shared their live link with at least one person outside the room.",
     xp: 5,
@@ -2996,151 +3012,18 @@ const achievements = [
     is_secret: false,
   },
 
-  // Block 5 — The Final Project: What It Is & Locking Your Idea
-  {
-    slug: "s8-what-counts-as-done",
-    session_number: 8,
-    block_number: 5,
-    title: "What Counts as Done",
-    description: "Two myth-or-fact questions about what a finished final project looks like.",
-    xp: 2,
-    proof_type: "quiz",
-    proof_config: {
-      questions: [
-        {
-          question: "A finished final project has to work on a real link.",
-          options: ["Myth", "Fact"],
-          correct_index: 1,
-          xp: 1,
-        },
-        {
-          question: "It needs at least five features to count as done.",
-          options: ["Myth — one thing, done well, is enough", "Fact — five features minimum"],
-          correct_index: 0,
-          xp: 1,
-        },
-      ],
-    },
-    is_secret: false,
-  },
-  {
-    slug: "s8-everyone-pitched",
-    session_number: 8,
-    block_number: 5,
-    title: "Everyone Pitched",
-    description: "Every pod member said their project idea out loud — to the room or the pod.",
-    xp: 5,
-    proof_type: "checklist",
-    proof_config: {
-      items: [
-        "Every member said their project idea out loud (to the room or the pod)",
-      ],
-    },
-    is_secret: false,
-  },
-  {
-    slug: "s8-scoped-and-locked",
-    session_number: 8,
-    block_number: 5,
-    title: "Scoped & Locked",
-    description: "Every pod member's final one-sentence project spec is written down.",
-    xp: 5,
-    proof_type: "instructor_flag",
-    proof_config: {
-      form_type: "fields",
-      fields: [
-        "Member 1's one-sentence project spec",
-        "Member 2's one-sentence project spec",
-        "Member 3's one-sentence project spec",
-      ],
-    },
-    is_secret: false,
-  },
-  {
-    slug: "s8-right-size",
-    session_number: 8,
-    block_number: 5,
-    title: "Right Size",
-    description: "Confirm every idea in your pod passes the size check.",
-    xp: 3,
-    proof_type: "checklist",
-    proof_config: {
-      items: [
-        "Every idea does exactly one thing",
-        "Every idea fits on one screen",
-        "No idea needs accounts or saved data",
-        "Every idea can be said in one sentence with no tech words",
-      ],
-    },
-    is_secret: false,
-  },
-
-  // Block 6 — Wrap
-  {
-    slug: "s8-launch-day-done",
-    session_number: 8,
-    block_number: 6,
-    title: "Launch Day Done",
-    description: "Your pod hit every milestone — tick all five to close out the session.",
-    xp: 10,
-    proof_type: "instructor_flag",
-    proof_config: {
-      form_type: "checklist",
-      items: [
-        "Everyone made save points (committed at least twice with labels)",
-        "Everyone rolled back at least once",
-        "Everyone deployed a build to a live URL",
-        "Everyone shared their live link with someone",
-        "Everyone locked a scoped final-project idea",
-      ],
-    },
-    is_secret: false,
-  },
-  {
-    slug: "s8-build-plan",
-    session_number: 8,
-    block_number: 6,
-    title: "Build Plan",
-    description: "Every pod member jotted the first 2–3 pieces they'll build next session.",
-    xp: 3,
-    proof_type: "instructor_flag",
-    proof_config: {
-      form_type: "fields",
-      fields: [
-        "Member 1's first 2–3 pieces to build next session",
-        "Member 2's first 2–3 pieces to build next session",
-        "Member 3's first 2–3 pieces to build next session",
-      ],
-    },
-    is_secret: false,
-  },
+  // Block 7 — Wrap
   {
     slug: "s8-one-thing-i-learned",
-    session_number: 8,
-    block_number: 6,
+    session_number: 2,
+    block_number: 7,
     title: "One Thing I Learned",
-    description: "Finish the line: \"The wildest part of today was ___.\"",
+    description: "Finish the line: \"The thing that surprised me most about how the internet works is ___.\"",
     xp: 3,
     proof_type: "instructor_flag",
     proof_config: {
       form_type: "fields",
-      fields: ["The wildest part of today was…"],
-    },
-    is_secret: false,
-  },
-
-  // Block 8 — All Session
-  {
-    slug: "s8-neighbor-assist",
-    session_number: 8,
-    block_number: 8,
-    title: "Neighbor Assist",
-    description: "Help another pod through a stuck commit or deploy — enter their team name to confirm.",
-    xp: 5,
-    proof_type: "instructor_flag",
-    proof_config: {
-      form_type: "fields",
-      fields: ["Pod you helped"],
+      fields: ["The thing that surprised me most about how the internet works is…"],
     },
     is_secret: false,
   },
@@ -3495,16 +3378,27 @@ async function main() {
     console.log("Achievements cleared.");
   }
 
-  // Upsert sessions into the template cohort (unique key: cohort_id + session_number).
+  // Seed sessions into the template cohort. Can't use .upsert() here — the
+  // (cohort_id, session_number) unique constraint is deferrable (needed for
+  // the drag-and-drop reorder feature), and Postgres doesn't allow a
+  // deferrable constraint as an ON CONFLICT arbiter. Read-then-write instead.
   console.log("Seeding sessions...");
-  const sessionsWithCohort = sessions.map((s) => ({ ...s, cohort_id: cohortId }));
-  const { error: sessionsError } = await supabase
-    .from("sessions")
-    .upsert(sessionsWithCohort, { onConflict: "cohort_id,session_number" });
+  for (const sessionRow of sessions) {
+    const { data: existing } = await supabase
+      .from("sessions")
+      .select("id")
+      .eq("cohort_id", cohortId)
+      .eq("session_number", sessionRow.session_number)
+      .maybeSingle();
 
-  if (sessionsError) {
-    console.error("Failed to seed sessions:", sessionsError.message);
-    process.exit(1);
+    const { error: sessionError } = existing
+      ? await supabase.from("sessions").update({ title: sessionRow.title }).eq("id", existing.id)
+      : await supabase.from("sessions").insert({ ...sessionRow, cohort_id: cohortId });
+
+    if (sessionError) {
+      console.error(`Failed to seed session ${sessionRow.session_number}:`, sessionError.message);
+      process.exit(1);
+    }
   }
   console.log(`  ${sessions.length} sessions seeded.`);
 
