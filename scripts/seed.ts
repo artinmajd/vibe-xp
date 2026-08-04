@@ -26,7 +26,7 @@ const sessions = [
   { session_number: 2, title: "Taking It Live" },
   { session_number: 3, title: "The Art of Prompting" },
   { session_number: 4, title: "Plan Before You Build" },
-  { session_number: 5, title: "Adding Features" },
+  { session_number: 5, title: "Teach AI How You Work" },
   { session_number: 6, title: "Think in Pieces, Build in Pieces" },
   { session_number: 7, title: "Everything Breaks (and How Pros Fix It Fast)" },
   { session_number: 8, title: "Teach Cursor How You Work" },
@@ -2307,12 +2307,21 @@ const achievements = [
     is_secret: false,
   },
 
-  // ─── Session 8 — Teach Cursor How You Work ───────────────────────────────────
+  // ─── Session 5 — Teach AI How You Work ───────────────────────────────────────
+  // Content originally lived at session_number 8 ("Teach Cursor How You
+  // Work"); slugs keep their original "s7-" prefix. This deck teaches a
+  // two-tool model (agents.md + Skills, no separate "Rule" concept), so
+  // several achievements were renamed/reworded to speak in agents.md terms.
+  // 3 achievements with no deck counterpart were removed (0 submissions
+  // existed against any of them): First Idea Down (the deck prescribes a
+  // specific next-session project and treats tonight's idea-decision as
+  // ungraded take-home reflection), Neighbor Assist and Bonus Skill (neither
+  // has a dedicated EARN IT slide in this deck).
 
   // Block 0 — Setup & Team Check-In
   {
     slug: "s7-ready-check",
-    session_number: 8,
+    session_number: 5,
     block_number: 0,
     title: "Ready Check",
     description: "You're set up and ready to build your stack — tick all four to log in for the day.",
@@ -2320,22 +2329,22 @@ const achievements = [
     proof_type: "checklist",
     proof_config: {
       items: [
-        "Cursor open and signed in",
-        "Session 6 folder still alive (debug game survived!)",
-        "New folder created: session-7-stack",
+        "VS Code + Codex open and signed in",
+        "Session 4 folder still alive — don't touch it, today's work lives somewhere new",
+        "New folder created: session-5-stack",
         "I know where pages open in the browser",
       ],
     },
     is_secret: false,
   },
 
-  // Block 1 — Stop Repeating Yourself: The Three Tools
+  // Block 1 — Stop Repeating Yourself: The Two Tools
   {
     slug: "s7-when-does-it-fire",
-    session_number: 8,
+    session_number: 5,
     block_number: 1,
     title: "When Does It Fire?",
-    description: "Three quick questions about when each tool fires — agents.md, rules, and skills.",
+    description: "Three quick questions about when each tool fires — agents.md and skills.",
     xp: 3,
     proof_type: "quiz",
     proof_config: {
@@ -2347,7 +2356,7 @@ const achievements = [
           xp: 1,
         },
         {
-          question: "A rule applies automatically without you asking.",
+          question: "Your agents.md applies automatically without you asking.",
           options: ["Myth", "Fact"],
           correct_index: 1,
           xp: 1,
@@ -2364,7 +2373,7 @@ const achievements = [
   },
   {
     slug: "s7-feel-the-repeat",
-    session_number: 8,
+    session_number: 5,
     block_number: 1,
     title: "Feel the Repeat",
     description: "Build two mini-pages, typing the same style preference into both prompts — upload a screenshot of each.",
@@ -2374,39 +2383,39 @@ const achievements = [
     is_secret: false,
   },
 
-  // Block 2 — Rules: Your Always-On Style
+  // Block 2 — agents.md: Your Always-On Style
   {
-    slug: "s7-set-a-rule",
-    session_number: 8,
+    slug: "s7-set-your-style",
+    session_number: 5,
     block_number: 2,
-    title: "Set a Rule",
-    description: "Adapt the template into a rule that captures a style you always want — screenshot the saved rule.",
+    title: "Set Your Style",
+    description: "Adapt the template into an agents.md entry capturing a style you always want — screenshot the saved entry.",
     xp: 5,
     proof_type: "instructor_flag",
     proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
-    slug: "s7-safety-rule",
-    session_number: 8,
+    slug: "s7-safety-line",
+    session_number: 5,
     block_number: 2,
-    title: "Safety Rule",
-    description: "Add a standing \"never include real personal information\" rule so it's on in every project.",
+    title: "Safety Line",
+    description: "Add a standing \"never include real personal information\" line to your agents.md so it's on in every project.",
     xp: 3,
     proof_type: "checklist",
     proof_config: {
       items: [
-        "I have added a \"never include real personal information\" standing rule",
+        "I have added a \"never include real personal information\" line to my agents.md",
       ],
     },
     is_secret: false,
   },
   {
     slug: "s7-it-fired-by-itself",
-    session_number: 8,
+    session_number: 5,
     block_number: 2,
     title: "It Fired By Itself",
-    description: "Build a brand-new thing without typing your style preference — screenshot it obeying the rule anyway.",
+    description: "Build a brand-new thing without typing your style preference — screenshot it obeying your agents.md anyway.",
     xp: 5,
     proof_type: "instructor_flag",
     proof_config: { form_type: "screenshot" },
@@ -2416,7 +2425,7 @@ const achievements = [
   // Block 3 — Skills: Recipes You Summon
   {
     slug: "s7-build-a-skill",
-    session_number: 8,
+    session_number: 5,
     block_number: 3,
     title: "Build a Skill",
     description: "Adapt the trading-card recipe template into a skill — screenshot the saved skill file.",
@@ -2427,7 +2436,7 @@ const achievements = [
   },
   {
     slug: "s7-summon-it",
-    session_number: 8,
+    session_number: 5,
     block_number: 3,
     title: "Summon It",
     description: "Summon your card skill for any single subject and screenshot the result.",
@@ -2437,18 +2446,18 @@ const achievements = [
     is_secret: false,
   },
   {
-    slug: "s7-rule-or-skill",
-    session_number: 8,
+    slug: "s7-agents-md-or-skill",
+    session_number: 5,
     block_number: 3,
-    title: "Rule or Skill?",
-    description: "Always on automatically, or only when you call it by name?",
+    title: "agents.md or Skill?",
+    description: "One fires automatically on every project. The other only works when you call it by name. Which is which?",
     xp: 1,
     proof_type: "quiz",
     proof_config: {
       questions: [
         {
-          question: "You want rounded buttons on every project without ever asking again. Is that a rule or a skill?",
-          options: ["A rule — it fires automatically on every project", "A skill — you summon it when you need it"],
+          question: "You want rounded buttons on every project without ever asking again. Is that agents.md or a Skill?",
+          options: ["agents.md — it fires automatically on every project", "A Skill — you summon it when you need it"],
           correct_index: 0,
           xp: 1,
         },
@@ -2460,7 +2469,7 @@ const achievements = [
   // Block 4 — Build the Card Set
   {
     slug: "s7-card-1",
-    session_number: 8,
+    session_number: 5,
     block_number: 4,
     title: "Card 1",
     description: "Summon your card skill for subject #1 — screenshot the finished card.",
@@ -2471,7 +2480,7 @@ const achievements = [
   },
   {
     slug: "s7-card-2",
-    session_number: 8,
+    session_number: 5,
     block_number: 4,
     title: "Card 2",
     description: "Summon your card skill for subject #2 — screenshot the finished card.",
@@ -2482,7 +2491,7 @@ const achievements = [
   },
   {
     slug: "s7-card-3",
-    session_number: 8,
+    session_number: 5,
     block_number: 4,
     title: "Card 3",
     description: "Summon your card skill for subject #3 — screenshot the finished card.",
@@ -2493,7 +2502,7 @@ const achievements = [
   },
   {
     slug: "s7-consistency-check",
-    session_number: 8,
+    session_number: 5,
     block_number: 4,
     title: "Consistency Check",
     description: "All three cards share a look you didn't re-describe each time — upload the full set in one screenshot.",
@@ -2504,7 +2513,7 @@ const achievements = [
   },
   {
     slug: "s7-upgrade-the-recipe",
-    session_number: 8,
+    session_number: 5,
     block_number: 4,
     title: "Upgrade the Recipe",
     description: "Improve your skill once (add a stat, a rarity gem, a foil effect), then summon it to show the upgrade — screenshot the result.",
@@ -2517,7 +2526,7 @@ const achievements = [
   // Block 5 — Share-Out & Peer Skill Swap
   {
     slug: "s7-show-the-set",
-    session_number: 8,
+    session_number: 5,
     block_number: 5,
     title: "Show the Set",
     description: "Your team showed its card set to the room.",
@@ -2531,7 +2540,7 @@ const achievements = [
   },
   {
     slug: "s7-borrow-a-skill",
-    session_number: 8,
+    session_number: 5,
     block_number: 5,
     title: "Borrow a Skill",
     description: "Get another team's card skill, summon it for your own subject, and screenshot the result.",
@@ -2542,7 +2551,7 @@ const achievements = [
   },
   {
     slug: "s7-lent-a-skill",
-    session_number: 8,
+    session_number: 5,
     block_number: 5,
     title: "Lent a Skill",
     description: "Another team borrowed your card skill — enter their team name as proof.",
@@ -2558,7 +2567,7 @@ const achievements = [
   // Block 6 — Final Project Kickoff & Wrap
   {
     slug: "s7-ship-it",
-    session_number: 8,
+    session_number: 5,
     block_number: 6,
     title: "Ship It",
     description: "Tick every box on the finish-line checklist — an instructor confirms before XP awards.",
@@ -2567,73 +2576,28 @@ const achievements = [
     proof_config: {
       form_type: "checklist",
       items: [
-        "A personal rule is set (and includes the \"never real personal info\" rule)",
+        "An agents.md entry is set (including the safety line)",
         "A card skill is built",
         "The set has at least 3 cards",
-        "The cards share a consistent look from the rule",
-        "The skill was summoned (not re-typed) each time",
+        "The cards share a consistent look",
+        "The skill was summoned, not re-typed, each time",
         "Final screenshot uploaded",
       ],
     },
     is_secret: false,
   },
   {
-    slug: "s7-first-idea-down",
-    session_number: 8,
-    block_number: 6,
-    title: "First Idea Down",
-    description: "Jot a one-sentence final-project idea for each team member — small, one-screen, one thing it does.",
-    xp: 5,
-    proof_type: "instructor_flag",
-    proof_config: {
-      form_type: "fields",
-      fields: [
-        "Team member 1's idea (one sentence)",
-        "Team member 2's idea (one sentence)",
-        "Team member 3's idea (one sentence)",
-      ],
-    },
-    is_secret: false,
-  },
-  {
     slug: "s7-one-thing-i-learned",
-    session_number: 8,
+    session_number: 5,
     block_number: 6,
     title: "One Thing I Learned",
-    description: "Finish the line: \"When I want Cursor to do something my way every time, I should ___.\"",
+    description: "Finish the line: \"When I want Codex to do something my way every time, I should ___.\"",
     xp: 3,
     proof_type: "instructor_flag",
     proof_config: {
       form_type: "fields",
-      fields: ["When I want Cursor to do something my way every time, I should…"],
+      fields: ["When I want Codex to do something my way every time, I should…"],
     },
-    is_secret: false,
-  },
-
-  // Block 8 — All Session
-  {
-    slug: "s7-neighbor-assist",
-    session_number: 8,
-    block_number: 8,
-    title: "Neighbor Assist",
-    description: "Help another team — enter their team name to confirm it happened.",
-    xp: 5,
-    proof_type: "instructor_flag",
-    proof_config: {
-      form_type: "fields",
-      fields: ["Team you helped"],
-    },
-    is_secret: false,
-  },
-  {
-    slug: "s7-bonus-skill",
-    session_number: 8,
-    block_number: 8,
-    title: "Bonus Skill",
-    description: "Fast finisher? Build a second skill for something else (a quiz, a stat bar, a banner) and summon it — screenshot the result.",
-    xp: 5,
-    proof_type: "instructor_flag",
-    proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
 
