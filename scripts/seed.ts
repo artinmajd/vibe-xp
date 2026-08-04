@@ -20,10 +20,11 @@ const shouldReset = process.argv.includes("--reset");
 //
 // Curriculum reorder: "Taking It Live" moved from position 8 to position 2
 // (per the final slide decks), so sessions 2-7 each shifted down by one.
+// "The Art of Prompting" and "From Prompt to Page" also swapped (3 <-> 4).
 const sessions = [
   { session_number: 1, title: "What is AI & How Does It Think?" },
   { session_number: 2, title: "Taking It Live" },
-  { session_number: 3, title: "Prompting Like a Pro" },
+  { session_number: 3, title: "The Art of Prompting" },
   { session_number: 4, title: "Building Your First App" },
   { session_number: 5, title: "Adding Features" },
   { session_number: 6, title: "Think in Pieces, Build in Pieces" },
@@ -259,12 +260,12 @@ const achievements = [
     is_secret: false,
   },
 
-  // ─── Session 3 — From Prompt to Page ────────────────────────────────────────
+  // ─── Session 4 — From Prompt to Page ────────────────────────────────────────
 
   // Block 0 — Setup & Team Check-In
   {
     slug: "s2-team-check-in",
-    session_number: 3,
+    session_number: 4,
     block_number: 0,
     title: "Team Check-In",
     description: "Confirm your team is here and ready — tick the box to log in for the day.",
@@ -279,7 +280,7 @@ const achievements = [
   // Block 1 — Cursor Basics & Your First Page
   {
     slug: "s2-everyones-in",
-    session_number: 3,
+    session_number: 4,
     block_number: 1,
     title: "Everyone's In",
     description: "Every member has Cursor open, signed in, the session-2-build folder created, and the chat panel open.",
@@ -297,7 +298,7 @@ const achievements = [
   },
   {
     slug: "s2-first-page-live",
-    session_number: 3,
+    session_number: 4,
     block_number: 1,
     title: "First Page Live",
     description: "Your name/nickname page renders in the browser. Screenshot it — this is your \"before\" picture for the whole day.",
@@ -308,7 +309,7 @@ const achievements = [
   },
   {
     slug: "s2-spot-the-guesses",
-    session_number: 3,
+    session_number: 4,
     block_number: 1,
     title: "Spot the Guesses",
     description: "After your first page appears, list three things Cursor chose on its own — without you telling it.",
@@ -328,7 +329,7 @@ const achievements = [
   // Block 2 — Vague vs. Specific Prompts
   {
     slug: "s2-the-lazy-page",
-    session_number: 3,
+    session_number: 4,
     block_number: 2,
     title: "The Lazy Page",
     description: "Build the vague pizza page (\"Make a page about pizza.\") and screenshot it — leave it untouched.",
@@ -339,7 +340,7 @@ const achievements = [
   },
   {
     slug: "s2-diagnosis",
-    session_number: 3,
+    session_number: 4,
     block_number: 2,
     title: "Diagnosis",
     description: "List six things Cursor had to guess on the vague pizza page because you didn't say.",
@@ -360,7 +361,7 @@ const achievements = [
   },
   {
     slug: "s2-the-directed-page",
-    session_number: 3,
+    session_number: 4,
     block_number: 2,
     title: "The Directed Page",
     description: "Build the specific pizza page from the fully loaded prompt and screenshot it.",
@@ -371,7 +372,7 @@ const achievements = [
   },
   {
     slug: "s2-seven-ingredients",
-    session_number: 3,
+    session_number: 4,
     block_number: 2,
     title: "Seven Ingredients",
     description: "Rewrite the weak dog prompt so it includes all seven ingredients — tick each one you used.",
@@ -395,7 +396,7 @@ const achievements = [
   // Block 3 — Improving Without Restarting
   {
     slug: "s2-no-restart-remake",
-    session_number: 3,
+    session_number: 4,
     block_number: 3,
     title: "No-Restart Remake",
     description: "Transform the vague pizza page using four follow-up prompts — one of each type — without restarting.",
@@ -414,7 +415,7 @@ const achievements = [
   },
   {
     slug: "s2-before-after",
-    session_number: 3,
+    session_number: 4,
     block_number: 3,
     title: "Before & After",
     description: "Upload your before (vague pizza page) and after (transformed page) screenshots in one submission.",
@@ -427,7 +428,7 @@ const achievements = [
   // Block 4 — Build Your Own Page
   {
     slug: "s2-safe-and-sound",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "Safe & Sound",
     description: "Confirm your page uses first names or nicknames only — no private information.",
@@ -442,7 +443,7 @@ const achievements = [
   },
   {
     slug: "s2-design-canvas",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "Design Canvas",
     description: "Fill all eight fields of your build canvas before you write the first prompt.",
@@ -465,7 +466,7 @@ const achievements = [
   },
   {
     slug: "s2-its-alive",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "It's Alive",
     description: "The first version of your own page renders in the browser — screenshot it.",
@@ -476,7 +477,7 @@ const achievements = [
   },
   {
     slug: "s2-upgrade-visual-identity",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "Upgrade: Visual Identity",
     description: "Make the visual theme stronger — more consistent colors, better spacing, a title style that matches.",
@@ -487,7 +488,7 @@ const achievements = [
   },
   {
     slug: "s2-upgrade-content",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "Upgrade: Content",
     description: "Improve the text so it is more interesting, specific, and fun to read — short and clear.",
@@ -498,7 +499,7 @@ const achievements = [
   },
   {
     slug: "s2-upgrade-layout",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "Upgrade: Layout",
     description: "Organize the page into clean sections or cards — make the layout easier to scan.",
@@ -509,7 +510,7 @@ const achievements = [
   },
   {
     slug: "s2-upgrade-interaction",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "Upgrade: Interaction",
     description: "Make the interactive feature more useful and fun — it should change something on the page when clicked.",
@@ -520,7 +521,7 @@ const achievements = [
   },
   {
     slug: "s2-upgrade-polish",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "Upgrade: Polish",
     description: "Make the page feel finished — improve spacing, headings, contrast, and small visual details.",
@@ -531,7 +532,7 @@ const achievements = [
   },
   {
     slug: "s2-working-feature",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "Working Feature",
     description: "Screenshot your interactive feature on the page — it must visibly do something.",
@@ -542,7 +543,7 @@ const achievements = [
   },
   {
     slug: "s2-checkpoint",
-    session_number: 3,
+    session_number: 4,
     block_number: 4,
     title: "Checkpoint",
     description: "Submit your best prompt so far and one thing you still want to improve.",
@@ -561,7 +562,7 @@ const achievements = [
   // Block 5 — Debugging & Remixing
   {
     slug: "s2-good-bug-report",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Good Bug Report",
     description: "Pick the most useful way to describe a broken button.",
@@ -585,7 +586,7 @@ const achievements = [
   },
   {
     slug: "s2-bug-hunt",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Bug Hunt",
     description: "Find one real weakness on your page, write a fix prompt using the formula, and upload a before-and-after screenshot.",
@@ -596,7 +597,7 @@ const achievements = [
   },
   {
     slug: "s2-remix-applied",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Remix Applied",
     description: "Apply your drawn Remix Card using prompts only and screenshot the result.",
@@ -607,7 +608,7 @@ const achievements = [
   },
   {
     slug: "s2-peer-test",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Peer Test",
     description: "Test a neighboring team's page and fill the four peer-test fields.",
@@ -626,7 +627,7 @@ const achievements = [
   },
   {
     slug: "s2-got-tested",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Got Tested",
     description: "Another team tested your page — enter their team name as proof the feedback happened.",
@@ -640,7 +641,7 @@ const achievements = [
   },
   {
     slug: "s2-final-fix",
-    session_number: 3,
+    session_number: 4,
     block_number: 5,
     title: "Final Fix",
     description: "Apply one repair or polish prompt based on the peer feedback you received and upload the result.",
@@ -653,7 +654,7 @@ const achievements = [
   // Block 6 — Showcase & Wrap
   {
     slug: "s2-ship-it",
-    session_number: 3,
+    session_number: 4,
     block_number: 6,
     title: "Ship It",
     description: "Tick every box on the finish-line checklist — an instructor confirms before XP awards.",
@@ -676,7 +677,7 @@ const achievements = [
   },
   {
     slug: "s2-final-page",
-    session_number: 3,
+    session_number: 4,
     block_number: 6,
     title: "Final Page",
     description: "Upload your final screenshot and fill the submission card.",
@@ -696,7 +697,7 @@ const achievements = [
   },
   {
     slug: "s2-we-showed-it",
-    session_number: 3,
+    session_number: 4,
     block_number: 6,
     title: "We Showed It",
     description: "Your team presented its page in the showcase.",
@@ -710,7 +711,7 @@ const achievements = [
   },
   {
     slug: "s2-one-thing-i-learned",
-    session_number: 3,
+    session_number: 4,
     block_number: 6,
     title: "One Thing I Learned",
     description: "Finish the line: \"When building with AI, I should ___.\"",
@@ -723,14 +724,15 @@ const achievements = [
     is_secret: false,
   },
 
-  // ─── Session 4 — The Art of Prompting ────────────────────────────────────────
-  // Four more (Before & After, Reference Confirmed, Upgrade Menu, Card Complete)
-  // still need product decisions before they can be added.
+  // ─── Session 3 — The Art of Prompting ────────────────────────────────────────
+  // Main build upgraded from a static trading card to a deployed tic-tac-toe
+  // game (own GitHub repo, live Vercel URL, homepage card link) — per the
+  // final slide deck, now the source of truth for this session.
 
   // Block 0 — Launch & Setup
   {
     slug: "s3-ready-check",
-    session_number: 4,
+    session_number: 3,
     block_number: 0,
     title: "Ready Check",
     description: "You're set up and ready to build — tick all four to log in for the day.",
@@ -738,7 +740,7 @@ const achievements = [
     proof_type: "checklist",
     proof_config: {
       items: [
-        "Cursor open & signed in",
+        "AI open and signed in",
         "Session 2 folder visible",
         "New Session 3 folder created",
         "I know where the page opens",
@@ -750,10 +752,10 @@ const achievements = [
   // Block 1 — The Gap Game
   {
     slug: "s3-gap-page",
-    session_number: 4,
+    session_number: 3,
     block_number: 1,
     title: "Same Sentence, Different Page",
-    description: "Everyone typed the same sentence — upload a screenshot of the page Cursor gave you.",
+    description: "Everyone typed the same sentence — upload a screenshot of the page AI gave you.",
     xp: 5,
     proof_type: "instructor_flag",
     proof_config: { form_type: "screenshot" },
@@ -761,10 +763,10 @@ const achievements = [
   },
   {
     slug: "s3-spot-the-gaps",
-    session_number: 4,
+    session_number: 3,
     block_number: 1,
     title: "Spot the Gaps",
-    description: "List 5 things Cursor decided on its own — font, colors, background, mood, spacing…",
+    description: "List 5 things AI decided on its own — font, colors, background, mood, spacing…",
     xp: 5,
     proof_type: "instructor_flag",
     proof_config: { form_type: "fields", fields: ["Gap 1", "Gap 2", "Gap 3", "Gap 4", "Gap 5"] },
@@ -774,10 +776,10 @@ const achievements = [
   // Block 2 — Vague vs. Decided
   {
     slug: "s3-guess-list",
-    session_number: 4,
+    session_number: 3,
     block_number: 2,
     title: "Guess-List",
-    description: "List 6 things the lazy \"Make tic-tac-toe.\" prompt left for Cursor to guess.",
+    description: "List 6 things the lazy \"Make tic-tac-toe.\" prompt left for AI to guess.",
     xp: 5,
     proof_type: "instructor_flag",
     proof_config: { form_type: "fields", fields: ["Guess 1", "Guess 2", "Guess 3", "Guess 4", "Guess 5", "Guess 6"] },
@@ -785,7 +787,7 @@ const achievements = [
   },
   {
     slug: "s3-decided-build",
-    session_number: 4,
+    session_number: 3,
     block_number: 2,
     title: "The Decided Build",
     description: "Screenshot your styled tic-tac-toe that matches the decided prompt you wrote.",
@@ -796,7 +798,7 @@ const achievements = [
   },
   {
     slug: "s3-goldilocks-sort",
-    session_number: 4,
+    session_number: 3,
     block_number: 2,
     title: "Goldilocks Sort",
     description: "For each prompt, decide: too vague, too much, or just right?",
@@ -805,10 +807,10 @@ const achievements = [
     proof_config: {
       questions: [
         { question: "Make a cool team page.", options: ["Too vague", "Too much", "Just right"], correct_index: 0, xp: 1 },
-        { question: "Hi Cursor, I hope you're doing well today. So basically we are a team and we were kind of thinking that maybe it would be nice, if it's not too hard, to have some sort of page, it could be any color really, we like blue but also red is fine, and maybe our names somewhere, and our teacher said it should look good, so yeah, something cool, thanks so much, you're the best…", options: ["Too vague", "Too much", "Just right"], correct_index: 1, xp: 1 },
-        { question: "Make a one-page site for our team, the Pixel Pirates. Dark purple and gold pirate theme, team name huge at the top, three cards with each member's nickname and role, and a button that shows our battle cry. Easy to read.", options: ["Too vague", "Too much", "Just right"], correct_index: 2, xp: 1 },
-        { question: "Make something fun.", options: ["Too vague", "Too much", "Just right"], correct_index: 0, xp: 1 },
-        { question: "Make a one-page profile card for a player called Nova. Neon green on black, big name at the top, three stats with numbers, and a button that flips the card. Keep it readable.", options: ["Too vague", "Too much", "Just right"], correct_index: 2, xp: 1 },
+        { question: "Hi AI, I hope you're doing well today. So basically we are a team and we were kind of thinking that maybe it would be nice, if it's not too hard, to have some sort of page, it could be any color really, we like blue but also red is fine, and maybe our names somewhere, and our teacher said it should look good, so yeah, something cool, thanks so much, you're the best…", options: ["Too vague", "Too much", "Just right"], correct_index: 1, xp: 1 },
+        { question: "Make a one-page site for our team, the Pixel Pirates. Dark purple and gold pirate theme, team name huge at the top, three cards with nicknames, and a button that shows our battle cry. Easy to read.", options: ["Too vague", "Too much", "Just right"], correct_index: 2, xp: 1 },
+        { question: "Make a movie quiz game. Five questions one at a time, score at the end with a \"Play Again\" button. Bright colors, big text, easy to click.", options: ["Too vague", "Too much", "Just right"], correct_index: 2, xp: 1 },
+        { question: "Make something fun for our team.", options: ["Too vague", "Too much", "Just right"], correct_index: 0, xp: 1 },
       ],
     },
     is_secret: false,
@@ -817,7 +819,7 @@ const achievements = [
   // Block 3 — Nudging
   {
     slug: "s3-before-after",
-    session_number: 4,
+    session_number: 3,
     block_number: 3,
     title: "Before & After",
     description: "Upload two screenshots: your 'before' (the Block 1 page) and your 'after' (transformed with five nudges).",
@@ -828,7 +830,7 @@ const achievements = [
   },
   {
     slug: "s3-five-lanes",
-    session_number: 4,
+    session_number: 3,
     block_number: 3,
     title: "Five Lanes",
     description: "Used all five kinds of nudge — tick each one you steered with.",
@@ -839,7 +841,7 @@ const achievements = [
   },
   {
     slug: "s3-broke-it-fixed-it",
-    session_number: 4,
+    session_number: 3,
     block_number: 3,
     title: "Broke It, Fixed It",
     description: "Something broke and you fixed it — screenshot a repair prompt (a described symptom or a pasted error with \"fix this\").",
@@ -852,10 +854,10 @@ const achievements = [
   // Block 4 — Reference Prompting
   {
     slug: "s3-caught-it-wrong",
-    session_number: 4,
+    session_number: 3,
     block_number: 4,
     title: "Caught It Wrong",
-    description: "Cursor confidently botched the reference — screenshot the wrong result you caught.",
+    description: "AI confidently botched the reference — screenshot the wrong result you caught.",
     xp: 5,
     proof_type: "instructor_flag",
     proof_config: { form_type: "screenshot" },
@@ -863,110 +865,95 @@ const achievements = [
   },
   {
     slug: "s3-restyle",
-    session_number: 4,
+    session_number: 3,
     block_number: 4,
     title: "The Restyle",
-    description: "Screenshot your page after restyling it with one named reference look.",
-    xp: 5,
-    proof_type: "instructor_flag",
-    proof_config: { form_type: "screenshot" },
-    is_secret: false,
-  },
-  {
-    slug: "s3-reference-confirmed",
-    session_number: 4,
-    block_number: 4,
-    title: "Reference Confirmed",
-    description: "Upload a screenshot of your reference-styled page, then record what the neighbor team guessed — an instructor confirms the match.",
+    description: "Screenshot your page after restyling it with one named reference look, and submit the restyle prompt you used.",
     xp: 5,
     proof_type: "instructor_flag",
     proof_config: {
       form_type: "composite",
       require: ["screenshot", "fields"],
-      fields: ["What the neighbor team guessed"],
+      fields: ["The restyle prompt you used"],
     },
     is_secret: false,
   },
   {
     slug: "s3-double-style",
-    session_number: 4,
+    session_number: 3,
     block_number: 4,
     title: "Double Style",
-    description: "Stack two references on one page so it still reads clearly — screenshot it and name both references.",
+    description: "Stack two references on one page so it still reads clearly — tick the box once it's live.",
     xp: 3,
-    proof_type: "instructor_flag",
-    proof_config: {
-      form_type: "composite",
-      require: ["screenshot", "fields"],
-      fields: ["First reference (the layout)", "Second reference (colors & fonts)"],
-    },
+    proof_type: "checklist",
+    proof_config: { items: ["Two references stacked on one page — and it still reads clearly"] },
     is_secret: false,
   },
 
-  // Block 5 — Build Your Trading Card
+  // Block 5 — Ship Tic-Tac-Toe (own repo, live Vercel URL, homepage card link)
   {
-    slug: "s3-card-canvas",
-    session_number: 4,
+    slug: "s3-game-canvas",
+    session_number: 3,
     block_number: 5,
-    title: "Card Canvas",
-    description: "Decide on paper first — fill in all 8 fields of your Card Design Canvas before you prompt.",
+    title: "Game Canvas",
+    description: "Decide on paper first — fill in all 8 fields of your Game Design Canvas before you prompt.",
     xp: 5,
     proof_type: "instructor_flag",
     proof_config: {
       form_type: "fields",
       fields: [
-        "Character name",
-        "Character title",
-        "Card style (named reference)",
+        "Game name",
+        "Style reference (named)",
         "Main colors",
-        "Four stats with numbers",
-        "Signature move",
-        "Picture area (which emoji or shape?)",
+        "X and O look",
+        "Win moment",
+        "Draw message",
+        "Scoreboard or restart",
         "One surprise detail",
       ],
     },
     is_secret: false,
   },
   {
-    slug: "s3-first-card",
-    session_number: 4,
+    slug: "s3-its-alive",
+    session_number: 3,
     block_number: 5,
-    title: "First Card",
-    description: "Screenshot your trading card right after your first build prompt.",
+    title: "It's Alive",
+    description: "Submit your live Vercel link right after Phase 1 — while the page still just says \"Coming soon.\"",
     xp: 5,
     proof_type: "instructor_flag",
-    proof_config: { form_type: "screenshot" },
+    proof_config: { form_type: "url" },
     is_secret: false,
   },
   // Upgrade Menu — five à-la-carte lanes, +3 each, instructor-approved (no cap).
   {
     slug: "s3-upgrade-stronger-style",
-    session_number: 4,
+    session_number: 3,
     block_number: 5,
     title: "Upgrade: Stronger Style",
-    description: "Sharpen the border, title font, and badge so the card reads like a real one.",
+    description: "Make the game look more like a real named reference — sharpen the board, the title font, and the buttons.",
     xp: 3,
     proof_type: "instructor_flag",
     proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
-    slug: "s3-upgrade-stat-drama",
-    session_number: 4,
+    slug: "s3-upgrade-scoreboard",
+    session_number: 3,
     block_number: 5,
-    title: "Upgrade: Stat Drama",
-    description: "Make the stats look like meters or bars that fill up, and highlight the highest one.",
+    title: "Upgrade: Scoreboard",
+    description: "Add a running score for X and O that updates after every round.",
     xp: 3,
     proof_type: "instructor_flag",
     proof_config: { form_type: "screenshot" },
     is_secret: false,
   },
   {
-    slug: "s3-upgrade-layout",
-    session_number: 4,
+    slug: "s3-upgrade-win-drama",
+    session_number: 3,
     block_number: 5,
-    title: "Upgrade: Layout",
-    description: "Tidy the layout — everything aligned, nothing cramped, easy to read at a glance.",
+    title: "Upgrade: Win Drama",
+    description: "Make winning feel huge — highlight the winning line and add a celebration.",
     xp: 3,
     proof_type: "instructor_flag",
     proof_config: { form_type: "screenshot" },
@@ -974,10 +961,10 @@ const achievements = [
   },
   {
     slug: "s3-upgrade-personality",
-    session_number: 4,
+    session_number: 3,
     block_number: 5,
     title: "Upgrade: Personality",
-    description: "Make the card feel less generic — a stronger title, a small catchphrase, a detail nobody else would have.",
+    description: "Keep everything, but make it feel less generic — a catchphrase, a sound, a detail nobody else has.",
     xp: 3,
     proof_type: "instructor_flag",
     proof_config: { form_type: "screenshot" },
@@ -985,10 +972,10 @@ const achievements = [
   },
   {
     slug: "s3-upgrade-polish",
-    session_number: 4,
+    session_number: 3,
     block_number: 5,
     title: "Upgrade: Polish",
-    description: "Make it feel finished — spacing, contrast, and one subtle premium detail.",
+    description: "Make this feel finished. Spacing, contrast, and one subtle premium detail.",
     xp: 3,
     proof_type: "instructor_flag",
     proof_config: { form_type: "screenshot" },
@@ -996,24 +983,24 @@ const achievements = [
   },
 
   {
-    slug: "s3-card-complete",
-    session_number: 4,
+    slug: "s3-project-shipped",
+    session_number: 3,
     block_number: 5,
-    title: "Card Complete",
-    description: "Your card is finished and meets every requirement. An instructor checks it off.",
+    title: "Project Shipped",
+    description: "The whole-team gate for the main build: your deployed tic-tac-toe game meets every requirement. An instructor checks it off.",
     xp: 10,
     proof_type: "instructor_flag",
     proof_config: {
       form_type: "checklist",
       items: [
-        "Safe name + title",
-        "Emoji or shape picture area (no photo)",
-        "Four stats with numbers",
-        "Signature-move box",
+        "Own folder, own repo, pushed to GitHub",
+        "Live Vercel URL opens on a phone",
+        "Two players can finish a full game",
+        "Wins and draws both show something",
         "A nameable reference style",
         "Three or more upgrade nudges",
-        "No private information",
-        "Final screenshot submitted",
+        "Homepage card links to the live game",
+        "No private information anywhere",
       ],
     },
     is_secret: false,
@@ -1021,30 +1008,30 @@ const achievements = [
 
   // Block 6 — Showcase & Wrap
   {
-    slug: "s3-showed-card",
-    session_number: 4,
+    slug: "s3-showed-game",
+    session_number: 3,
     block_number: 6,
-    title: "We Showed Our Card",
-    description: "Your team presented its card on the projector.",
+    title: "We Showed Our Game",
+    description: "Your team presented its game on the projector.",
     xp: 3,
     proof_type: "instructor_flag",
-    proof_config: { form_type: "checklist", items: ["We presented our card to the class"] },
+    proof_config: { form_type: "checklist", items: ["Our team presented on the projector"] },
     is_secret: false,
   },
   {
     slug: "s3-takeaway",
-    session_number: 4,
+    session_number: 3,
     block_number: 6,
     title: "One-Line Takeaway",
-    description: "Finish the line: \"Today I learned that when steering Cursor, I should ___.\"",
+    description: "Finish the line: \"Today I learned that when steering Codex, I should ___.\"",
     xp: 3,
     proof_type: "instructor_flag",
-    proof_config: { form_type: "fields", fields: ["Today I learned that when steering Cursor, I should…"] },
+    proof_config: { form_type: "fields", fields: ["Today I learned that when steering Codex, I should…"] },
     is_secret: false,
   },
   {
     slug: "s3-recap-check",
-    session_number: 4,
+    session_number: 3,
     block_number: 6,
     title: "Recap Check",
     description: "Quick myth-or-fact check on today's moves.",
