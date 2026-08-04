@@ -106,14 +106,15 @@ const UPDATES: Record<string, Record<string, unknown>> = {
     slug: "s7-agents-md-or-skill",
     title: "agents.md or Skill?",
     description: "One fires automatically on every project. The other only works when you call it by name. Which is which?",
+    xp: 5,
     proof_config: {
       form_type: "quiz",
       questions: [
         {
           question: "You want rounded buttons on every project without ever asking again. Is that agents.md or a Skill?",
-          options: ["agents.md — it fires automatically on every project", "A Skill — you summon it when you need it"],
+          options: ["agents.md", "Skill"],
           correct_index: 0,
-          xp: 1,
+          xp: 5,
         },
       ],
     },

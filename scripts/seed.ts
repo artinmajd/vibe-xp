@@ -2451,15 +2451,15 @@ const achievements = [
     block_number: 3,
     title: "agents.md or Skill?",
     description: "One fires automatically on every project. The other only works when you call it by name. Which is which?",
-    xp: 1,
+    xp: 5,
     proof_type: "quiz",
     proof_config: {
       questions: [
         {
           question: "You want rounded buttons on every project without ever asking again. Is that agents.md or a Skill?",
-          options: ["agents.md — it fires automatically on every project", "A Skill — you summon it when you need it"],
+          options: ["agents.md", "Skill"],
           correct_index: 0,
-          xp: 1,
+          xp: 5,
         },
       ],
     },
