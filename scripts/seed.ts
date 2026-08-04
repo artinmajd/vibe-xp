@@ -2465,6 +2465,78 @@ const achievements = [
     },
     is_secret: false,
   },
+  {
+    slug: "s7-safety-line-quiz",
+    session_number: 5,
+    block_number: 3,
+    title: "The Safety Line",
+    description: "Where should \"Never include real personal information\" live so it always applies?",
+    xp: 2,
+    proof_type: "quiz",
+    proof_config: {
+      questions: [
+        {
+          question: "Where should \"Never include real personal information\" live so it always applies?",
+          options: [
+            "In a one-off prompt, retyped every time",
+            "In your agents.md file",
+            "Nowhere — Codex already knows this automatically",
+          ],
+          correct_index: 1,
+          xp: 2,
+        },
+      ],
+    },
+    is_secret: false,
+  },
+  {
+    slug: "s7-plan-or-skill",
+    session_number: 5,
+    block_number: 3,
+    title: "Plan or Skill?",
+    description: "Which question does a Skill answer?",
+    xp: 2,
+    proof_type: "quiz",
+    proof_config: {
+      questions: [
+        {
+          question: "Which question does a Skill answer?",
+          options: [
+            "\"What should we build next?\"",
+            "\"How do I make this again?\"",
+            "\"Where did I save my files?\"",
+          ],
+          correct_index: 1,
+          xp: 2,
+        },
+      ],
+    },
+    is_secret: false,
+  },
+  {
+    slug: "s7-what-survives",
+    session_number: 5,
+    block_number: 3,
+    title: "What Survives?",
+    description: "You open a brand-new chat. Which of these does NOT automatically survive unless you saved it as a file?",
+    xp: 2,
+    proof_type: "quiz",
+    proof_config: {
+      questions: [
+        {
+          question: "You open a brand-new chat. Which of these does NOT automatically survive unless you saved it as a file?",
+          options: [
+            "Your agents.md",
+            "Your project's files and code",
+            "The plan you and Codex talked through in Plan Mode",
+          ],
+          correct_index: 2,
+          xp: 2,
+        },
+      ],
+    },
+    is_secret: false,
+  },
 
   // Block 4 — Build the Card Set
   {
