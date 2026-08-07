@@ -35,7 +35,7 @@ const NEW_ACHIEVEMENTS = [
     block_number: 3,
     title: "The Safety Line",
     description: "Where should \"Never include real personal information\" live so it always applies?",
-    xp: 2,
+    xp: 5,
     proof_type: "quiz",
     proof_config: {
       questions: [
@@ -47,7 +47,7 @@ const NEW_ACHIEVEMENTS = [
             "Nowhere — Codex already knows this automatically",
           ],
           correct_index: 1,
-          xp: 2,
+          xp: 5,
         },
       ],
     },
@@ -61,7 +61,7 @@ const NEW_ACHIEVEMENTS = [
     block_number: 3,
     title: "Plan or Skill?",
     description: "Which question does a Skill answer?",
-    xp: 2,
+    xp: 5,
     proof_type: "quiz",
     proof_config: {
       questions: [
@@ -73,7 +73,7 @@ const NEW_ACHIEVEMENTS = [
             "\"Where did I save my files?\"",
           ],
           correct_index: 1,
-          xp: 2,
+          xp: 5,
         },
       ],
     },
@@ -87,7 +87,7 @@ const NEW_ACHIEVEMENTS = [
     block_number: 3,
     title: "What Survives?",
     description: "You open a brand-new chat. Which of these does NOT automatically survive unless you saved it as a file?",
-    xp: 2,
+    xp: 5,
     proof_type: "quiz",
     proof_config: {
       questions: [
@@ -99,7 +99,7 @@ const NEW_ACHIEVEMENTS = [
             "The plan you and Codex talked through in Plan Mode",
           ],
           correct_index: 2,
-          xp: 2,
+          xp: 5,
         },
       ],
     },
