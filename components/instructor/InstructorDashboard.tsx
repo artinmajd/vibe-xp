@@ -47,6 +47,110 @@ type NewQuestion = {
   xp: number;
 };
 
+// Shared question builder — used both when creating a new quiz achievement
+// and when editing the questions of an existing one.
+function QuizQuestionBuilder({
+  questions,
+  setQuestions,
+}: {
+  questions: NewQuestion[];
+  setQuestions: React.Dispatch<React.SetStateAction<NewQuestion[]>>;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-xs text-zinc-500">Questions</p>
+      {questions.map((q, qi) => (
+        <div key={qi} className="bg-zinc-800 border border-zinc-700 rounded-lg p-3 flex flex-col gap-2">
+          {/* Question text + XP + remove */}
+          <div className="flex gap-2 items-start">
+            <input
+              value={q.question}
+              onChange={(e) => setQuestions((prev) => prev.map((x, i) => i === qi ? { ...x, question: e.target.value } : x))}
+              placeholder={`Question ${qi + 1}`}
+              className="flex-1 bg-zinc-700 text-white rounded px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+            />
+            <div className="flex items-center gap-1 shrink-0">
+              <span className="text-xs text-zinc-500">XP</span>
+              <input
+                type="number"
+                value={q.xp}
+                min={1}
+                onChange={(e) => setQuestions((prev) => prev.map((x, i) => i === qi ? { ...x, xp: parseInt(e.target.value) || 1 } : x))}
+                className="w-14 bg-zinc-700 text-white rounded px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+            {questions.length > 1 && (
+              <button
+                onClick={() => setQuestions((prev) => prev.filter((_, i) => i !== qi))}
+                className="text-zinc-500 hover:text-rose-400 text-sm px-1 shrink-0"
+              >
+                ×
+              </button>
+            )}
+          </div>
+          {/* Options */}
+          <div className="flex flex-col gap-1 pl-1">
+            {q.options.map((opt, oi) => (
+              <div key={oi} className="flex gap-2 items-center">
+                <input
+                  type="radio"
+                  name={`correct-${qi}`}
+                  checked={q.correct_index === oi}
+                  onChange={() => setQuestions((prev) => prev.map((x, i) => i === qi ? { ...x, correct_index: oi } : x))}
+                  className="accent-emerald-500 shrink-0"
+                  title="Mark as correct"
+                />
+                <input
+                  value={opt}
+                  onChange={(e) => setQuestions((prev) => prev.map((x, i) => {
+                    if (i !== qi) return x;
+                    const opts = [...x.options];
+                    opts[oi] = e.target.value;
+                    return { ...x, options: opts };
+                  }))}
+                  placeholder={`Option ${oi + 1}`}
+                  className="flex-1 bg-zinc-700 text-white rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+                {q.options.length > 2 && (
+                  <button
+                    onClick={() => setQuestions((prev) => prev.map((x, i) => {
+                      if (i !== qi) return x;
+                      const opts = x.options.filter((_, j) => j !== oi);
+                      return { ...x, options: opts, correct_index: Math.min(x.correct_index, opts.length - 1) };
+                    }))}
+                    className="text-zinc-600 hover:text-rose-400 text-sm px-0.5 shrink-0"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+            {q.options.length < 4 && (
+              <button
+                onClick={() => setQuestions((prev) => prev.map((x, i) => i === qi ? { ...x, options: [...x.options, ""] } : x))}
+                className="text-xs text-zinc-600 hover:text-zinc-400 text-left mt-0.5 ml-5"
+              >
+                + option
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-zinc-600 pl-1">● = correct answer</p>
+        </div>
+      ))}
+      <button
+        onClick={() => setQuestions((prev) => [...prev, { question: "", options: ["", ""], correct_index: 0, xp: 5 }])}
+        className="text-xs text-indigo-400 hover:text-indigo-300 text-left"
+      >
+        + Add question
+      </button>
+    </div>
+  );
+}
+
+function questionsAreValid(questions: NewQuestion[]): boolean {
+  return questions.length > 0 && questions.every((q) => q.question.trim() && q.options.length >= 2);
+}
+
 type AchievementRow = {
   id: string;
   title: string;
@@ -56,6 +160,8 @@ type AchievementRow = {
   is_secret: boolean;
   sort_order: number;
   block_number: number;
+  proof_type: string;
+  proof_config: Record<string, unknown>;
 };
 
 type Props = {
@@ -201,6 +307,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editBlock, setEditBlock] = useState(1);
+  const [editQuestions, setEditQuestions] = useState<NewQuestion[]>([]);
 
   // Create form state
   const [creating, setCreating] = useState(false);
@@ -551,12 +658,17 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
     router.refresh();
   }
 
-  async function handleSaveAchievement(id: string) {
-    setAchBusy(id);
+  async function handleSaveAchievement(ach: AchievementRow) {
+    setAchBusy(ach.id);
+    const body: Record<string, unknown> = { id: ach.id, title: editTitle, description: editDesc, block_number: editBlock };
+    if (ach.proof_type === "quiz") {
+      body.proof_config = { questions: editQuestions };
+      body.xp = editQuestions.reduce((sum, q) => sum + q.xp, 0);
+    }
     await fetch("/api/instructor/achievements", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, title: editTitle, description: editDesc, block_number: editBlock }),
+      body: JSON.stringify(body),
     });
     setAchBusy(null);
     setEditingAchId(null);
@@ -1289,93 +1401,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
 
                       {/* quiz: question builder */}
                       {newFormType === "quiz" && (
-                        <div className="flex flex-col gap-3">
-                          <p className="text-xs text-zinc-500">Questions</p>
-                          {newQuestions.map((q, qi) => (
-                            <div key={qi} className="bg-zinc-800 border border-zinc-700 rounded-lg p-3 flex flex-col gap-2">
-                              {/* Question text + XP + remove */}
-                              <div className="flex gap-2 items-start">
-                                <input
-                                  value={q.question}
-                                  onChange={(e) => setNewQuestions((prev) => prev.map((x, i) => i === qi ? { ...x, question: e.target.value } : x))}
-                                  placeholder={`Question ${qi + 1}`}
-                                  className="flex-1 bg-zinc-700 text-white rounded px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
-                                />
-                                <div className="flex items-center gap-1 shrink-0">
-                                  <span className="text-xs text-zinc-500">XP</span>
-                                  <input
-                                    type="number"
-                                    value={q.xp}
-                                    min={1}
-                                    onChange={(e) => setNewQuestions((prev) => prev.map((x, i) => i === qi ? { ...x, xp: parseInt(e.target.value) || 1 } : x))}
-                                    className="w-14 bg-zinc-700 text-white rounded px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
-                                  />
-                                </div>
-                                {newQuestions.length > 1 && (
-                                  <button
-                                    onClick={() => setNewQuestions((prev) => prev.filter((_, i) => i !== qi))}
-                                    className="text-zinc-500 hover:text-rose-400 text-sm px-1 shrink-0"
-                                  >
-                                    ×
-                                  </button>
-                                )}
-                              </div>
-                              {/* Options */}
-                              <div className="flex flex-col gap-1 pl-1">
-                                {q.options.map((opt, oi) => (
-                                  <div key={oi} className="flex gap-2 items-center">
-                                    <input
-                                      type="radio"
-                                      name={`correct-${qi}`}
-                                      checked={q.correct_index === oi}
-                                      onChange={() => setNewQuestions((prev) => prev.map((x, i) => i === qi ? { ...x, correct_index: oi } : x))}
-                                      className="accent-emerald-500 shrink-0"
-                                      title="Mark as correct"
-                                    />
-                                    <input
-                                      value={opt}
-                                      onChange={(e) => setNewQuestions((prev) => prev.map((x, i) => {
-                                        if (i !== qi) return x;
-                                        const opts = [...x.options];
-                                        opts[oi] = e.target.value;
-                                        return { ...x, options: opts };
-                                      }))}
-                                      placeholder={`Option ${oi + 1}`}
-                                      className="flex-1 bg-zinc-700 text-white rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
-                                    />
-                                    {q.options.length > 2 && (
-                                      <button
-                                        onClick={() => setNewQuestions((prev) => prev.map((x, i) => {
-                                          if (i !== qi) return x;
-                                          const opts = x.options.filter((_, j) => j !== oi);
-                                          return { ...x, options: opts, correct_index: Math.min(x.correct_index, opts.length - 1) };
-                                        }))}
-                                        className="text-zinc-600 hover:text-rose-400 text-sm px-0.5 shrink-0"
-                                      >
-                                        ×
-                                      </button>
-                                    )}
-                                  </div>
-                                ))}
-                                {q.options.length < 4 && (
-                                  <button
-                                    onClick={() => setNewQuestions((prev) => prev.map((x, i) => i === qi ? { ...x, options: [...x.options, ""] } : x))}
-                                    className="text-xs text-zinc-600 hover:text-zinc-400 text-left mt-0.5 ml-5"
-                                  >
-                                    + option
-                                  </button>
-                                )}
-                              </div>
-                              <p className="text-xs text-zinc-600 pl-1">● = correct answer</p>
-                            </div>
-                          ))}
-                          <button
-                            onClick={() => setNewQuestions((prev) => [...prev, { question: "", options: ["", ""], correct_index: 0, xp: 5 }])}
-                            className="text-xs text-indigo-400 hover:text-indigo-300 text-left"
-                          >
-                            + Add question
-                          </button>
-                        </div>
+                        <QuizQuestionBuilder questions={newQuestions} setQuestions={setNewQuestions} />
                       )}
 
                       {/* Summary badge */}
@@ -1407,7 +1433,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                             if (newFormType === "checklist" && !newChecklistItems.some((i) => i.trim())) return true;
                             if (newFormType === "fields" && !newFieldNames.some((f) => f.trim())) return true;
                             if (newFormType === "composite" && !newCompositeItems.some((i) => i.trim())) return true;
-                            if (newFormType === "quiz" && (newQuestions.length === 0 || newQuestions.some((q) => !q.question.trim() || q.options.length < 2))) return true;
+                            if (newFormType === "quiz" && !questionsAreValid(newQuestions)) return true;
                             return false;
                           })()}
                           onClick={handleCreateAchievement}
@@ -1492,10 +1518,18 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                                       ))}
                                     </select>
                                   </div>
+                                  {ach.proof_type === "quiz" && (
+                                    <div className="flex flex-col gap-2 border-t border-zinc-800 pt-3">
+                                      <QuizQuestionBuilder questions={editQuestions} setQuestions={setEditQuestions} />
+                                      <span className="text-xs text-zinc-500">
+                                        Achievement XP will update to {editQuestions.reduce((s, q) => s + q.xp, 0)} (sum of question XP)
+                                      </span>
+                                    </div>
+                                  )}
                                   <div className="flex items-center gap-2">
                                     <button
-                                      disabled={achBusy === ach.id || !editTitle.trim()}
-                                      onClick={() => handleSaveAchievement(ach.id)}
+                                      disabled={achBusy === ach.id || !editTitle.trim() || (ach.proof_type === "quiz" && !questionsAreValid(editQuestions))}
+                                      onClick={() => handleSaveAchievement(ach)}
                                       className="cursor-pointer bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
                                     >
                                       {achBusy === ach.id ? "Saving…" : "Save"}
@@ -1541,6 +1575,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                                       setEditTitle(ach.title);
                                       setEditDesc(ach.description);
                                       setEditBlock(ach.block_number);
+                                      setEditQuestions((ach.proof_config?.questions as NewQuestion[] | undefined) ?? []);
                                     }}
                                     className="cursor-pointer shrink-0 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors"
                                   >

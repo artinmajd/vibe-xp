@@ -149,7 +149,7 @@ export default async function InstructorPage() {
   const { data: achievementRows } = activeSession
     ? await supabase
         .from("achievements")
-        .select("id, title, description, xp, is_secret, sort_order, block_number, is_unlocked")
+        .select("id, title, description, xp, is_secret, sort_order, block_number, is_unlocked, proof_type, proof_config")
         .eq("cohort_id", cohort.id)
         .eq("session_number", activeSession.session_number)
         .eq("is_active", true)
@@ -174,6 +174,8 @@ export default async function InstructorPage() {
     is_secret: a.is_secret,
     sort_order: a.sort_order ?? 0,
     block_number: a.block_number ?? 1,
+    proof_type: a.proof_type,
+    proof_config: (a.proof_config ?? {}) as Record<string, unknown>,
   }));
 
   return (

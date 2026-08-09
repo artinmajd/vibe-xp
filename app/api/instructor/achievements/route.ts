@@ -109,7 +109,8 @@ export async function DELETE(request: Request) {
   return NextResponse.json({ ok: true });
 }
 
-// PATCH — update a single achievement's title and/or description
+// PATCH — update a single achievement's title, description, block_number,
+// and/or (for quiz achievements) its proof_config questions + derived xp.
 export async function PATCH(request: Request) {
   if (!(await checkAuth())) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -118,7 +119,7 @@ export async function PATCH(request: Request) {
   const cohort = await getInstructorCohort();
   if (!cohort) return NextResponse.json({ error: "Pick a cohort first." }, { status: 400 });
 
-  const { id, title, description, block_number } = await request.json();
+  const { id, title, description, block_number, xp, proof_config } = await request.json();
   if (!id) {
     return NextResponse.json({ error: "Missing id." }, { status: 400 });
   }
@@ -128,6 +129,8 @@ export async function PATCH(request: Request) {
   if (title !== undefined) updates.title = title;
   if (description !== undefined) updates.description = description;
   if (block_number !== undefined) updates.block_number = block_number;
+  if (proof_config !== undefined) updates.proof_config = proof_config;
+  if (xp !== undefined) updates.xp = xp;
 
   const { error } = await supabase
     .from("achievements")
