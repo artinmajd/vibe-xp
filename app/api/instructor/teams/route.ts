@@ -128,15 +128,35 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 
-// DELETE /api/instructor/teams — kick a student out of their team
+// DELETE /api/instructor/teams — kick a student out of their team, or (with
+// team_id instead) delete the whole team permanently.
 export async function DELETE(req: NextRequest) {
   await requireInstructor();
-  const { student_id } = await req.json();
-  if (!student_id) {
-    return NextResponse.json({ error: "student_id is required" }, { status: 400 });
-  }
+  const { student_id, team_id } = await req.json();
 
   const supabase = createServerClient();
+
+  if (team_id) {
+    // Detach members (accounts survive, they just leave the team), then
+    // remove everything else that points at this team — submissions and
+    // manual XP grants have a required team_id, so they can't be left
+    // behind. instructor_actions.team_id is nullable, so it's cleared
+    // instead of deleted, to keep the audit log intact.
+    await supabase.from("students").update({ team_id: null }).eq("team_id", team_id);
+    await supabase.from("team_members").delete().eq("team_id", team_id);
+    await supabase.from("submissions").delete().eq("team_id", team_id);
+    await supabase.from("manual_xp_grants").delete().eq("team_id", team_id);
+    await supabase.from("instructor_actions").update({ team_id: null }).eq("team_id", team_id);
+
+    const { error } = await supabase.from("teams").delete().eq("id", team_id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (!student_id) {
+    return NextResponse.json({ error: "student_id or team_id is required" }, { status: 400 });
+  }
+
   await supabase.from("team_members").delete().eq("student_id", student_id);
   const { error } = await supabase.from("students").update({ team_id: null }).eq("id", student_id);
 

@@ -259,6 +259,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
   const [reassigning, setReassigning] = useState<string | null>(null);
   const [reassignTarget, setReassignTarget] = useState<Record<string, string>>({});
   const [kicking, setKicking] = useState<string | null>(null);
+  const [deletingTeam, setDeletingTeam] = useState<string | null>(null);
 
   // Cohort team limits (Teams tab settings)
   const [limitMaxTeams, setLimitMaxTeams] = useState(cohort.max_teams);
@@ -373,6 +374,24 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
       body: JSON.stringify({ student_id: studentId }),
     });
     setKicking(null);
+    router.refresh();
+  }
+
+  async function handleDeleteTeam(team: TeamInfo) {
+    const message =
+      team.members.length > 0
+        ? `Delete "${team.name}"? Its ${team.members.length} member${team.members.length === 1 ? "" : "s"} will be removed from the team — their accounts stay, but they'll need to join or be added to a new one. This team's earned XP and submissions will also be permanently deleted. This can't be undone.`
+        : `Delete "${team.name}" permanently? This can't be undone.`;
+    if (!confirm(message)) return;
+
+    setDeletingTeam(team.id);
+    await fetch("/api/instructor/teams", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ team_id: team.id }),
+    });
+    setDeletingTeam(null);
+    setEditingTeam(null);
     router.refresh();
   }
 
@@ -1647,6 +1666,13 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                       className="text-zinc-500 hover:text-zinc-300 text-xs px-2 py-2"
                     >
                       Cancel
+                    </button>
+                    <button
+                      disabled={deletingTeam === team.id}
+                      onClick={() => handleDeleteTeam(team)}
+                      className="ml-auto text-xs bg-zinc-800 hover:bg-rose-900 disabled:opacity-50 text-rose-500 hover:text-rose-300 px-3 py-2 rounded-lg transition-colors"
+                    >
+                      {deletingTeam === team.id ? "Deleting…" : "Delete team"}
                     </button>
                   </div>
                 ) : (
