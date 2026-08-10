@@ -369,10 +369,18 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
   const [deletingTeam, setDeletingTeam] = useState<string | null>(null);
 
   // New team creation (Teams tab)
+  const [creatingTeam, setCreatingTeam] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamEmoji, setNewTeamEmoji] = useState("");
   const [createTeamBusy, setCreateTeamBusy] = useState(false);
   const [createTeamError, setCreateTeamError] = useState<string | null>(null);
+
+  function resetCreateTeamForm() {
+    setCreatingTeam(false);
+    setNewTeamName("");
+    setNewTeamEmoji("");
+    setCreateTeamError(null);
+  }
 
   async function handleCreateTeam() {
     if (!newTeamName.trim()) return;
@@ -389,8 +397,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
       setCreateTeamError(body.error ?? "Something broke. Try again.");
       return;
     }
-    setNewTeamName("");
-    setNewTeamEmoji("");
+    resetCreateTeamForm();
     router.refresh();
   }
 
@@ -1696,46 +1703,64 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
             </div>
 
             {/* Create a new, empty team — members are added afterward via "Move to…" below */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-              <p className="text-sm font-semibold mb-3">Create Team</p>
-              <div className="flex items-end gap-2 flex-wrap">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">Emoji</label>
-                  <input
-                    type="text"
-                    value={newTeamEmoji}
-                    onChange={(e) => setNewTeamEmoji(e.target.value)}
-                    placeholder="🚀"
-                    className="w-16 bg-zinc-800 text-white rounded px-2 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 text-center"
-                  />
+            {!creatingTeam ? (
+              <button
+                onClick={() => setCreatingTeam(true)}
+                disabled={teams.length >= cohort.max_teams}
+                className="cursor-pointer self-start text-xs font-semibold bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-lg transition-colors"
+                title={teams.length >= cohort.max_teams ? `This cohort is at its ${cohort.max_teams}-team limit` : undefined}
+              >
+                + Create Team
+              </button>
+            ) : (
+              <div className="bg-zinc-900 border border-indigo-600/40 rounded-xl p-5">
+                <p className="text-sm font-bold text-white mb-4">Create Team</p>
+                <div className="flex items-end gap-2 flex-wrap">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-zinc-500">Emoji</label>
+                    <input
+                      type="text"
+                      value={newTeamEmoji}
+                      onChange={(e) => setNewTeamEmoji(e.target.value)}
+                      placeholder="🚀"
+                      className="w-16 bg-zinc-800 text-white rounded px-2 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 text-center"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1 flex-1 min-w-40">
+                    <label className="text-xs text-zinc-500">Team name</label>
+                    <input
+                      type="text"
+                      value={newTeamName}
+                      onChange={(e) => setNewTeamName(e.target.value)}
+                      placeholder="e.g. The Debuggers"
+                      autoFocus
+                      className="w-full bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <button
+                    disabled={createTeamBusy || !newTeamName.trim() || teams.length >= cohort.max_teams}
+                    onClick={handleCreateTeam}
+                    className="cursor-pointer bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors"
+                  >
+                    {createTeamBusy ? "Creating…" : "Create Team"}
+                  </button>
+                  <button
+                    onClick={resetCreateTeamForm}
+                    className="cursor-pointer text-zinc-500 hover:text-zinc-300 text-xs px-3 py-2.5 transition-colors"
+                  >
+                    Cancel
+                  </button>
                 </div>
-                <div className="flex flex-col gap-1 flex-1 min-w-40">
-                  <label className="text-xs text-zinc-500">Team name</label>
-                  <input
-                    type="text"
-                    value={newTeamName}
-                    onChange={(e) => setNewTeamName(e.target.value)}
-                    placeholder="e.g. The Debuggers"
-                    className="w-full bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500"
-                  />
-                </div>
-                <button
-                  disabled={createTeamBusy || !newTeamName.trim() || teams.length >= cohort.max_teams}
-                  onClick={handleCreateTeam}
-                  className="cursor-pointer bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors"
-                >
-                  {createTeamBusy ? "Creating…" : "Create Team"}
-                </button>
+                {teams.length >= cohort.max_teams && (
+                  <p className="text-xs text-amber-400 mt-2">
+                    This cohort is at its {cohort.max_teams}-team limit — raise it above in Team Limits to add more.
+                  </p>
+                )}
+                {createTeamError && (
+                  <p className="text-rose-400 text-xs mt-2">{createTeamError}</p>
+                )}
               </div>
-              {teams.length >= cohort.max_teams && (
-                <p className="text-xs text-amber-400 mt-2">
-                  This cohort is at its {cohort.max_teams}-team limit — raise it above in Team Limits to add more.
-                </p>
-              )}
-              {createTeamError && (
-                <p className="text-rose-400 text-xs mt-2">{createTeamError}</p>
-              )}
-            </div>
+            )}
 
             {teams.map((team) => (
               <div key={team.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
