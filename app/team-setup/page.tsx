@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import DarkBackground from "@/components/DarkBackground";
+import EmojiPickerInput from "@/components/EmojiPickerInput";
 
 type View = "choose" | "create" | "join";
 
@@ -127,10 +128,9 @@ export default function TeamSetupPage() {
                 <label className="text-sm font-medium text-white/70">
                   Team emoji <span className="text-white/30 font-normal">(optional)</span>
                 </label>
-                <input
-                  type="text"
+                <EmojiPickerInput
                   value={emoji}
-                  onChange={(e) => setEmoji(e.target.value)}
+                  onChange={setEmoji}
                   placeholder="e.g. 🚀"
                   className={inputClass}
                 />

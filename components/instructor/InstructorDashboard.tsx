@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import EmojiPickerInput from "@/components/EmojiPickerInput";
 
 type Member = { id: string; name: string };
 
@@ -1718,11 +1719,9 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                 <div className="flex items-end gap-2 flex-wrap">
                   <div className="flex flex-col gap-1">
                     <label className="text-xs text-zinc-500">Emoji</label>
-                    <input
-                      type="text"
+                    <EmojiPickerInput
                       value={newTeamEmoji}
-                      onChange={(e) => setNewTeamEmoji(e.target.value)}
-                      placeholder="🚀"
+                      onChange={setNewTeamEmoji}
                       className="w-16 bg-zinc-800 text-white rounded px-2 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 text-center"
                     />
                   </div>
@@ -1768,10 +1767,9 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
                 {/* Header — view or edit mode */}
                 {editingTeam === team.id ? (
                   <div className="flex items-center gap-2 mb-4">
-                    <input
-                      type="text"
+                    <EmojiPickerInput
                       value={editEmoji}
-                      onChange={(e) => setEditEmoji(e.target.value)}
+                      onChange={setEditEmoji}
                       placeholder="Emoji"
                       className="w-14 bg-zinc-800 text-white rounded px-2 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 text-center"
                     />
