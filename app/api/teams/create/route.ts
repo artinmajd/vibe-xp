@@ -1,19 +1,7 @@
 import { createServerClient } from "@/lib/supabase-server";
 import { createAuthClient } from "@/lib/supabase-auth";
+import { generateJoinCode } from "@/lib/team-codes";
 import { NextResponse } from "next/server";
-
-const WORDS = [
-  "NOVA", "BOLT", "APEX", "FLUX", "VEGA", "ZION", "ECHO", "HALO",
-  "IRIS", "JADE", "KITE", "LYNX", "MIST", "NEON", "ONYX", "PIKE",
-  "QUILL", "REEF", "SAGE", "TIDE", "URSA", "VALE", "WAVE", "XENO",
-  "YARN", "ZEST", "ARC", "BAY", "CREST", "DAWN",
-];
-
-function generateJoinCode(): string {
-  const word = WORDS[Math.floor(Math.random() * WORDS.length)];
-  const digits = String(Math.floor(1000 + Math.random() * 9000));
-  return `${word}-${digits}`;
-}
 
 export async function POST(request: Request) {
   const authClient = await createAuthClient();

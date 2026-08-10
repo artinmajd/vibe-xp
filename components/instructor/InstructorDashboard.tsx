@@ -368,6 +368,32 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
   const [kicking, setKicking] = useState<string | null>(null);
   const [deletingTeam, setDeletingTeam] = useState<string | null>(null);
 
+  // New team creation (Teams tab)
+  const [newTeamName, setNewTeamName] = useState("");
+  const [newTeamEmoji, setNewTeamEmoji] = useState("");
+  const [createTeamBusy, setCreateTeamBusy] = useState(false);
+  const [createTeamError, setCreateTeamError] = useState<string | null>(null);
+
+  async function handleCreateTeam() {
+    if (!newTeamName.trim()) return;
+    setCreateTeamBusy(true);
+    setCreateTeamError(null);
+    const res = await fetch("/api/instructor/teams/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newTeamName, emoji: newTeamEmoji }),
+    });
+    const body = await res.json().catch(() => ({}));
+    setCreateTeamBusy(false);
+    if (!res.ok) {
+      setCreateTeamError(body.error ?? "Something broke. Try again.");
+      return;
+    }
+    setNewTeamName("");
+    setNewTeamEmoji("");
+    router.refresh();
+  }
+
   // Cohort team limits (Teams tab settings)
   const [limitMaxTeams, setLimitMaxTeams] = useState(cohort.max_teams);
   const [limitMaxMembers, setLimitMaxMembers] = useState(cohort.max_team_members);
@@ -1666,6 +1692,48 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
               </div>
               {limitsError && (
                 <p className="text-rose-400 text-xs mt-3">{limitsError}</p>
+              )}
+            </div>
+
+            {/* Create a new, empty team — members are added afterward via "Move to…" below */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+              <p className="text-sm font-semibold mb-3">Create Team</p>
+              <div className="flex items-end gap-2 flex-wrap">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-zinc-500">Emoji</label>
+                  <input
+                    type="text"
+                    value={newTeamEmoji}
+                    onChange={(e) => setNewTeamEmoji(e.target.value)}
+                    placeholder="🚀"
+                    className="w-16 bg-zinc-800 text-white rounded px-2 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500 text-center"
+                  />
+                </div>
+                <div className="flex flex-col gap-1 flex-1 min-w-40">
+                  <label className="text-xs text-zinc-500">Team name</label>
+                  <input
+                    type="text"
+                    value={newTeamName}
+                    onChange={(e) => setNewTeamName(e.target.value)}
+                    placeholder="e.g. The Debuggers"
+                    className="w-full bg-zinc-800 text-white rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+                <button
+                  disabled={createTeamBusy || !newTeamName.trim() || teams.length >= cohort.max_teams}
+                  onClick={handleCreateTeam}
+                  className="cursor-pointer bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors"
+                >
+                  {createTeamBusy ? "Creating…" : "Create Team"}
+                </button>
+              </div>
+              {teams.length >= cohort.max_teams && (
+                <p className="text-xs text-amber-400 mt-2">
+                  This cohort is at its {cohort.max_teams}-team limit — raise it above in Team Limits to add more.
+                </p>
+              )}
+              {createTeamError && (
+                <p className="text-rose-400 text-xs mt-2">{createTeamError}</p>
               )}
             </div>
 
