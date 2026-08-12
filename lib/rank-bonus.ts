@@ -5,7 +5,15 @@ import { createServerClient } from "@/lib/supabase-server";
 // it was submitted — earlier submitted_at always ranks higher.
 //
 //   rank  = position by submitted_at among the achievement's confirmed subs
+//           that earned nonzero base XP
 //   bonus = max(0, X - rank), X = number of students in the cohort
+//
+// A submission with zero base XP (e.g. a quiz answered entirely wrong —
+// validateQuiz only checks the answer is well-formed, not correct, so a
+// wrong-but-valid quiz still gets auto_approved) doesn't compete for, or
+// receive, the speed bonus: being fast is worthless if the answer is wrong.
+// It's excluded from ranking entirely — later, correctly-answered
+// submissions still fill ranks 1, 2, 3… as if it were never submitted.
 //
 // Because a late-approved-but-early-submitted entry can outrank one already
 // confirmed, we re-rank the whole confirmed set on every confirmation (and on
@@ -32,16 +40,17 @@ export async function rerankAchievement(
     .eq("cohort_id", cohortId);
   const X = students ?? 1;
 
-  for (let i = 0; i < confirmed.length; i++) {
-    const s = confirmed[i];
-    const newRank = i + 1;
-    const newBonus = Math.max(0, X - newRank);
+  let rank = 0;
+  for (const s of confirmed) {
+    const base = (s.xp_awarded ?? 0) - (s.bonus_xp ?? 0);
+    const earnedNothing = base <= 0;
+    const newRank = earnedNothing ? null : ++rank;
+    const newBonus = earnedNothing ? 0 : Math.max(0, X - newRank!);
     if (s.submission_rank === newRank && s.bonus_xp === newBonus) continue;
 
-    const baseMultiplied = (s.xp_awarded ?? 0) - (s.bonus_xp ?? 0);
     await supabase
       .from("submissions")
-      .update({ submission_rank: newRank, bonus_xp: newBonus, xp_awarded: baseMultiplied + newBonus })
+      .update({ submission_rank: newRank, bonus_xp: newBonus, xp_awarded: base + newBonus })
       .eq("id", s.id);
   }
 }
