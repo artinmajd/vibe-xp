@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import EmojiPickerInput from "@/components/EmojiPickerInput";
+import { QuizQuestion, QuizAnswer, calcQuestionXP } from "@/lib/quiz-xp";
 
 type Member = { id: string; name: string };
 
@@ -15,9 +16,24 @@ type PendingSubmission = {
   achievement_xp: number;
   proof_type: string;
   proof_data: Record<string, unknown>;
+  proof_config: Record<string, unknown>;
   screenshot_url: string | null;
   submitted_at: string;
 };
+
+// Turns one quiz answer into a readable line for the instructor view —
+// the raw proof_data only has {question_index, chosen_index, time_elapsed},
+// which is meaningless without the achievement's own question/option text.
+function formatQuizAnswer(questions: QuizQuestion[], answer: QuizAnswer): string {
+  const q = questions[answer.question_index];
+  if (!q) return `Q${answer.question_index + 1}: (question no longer exists)`;
+
+  const chosenText = answer.chosen_index !== null ? q.options[answer.chosen_index] ?? "?" : "no answer";
+  const xpEarned = calcQuestionXP(q, answer);
+  const verdict = xpEarned > 0 ? `✓ correct, +${xpEarned} XP` : "✗ wrong";
+
+  return `Q${answer.question_index + 1}: "${q.question}" → chose "${chosenText}" — ${verdict} (${answer.time_elapsed}s)`;
+}
 
 type TeamInfo = {
   id: string;
@@ -249,6 +265,23 @@ function SubmissionGroups({
                     ) : null;
                   })()}
                   {(() => {
+                    // Quiz answers are structured records ({question_index,
+                    // chosen_index, time_elapsed}), not strings — they need
+                    // the achievement's own questions/options to make sense,
+                    // so they're rendered separately from everything else.
+                    if (s.proof_type === "quiz" && Array.isArray(s.proof_data.answers)) {
+                      const questions = (s.proof_config.questions as QuizQuestion[] | undefined) ?? [];
+                      const answers = s.proof_data.answers as QuizAnswer[];
+                      if (answers.length === 0) return null;
+                      return (
+                        <div className="bg-zinc-800 rounded-lg p-3 text-xs text-zinc-300 flex flex-col gap-1">
+                          {answers.map((answer, i) => (
+                            <div key={i}>{formatQuizAnswer(questions, answer)}</div>
+                          ))}
+                        </div>
+                      );
+                    }
+
                     const displayData = Object.fromEntries(
                       Object.entries(s.proof_data).filter(([k]) => k !== "screenshot_urls")
                     );

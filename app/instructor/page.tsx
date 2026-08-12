@@ -37,7 +37,7 @@ export default async function InstructorPage() {
       id, team_id, student_id, proof_data, screenshot_url, submitted_at,
       teams(name),
       students(display_name),
-      achievements(title, xp, proof_type)
+      achievements(title, xp, proof_type, proof_config)
     `;
 
   const { data: pendingRaw } = cohortTeamIds.length
@@ -60,7 +60,7 @@ export default async function InstructorPage() {
 
   type SubRow = NonNullable<typeof pendingRaw>[number];
   function mapSubmission(s: SubRow) {
-    const ach = s.achievements as unknown as { title: string; xp: number; proof_type: string } | null;
+    const ach = s.achievements as unknown as { title: string; xp: number; proof_type: string; proof_config: Record<string, unknown> } | null;
     return {
       id: s.id,
       team_id: s.team_id,
@@ -70,6 +70,7 @@ export default async function InstructorPage() {
       achievement_xp: ach?.xp ?? 0,
       proof_type: ach?.proof_type ?? "",
       proof_data: s.proof_data as Record<string, unknown>,
+      proof_config: ach?.proof_config ?? {},
       screenshot_url: s.screenshot_url,
       submitted_at: s.submitted_at,
     };
