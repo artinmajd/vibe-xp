@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ALLOWED_UPLOAD_TYPES_ACCEPT } from "@/lib/upload-constraints";
 
 type CohortStudent = { id: string; name: string; team_name: string | null };
@@ -13,6 +13,7 @@ type Message = {
   file_url: string | null;
   file_name: string | null;
   file_type: string | null;
+  read_by_instructor: boolean;
   created_at: string;
 };
 
@@ -22,8 +23,17 @@ function formatTime(iso: string) {
 
 const ALL_STUDENTS = "__all__";
 
-export default function MessagesTab({ cohortStudents }: { cohortStudents: CohortStudent[] }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+export default function MessagesTab({
+  cohortStudents,
+  messages,
+  onRefresh,
+  onSelectStudent,
+}: {
+  cohortStudents: CohortStudent[];
+  messages: Message[];
+  onRefresh: () => void;
+  onSelectStudent: (studentId: string) => void;
+}) {
   const [selected, setSelected] = useState<string>(ALL_STUDENTS);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -35,19 +45,27 @@ export default function MessagesTab({ cohortStudents }: { cohortStudents: Cohort
   const fileInputRef = useRef<HTMLInputElement>(null);
   const atBottomRef = useRef(true);
 
-  const fetchMessages = useCallback(async () => {
-    const res = await fetch("/api/instructor/messages");
-    if (res.ok) {
-      const { messages: msgs } = await res.json();
-      setMessages(msgs);
+  // Per-student unread count — drives the red dot in the recipient list.
+  const unreadByStudent = messages.reduce<Record<string, number>>((acc, m) => {
+    if (m.sender === "student" && !m.read_by_instructor && m.student_id) {
+      acc[m.student_id] = (acc[m.student_id] ?? 0) + 1;
     }
-  }, []);
+    return acc;
+  }, {});
 
+  function selectRecipient(id: string) {
+    setSelected(id);
+    atBottomRef.current = true;
+  }
+
+  // Mark the open thread's unread messages as read — both right when it's
+  // selected, and if a new one arrives while it's already open.
   useEffect(() => {
-    fetchMessages();
-    const id = setInterval(fetchMessages, 4000);
-    return () => clearInterval(id);
-  }, [fetchMessages]);
+    if (selected !== ALL_STUDENTS && (unreadByStudent[selected] ?? 0) > 0) {
+      onSelectStudent(selected);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, messages]);
 
   // Thread shown for the selected recipient:
   //  - "All Students": only broadcasts (student_id === null)
@@ -84,7 +102,7 @@ export default function MessagesTab({ cohortStudents }: { cohortStudents: Cohort
     });
     setSending(false);
     atBottomRef.current = true;
-    fetchMessages();
+    onRefresh();
   }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -119,7 +137,7 @@ export default function MessagesTab({ cohortStudents }: { cohortStudents: Cohort
     setUploading(false);
     e.target.value = "";
     atBottomRef.current = true;
-    fetchMessages();
+    onRefresh();
   }
 
   const busy = sending || uploading;
@@ -130,7 +148,7 @@ export default function MessagesTab({ cohortStudents }: { cohortStudents: Cohort
       {/* Recipient list */}
       <div className="w-56 shrink-0 bg-zinc-900 border border-zinc-800 rounded-xl overflow-y-auto">
         <button
-          onClick={() => setSelected(ALL_STUDENTS)}
+          onClick={() => selectRecipient(ALL_STUDENTS)}
           className={`w-full text-left px-4 py-3 text-sm border-b border-zinc-800 transition-colors ${
             selected === ALL_STUDENTS ? "bg-indigo-600/20 text-white" : "text-zinc-400 hover:bg-zinc-800"
           }`}
@@ -143,12 +161,17 @@ export default function MessagesTab({ cohortStudents }: { cohortStudents: Cohort
           cohortStudents.map((s) => (
             <button
               key={s.id}
-              onClick={() => setSelected(s.id)}
+              onClick={() => selectRecipient(s.id)}
               className={`w-full text-left px-4 py-3 text-sm border-b border-zinc-800 transition-colors ${
                 selected === s.id ? "bg-indigo-600/20 text-white" : "text-zinc-400 hover:bg-zinc-800"
               }`}
             >
-              <p className="truncate">{s.name}</p>
+              <div className="flex items-center gap-1.5">
+                {unreadByStudent[s.id] > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" title={`${unreadByStudent[s.id]} unread`} />
+                )}
+                <p className="truncate">{s.name}</p>
+              </div>
               {s.team_name && <p className="text-xs text-zinc-600 truncate">{s.team_name}</p>}
             </button>
           ))

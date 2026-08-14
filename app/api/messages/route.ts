@@ -75,6 +75,7 @@ export async function POST(request: Request) {
     file_url: file_url ?? null,
     file_name: file_name ?? null,
     file_type: file_type ?? null,
+    read_by_instructor: false,
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

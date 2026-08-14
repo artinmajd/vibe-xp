@@ -184,6 +184,18 @@ type AchievementRow = {
 
 type CohortStudent = { id: string; name: string; team_name: string | null };
 
+type InstructorMessageRow = {
+  id: string;
+  student_id: string | null;
+  sender: "instructor" | "student";
+  content: string | null;
+  file_url: string | null;
+  file_name: string | null;
+  file_type: string | null;
+  read_by_instructor: boolean;
+  created_at: string;
+};
+
 type Props = {
   pending: PendingSubmission[];
   approved: PendingSubmission[];
@@ -329,6 +341,38 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
   const [tab, setTab] = useState<Tab>("submissions");
   const [chatEnabled, setChatEnabled] = useState(initialChatEnabled);
   const [groupBy, setGroupBy] = useState<GroupBy>("team");
+
+  // Instructor <-> student messages — fetched/polled here (not inside
+  // MessagesTab) so the tab bar's unread badge stays live no matter which
+  // tab is currently open, same as the Submissions tab's pending count.
+  const [instructorMessages, setInstructorMessages] = useState<InstructorMessageRow[]>([]);
+
+  const fetchInstructorMessages = React.useCallback(async () => {
+    const res = await fetch("/api/instructor/messages");
+    if (res.ok) {
+      const { messages } = await res.json();
+      setInstructorMessages(messages);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchInstructorMessages();
+    const id = setInterval(fetchInstructorMessages, 4000);
+    return () => clearInterval(id);
+  }, [fetchInstructorMessages]);
+
+  async function handleMarkStudentRead(studentId: string) {
+    setInstructorMessages((prev) =>
+      prev.map((m) => (m.student_id === studentId && m.sender === "student" ? { ...m, read_by_instructor: true } : m))
+    );
+    await fetch("/api/instructor/messages", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ student_id: studentId }),
+    });
+  }
+
+  const unreadMessagesTotal = instructorMessages.filter((m) => m.sender === "student" && !m.read_by_instructor).length;
 
   // Session tab: local order for drag-and-drop (synced from server below)
   const [localSessions, setLocalSessions] = useState<SessionInfo[]>(sessions);
@@ -1032,6 +1076,8 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
           >
             {t === "submissions"
               ? `Submissions${pending.length > 0 ? ` (${pending.length} pending)` : ""}`
+              : t === "messages"
+              ? `Messages${unreadMessagesTotal > 0 ? ` (${unreadMessagesTotal} new)` : ""}`
               : t === "leaderboard"
               ? "Leaderboard"
               : t === "achievements"
@@ -2023,7 +2069,14 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
         )}
 
         {/* ── Messages ── */}
-        {tab === "messages" && <MessagesTab cohortStudents={cohortStudents} />}
+        {tab === "messages" && (
+          <MessagesTab
+            cohortStudents={cohortStudents}
+            messages={instructorMessages}
+            onRefresh={fetchInstructorMessages}
+            onSelectStudent={handleMarkStudentRead}
+          />
+        )}
 
         {/* ── Leaderboard preview ── */}
         {tab === "leaderboard" && (

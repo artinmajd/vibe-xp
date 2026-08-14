@@ -16,7 +16,7 @@ export async function GET() {
 
   const { data: messages, error } = await supabase
     .from("instructor_messages")
-    .select("id, student_id, sender, content, file_url, file_name, file_type, created_at")
+    .select("id, student_id, sender, content, file_url, file_name, file_type, read_by_instructor, created_at")
     .eq("cohort_id", cohort.id)
     .order("created_at", { ascending: true })
     .limit(1000);
@@ -70,7 +70,32 @@ export async function POST(request: Request) {
     file_url: file_url ?? null,
     file_name: file_name ?? null,
     file_type: file_type ?? null,
+    read_by_instructor: true,
   });
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ ok: true });
+}
+
+// PATCH — mark one student's messages to the instructor as read (opening
+// their thread in the Messages tab clears their unread badge).
+export async function PATCH(request: Request) {
+  await requireInstructor();
+  const cohort = await getInstructorCohort();
+  if (!cohort) return NextResponse.json({ error: "Pick a cohort first." }, { status: 400 });
+
+  const { student_id } = await request.json() as { student_id?: string };
+  if (!student_id) return NextResponse.json({ error: "Missing student_id." }, { status: 400 });
+
+  const supabase = createServerClient();
+  const { error } = await supabase
+    .from("instructor_messages")
+    .update({ read_by_instructor: true })
+    .eq("cohort_id", cohort.id)
+    .eq("student_id", student_id)
+    .eq("sender", "student")
+    .eq("read_by_instructor", false);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
