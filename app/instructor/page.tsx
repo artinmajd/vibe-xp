@@ -146,6 +146,20 @@ export default async function InstructorPage() {
 
   const teamlessStudents = (teamlessRaw ?? []).map((s) => ({ id: s.id, name: s.display_name }));
 
+  // Every student in this cohort (any team status) — for the Messages tab's
+  // per-student recipient list.
+  const { data: cohortStudentsRaw } = await supabase
+    .from("students")
+    .select("id, display_name, teams(name)")
+    .eq("cohort_id", cohort.id)
+    .order("display_name");
+
+  const cohortStudents = (cohortStudentsRaw ?? []).map((s) => ({
+    id: s.id,
+    name: s.display_name,
+    team_name: (s.teams as unknown as { name: string } | null)?.name ?? null,
+  }));
+
   // Achievements for the active session — per-cohort, is_unlocked on the row.
   const { data: achievementRows } = activeSession
     ? await supabase
@@ -185,6 +199,7 @@ export default async function InstructorPage() {
       approved={approved}
       teams={teams}
       teamlessStudents={teamlessStudents}
+      cohortStudents={cohortStudents}
       sessions={sessions}
       activeSession={activeSession}
       nextAchievement={nextAchievement ? { id: nextAchievement.id, title: nextAchievement.title } : null}

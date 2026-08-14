@@ -178,9 +178,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Remove the cohort's achievements, then the cohort. (An empty cohort has
-    // no teams, so no submissions reference these achievements.)
+    // Remove the cohort's achievements and messages, then the cohort. (An
+    // empty cohort has no teams, so no submissions reference these
+    // achievements; broadcasts can still exist even with 0 students, so
+    // instructor_messages needs its own cleanup.)
     await supabase.from("achievements").delete().eq("cohort_id", cohort_id);
+    await supabase.from("instructor_messages").delete().eq("cohort_id", cohort_id);
     const { error } = await supabase.from("cohorts").delete().eq("id", cohort_id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });

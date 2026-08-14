@@ -1,16 +1,7 @@
 import { createServerClient } from "@/lib/supabase-server";
 import { createAuthClient } from "@/lib/supabase-auth";
+import { MAX_UPLOAD_BYTES, ALLOWED_UPLOAD_TYPES, UPLOAD_TYPE_ERROR } from "@/lib/upload-constraints";
 import { NextResponse } from "next/server";
-
-const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
-
-const ALLOWED_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/gif",
-  "application/pdf",
-];
 
 export async function POST(request: Request) {
   const authClient = await createAuthClient();
@@ -21,15 +12,12 @@ export async function POST(request: Request) {
   const file = formData.get("file") as File | null;
   if (!file) return NextResponse.json({ error: "No file provided." }, { status: 400 });
 
-  if (file.size > MAX_BYTES) {
+  if (file.size > MAX_UPLOAD_BYTES) {
     return NextResponse.json({ error: "File too large. Max 10 MB." }, { status: 400 });
   }
 
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return NextResponse.json(
-      { error: "Unsupported file type. PNG, JPEG, WebP, GIF, or PDF only." },
-      { status: 400 }
-    );
+  if (!ALLOWED_UPLOAD_TYPES.includes(file.type)) {
+    return NextResponse.json({ error: UPLOAD_TYPE_ERROR }, { status: 400 });
   }
 
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";

@@ -13,8 +13,9 @@ type Message = {
   created_at: string;
 };
 
-type Broadcast = {
+type InstructorMessage = {
   id: string;
+  sender: "instructor" | "student";
   content: string | null;
   file_url: string | null;
   file_name: string | null;
@@ -140,12 +141,12 @@ export default function TeamChat({
 }) {
   const [tab, setTab] = useState<"team" | "instructor">("team");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
+  const [instructorThread, setInstructorThread] = useState<InstructorMessage[]>([]);
   const [collapsed, setCollapsed] = useState(true);
 
   // Separate unread tracking per tab
   const [lastSeenTeam, setLastSeenTeam] = useState<number | null>(null);
-  const [lastSeenBroadcast, setLastSeenBroadcast] = useState<number | null>(null);
+  const [lastSeenInstructor, setLastSeenInstructor] = useState<number | null>(null);
 
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -153,9 +154,15 @@ export default function TeamChat({
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  const [instructorText, setInstructorText] = useState("");
+  const [instructorSending, setInstructorSending] = useState(false);
+  const [instructorUploading, setInstructorUploading] = useState(false);
+  const [instructorUploadError, setInstructorUploadError] = useState<string | null>(null);
+
   const teamListRef = useRef<HTMLDivElement>(null);
-  const broadcastListRef = useRef<HTMLDivElement>(null);
+  const instructorListRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const instructorFileInputRef = useRef<HTMLInputElement>(null);
   const atBottomRef = useRef(true);
 
   const fetchMessages = useCallback(async () => {
@@ -167,30 +174,30 @@ export default function TeamChat({
     }
   }, [teamId]);
 
-  const fetchBroadcasts = useCallback(async () => {
-    const res = await fetch("/api/broadcasts");
+  const fetchInstructorThread = useCallback(async () => {
+    const res = await fetch("/api/messages");
     if (res.ok) {
-      const { broadcasts: items } = await res.json();
-      setBroadcasts(items);
-      setLastSeenBroadcast((prev) => prev === null ? items.length : prev);
+      const { messages: items } = await res.json();
+      setInstructorThread(items);
+      setLastSeenInstructor((prev) => prev === null ? items.length : prev);
     }
   }, []);
 
   useEffect(() => {
     fetchMessages();
-    fetchBroadcasts();
+    fetchInstructorThread();
     const msgId = setInterval(fetchMessages, 3000);
-    const bcastId = setInterval(fetchBroadcasts, 5000);
-    return () => { clearInterval(msgId); clearInterval(bcastId); };
-  }, [fetchMessages, fetchBroadcasts]);
+    const instId = setInterval(fetchInstructorThread, 4000);
+    return () => { clearInterval(msgId); clearInterval(instId); };
+  }, [fetchMessages, fetchInstructorThread]);
 
   // Scroll active list to bottom when new items arrive
   useEffect(() => {
     if (!collapsed && atBottomRef.current) {
-      const ref = tab === "team" ? teamListRef : broadcastListRef;
+      const ref = tab === "team" ? teamListRef : instructorListRef;
       if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
     }
-  }, [messages, broadcasts, collapsed, tab]);
+  }, [messages, instructorThread, collapsed, tab]);
 
   function onScroll(ref: React.RefObject<HTMLDivElement | null>) {
     const el = ref.current;
@@ -208,7 +215,7 @@ export default function TeamChat({
 
   function markTabSeen(t: "team" | "instructor") {
     if (t === "team") setLastSeenTeam(messages.length);
-    else setLastSeenBroadcast(broadcasts.length);
+    else setLastSeenInstructor(instructorThread.length);
   }
 
   function handleTabChange(t: "team" | "instructor") {
@@ -216,6 +223,53 @@ export default function TeamChat({
     markTabSeen(t);
     atBottomRef.current = true;
   }
+
+  async function sendInstructorText() {
+    const trimmed = instructorText.trim();
+    if (!trimmed || instructorSending) return;
+    setInstructorSending(true);
+    setInstructorText("");
+    await fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: trimmed }),
+    });
+    setInstructorSending(false);
+    atBottomRef.current = true;
+    fetchInstructorThread();
+  }
+
+  async function handleInstructorFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setInstructorUploadError(null);
+    setInstructorUploading(true);
+
+    const fd = new FormData();
+    fd.append("file", file);
+    const uploadRes = await fetch("/api/chat/upload", { method: "POST", body: fd });
+    const uploadBody = await uploadRes.json();
+
+    if (!uploadRes.ok) {
+      setInstructorUploadError(uploadBody.error ?? "Upload failed.");
+      setInstructorUploading(false);
+      e.target.value = "";
+      return;
+    }
+
+    await fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ file_url: uploadBody.url, file_name: uploadBody.name, file_type: uploadBody.type }),
+    });
+
+    setInstructorUploading(false);
+    e.target.value = "";
+    atBottomRef.current = true;
+    fetchInstructorThread();
+  }
+
+  const instructorBusy = instructorSending || instructorUploading;
 
   async function sendText() {
     const trimmed = text.trim();
@@ -264,8 +318,8 @@ export default function TeamChat({
 
   const busy = sending || uploading;
   const unreadTeam = collapsed || tab !== "team" ? Math.max(0, messages.length - (lastSeenTeam ?? messages.length)) : 0;
-  const unreadBroadcast = collapsed || tab !== "instructor" ? Math.max(0, broadcasts.length - (lastSeenBroadcast ?? broadcasts.length)) : 0;
-  const totalUnread = unreadTeam + unreadBroadcast;
+  const unreadInstructor = collapsed || tab !== "instructor" ? Math.max(0, instructorThread.length - (lastSeenInstructor ?? instructorThread.length)) : 0;
+  const totalUnread = unreadTeam + unreadInstructor;
 
   return (
     <>
@@ -285,7 +339,7 @@ export default function TeamChat({
             {/* Tab bar */}
             <div className="shrink-0 flex border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               {(["team", "instructor"] as const).map((t) => {
-                const unread = t === "team" ? unreadTeam : unreadBroadcast;
+                const unread = t === "team" ? unreadTeam : unreadInstructor;
                 return (
                   <button
                     key={t}
@@ -385,74 +439,121 @@ export default function TeamChat({
 
             {/* ── Instructor tab ── */}
             {tab === "instructor" && (
-              <div
-                ref={broadcastListRef}
-                onScroll={() => onScroll(broadcastListRef)}
-                className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"
-              >
-                {broadcasts.length === 0 ? (
-                  <div className="flex-1 flex items-center justify-center py-12">
-                    <p className="text-xs text-white/20 text-center leading-relaxed">
-                      No announcements yet.<br />Check back during class!
-                    </p>
-                  </div>
-                ) : (
-                  broadcasts.map((b) => {
-                    const isImage = b.file_type?.startsWith("image/");
-                    return (
-                      <div key={b.id} className="flex flex-col gap-1">
-                        <div className="flex items-center gap-1.5 px-1">
-                          <span className="text-xs font-semibold text-amber-300/80">📢 Instructor</span>
-                          <span className="text-xs text-white/25">{formatTime(b.created_at)}</span>
-                        </div>
-                        <div
-                          className="rounded-2xl rounded-tl-sm px-3 py-2 flex flex-col gap-2"
-                          style={{ background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)" }}
-                        >
-                          {b.content && (
-                            <p className="text-sm text-white/90 whitespace-pre-wrap break-words leading-relaxed">
-                              {b.content}
-                            </p>
-                          )}
-                          {b.file_url && isImage && (
-                            <div className="flex flex-col gap-1.5">
-                              <img
-                                src={b.file_url}
-                                alt={b.file_name ?? "image"}
-                                className="max-w-full rounded-xl cursor-zoom-in object-contain"
-                                style={{ maxHeight: "180px", background: "rgba(0,0,0,0.2)" }}
-                                onClick={() => setLightbox(b.file_url!)}
-                              />
-                              <button
-                                onClick={() => forceDownload(b.file_url!, b.file_name ?? "image")}
-                                className="text-xs text-amber-300/60 hover:text-amber-300 text-left flex items-center gap-1 transition-colors"
-                              >
-                                ↓ {b.file_name ?? "Download"}
-                              </button>
-                            </div>
-                          )}
-                          {b.file_url && !isImage && (
-                            <div className="flex items-center gap-2.5 py-0.5">
-                              <span className="text-xl shrink-0">📎</span>
-                              <div className="flex flex-col gap-0.5 min-w-0">
-                                <span className="text-xs font-medium text-white/80 truncate" style={{ maxWidth: "160px" }} title={b.file_name ?? undefined}>
-                                  {b.file_name ?? "File"}
-                                </span>
+              <>
+                <div
+                  ref={instructorListRef}
+                  onScroll={() => onScroll(instructorListRef)}
+                  className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"
+                >
+                  {instructorThread.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center py-12">
+                      <p className="text-xs text-white/20 text-center leading-relaxed">
+                        No messages yet.<br />Say hi to your instructor, or check back during class!
+                      </p>
+                    </div>
+                  ) : (
+                    instructorThread.map((m) => {
+                      const isImage = m.file_type?.startsWith("image/");
+                      const isMine = m.sender === "student";
+                      return (
+                        <div key={m.id} className={`flex flex-col gap-1 ${isMine ? "items-end" : "items-start"}`}>
+                          <div className="flex items-center gap-1.5 px-1">
+                            {!isMine && <span className="text-xs font-semibold text-amber-300/80">📢 Instructor</span>}
+                            <span className="text-xs text-white/25">{formatTime(m.created_at)}</span>
+                          </div>
+                          <div
+                            className={`max-w-[88%] rounded-2xl px-3 py-2 flex flex-col gap-2 ${isMine ? "rounded-tr-sm" : "rounded-tl-sm"}`}
+                            style={isMine
+                              ? { background: "rgba(99,102,241,0.3)" }
+                              : { background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)" }
+                            }
+                          >
+                            {m.content && (
+                              <p className="text-sm text-white/90 whitespace-pre-wrap break-words leading-relaxed">
+                                {m.content}
+                              </p>
+                            )}
+                            {m.file_url && isImage && (
+                              <div className="flex flex-col gap-1.5">
+                                <img
+                                  src={m.file_url}
+                                  alt={m.file_name ?? "image"}
+                                  className="max-w-full rounded-xl cursor-zoom-in object-contain"
+                                  style={{ maxHeight: "180px", background: "rgba(0,0,0,0.2)" }}
+                                  onClick={() => setLightbox(m.file_url!)}
+                                />
                                 <button
-                                  onClick={() => forceDownload(b.file_url!, b.file_name ?? "file")}
-                                  className="text-xs text-amber-300/60 hover:text-amber-300 text-left transition-colors"
+                                  onClick={() => forceDownload(m.file_url!, m.file_name ?? "image")}
+                                  className={`text-xs text-left flex items-center gap-1 transition-colors ${isMine ? "text-indigo-300/70 hover:text-indigo-300" : "text-amber-300/60 hover:text-amber-300"}`}
                                 >
-                                  Download
+                                  ↓ {m.file_name ?? "Download"}
                                 </button>
                               </div>
-                            </div>
-                          )}
+                            )}
+                            {m.file_url && !isImage && (
+                              <div className="flex items-center gap-2.5 py-0.5">
+                                <span className="text-xl shrink-0">📎</span>
+                                <div className="flex flex-col gap-0.5 min-w-0">
+                                  <span className="text-xs font-medium text-white/80 truncate" style={{ maxWidth: "160px" }} title={m.file_name ?? undefined}>
+                                    {m.file_name ?? "File"}
+                                  </span>
+                                  <button
+                                    onClick={() => forceDownload(m.file_url!, m.file_name ?? "file")}
+                                    className={`text-xs text-left transition-colors ${isMine ? "text-indigo-300/70 hover:text-indigo-300" : "text-amber-300/60 hover:text-amber-300"}`}
+                                  >
+                                    Download
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })
+                      );
+                    })
+                  )}
+                </div>
+
+                {instructorUploadError && (
+                  <div className="px-4 py-2 shrink-0 flex items-center justify-between" style={{ background: "rgba(255,50,50,0.08)", borderTop: "1px solid rgba(255,50,50,0.2)" }}>
+                    <span className="text-xs text-rose-400">{instructorUploadError}</span>
+                    <button onClick={() => setInstructorUploadError(null)} className="text-rose-600 hover:text-rose-400 text-base ml-2 leading-none">×</button>
+                  </div>
                 )}
-              </div>
+
+                <div className="shrink-0 px-3 py-3 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                  <div className="flex gap-2 items-end">
+                    <textarea
+                      value={instructorText}
+                      onChange={(e) => setInstructorText(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendInstructorText(); } }}
+                      placeholder="Message your instructor…"
+                      rows={1}
+                      className="flex-1 resize-none rounded-xl px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50 text-white/90 placeholder-white/20"
+                      style={{ background: "rgba(255,255,255,0.06)", maxHeight: "80px" }}
+                    />
+                    <input ref={instructorFileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf" className="hidden" onChange={handleInstructorFileChange} />
+                    <button
+                      onClick={() => instructorFileInputRef.current?.click()}
+                      disabled={instructorBusy}
+                      title="Attach file"
+                      className="shrink-0 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 transition-colors disabled:opacity-40"
+                      style={{ background: "rgba(255,255,255,0.06)" }}
+                    >
+                      {instructorUploading ? <span className="text-xs text-white/40">…</span> : <span className="text-base">📎</span>}
+                    </button>
+                    <button
+                      onClick={sendInstructorText}
+                      disabled={!instructorText.trim() || instructorBusy}
+                      title="Send (Enter)"
+                      className="shrink-0 w-9 h-9 flex items-center justify-center rounded-xl transition-all disabled:opacity-30"
+                      style={{ background: instructorText.trim() && !instructorBusy ? "rgba(251,191,36,0.5)" : "rgba(255,255,255,0.06)" }}
+                    >
+                      <span className="text-base leading-none">↑</span>
+                    </button>
+                  </div>
+                  <p className="text-xs text-white/15 mt-1.5 px-1">Enter to send · Shift+Enter for new line</p>
+                </div>
+              </>
             )}
           </div>
         )}
