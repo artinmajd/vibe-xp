@@ -526,7 +526,7 @@ export default function TeamChat({
                       value={instructorText}
                       onChange={(e) => setInstructorText(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendInstructorText(); } }}
-                      placeholder="Message your instructor…"
+                      placeholder="Message instructor…"
                       rows={1}
                       className="flex-1 resize-none rounded-xl px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50 text-white/90 placeholder-white/20"
                       style={{ background: "rgba(255,255,255,0.06)", maxHeight: "80px" }}
