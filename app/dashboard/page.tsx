@@ -383,7 +383,13 @@ export default async function DashboardPage() {
                       return isLocked ? (
                         <div key={achievement.id}>{card}</div>
                       ) : (
-                        <Link key={achievement.id} href={`/dashboard/achievement/${achievement.slug}`}>
+                        // prefetch={false} — Next.js prefetches every visible Link by
+                        // default, and this one renders per achievement (15-30+ per
+                        // dashboard, re-triggered on every 5-10s poll refresh). That
+                        // silently fetched more invocations than every real click ever
+                        // would — 129K/week in production, the single largest line item
+                        // in Vercel's usage breakdown.
+                        <Link key={achievement.id} href={`/dashboard/achievement/${achievement.slug}`} prefetch={false}>
                           {card}
                         </Link>
                       );
