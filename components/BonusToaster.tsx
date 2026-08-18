@@ -7,7 +7,7 @@ type Toast = { key: number; headline: string; detail: string; tone: "good" | "do
 type SeenMap = Record<string, { rank: number; bonus: number }>;
 
 const SEEN_KEY = "seen-confirmations";
-const POLL_MS = 3000;
+const POLL_MS = 8000;
 const TOAST_MS = 15000; // stay on screen 15s
 const EXIT_MS = 400;    // matches .animate-toast-out duration
 

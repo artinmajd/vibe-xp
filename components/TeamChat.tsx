@@ -23,6 +23,11 @@ type InstructorMessage = {
   created_at: string;
 };
 
+// While the chat panel is collapsed, poll much less often — the badge count
+// still updates (just with more delay), which matters a lot less than
+// invocation volume for a widget that's closed most of a class session.
+const SLOW_POLL_MS = 20000;
+
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
@@ -183,13 +188,16 @@ export default function TeamChat({
     }
   }, []);
 
+  // Poll fast while the panel is open (so chatting feels live), but drop way
+  // down while collapsed — the badge count still updates, just with more
+  // delay, since most of a class session is spent with this closed.
   useEffect(() => {
     fetchMessages();
     fetchInstructorThread();
-    const msgId = setInterval(fetchMessages, 3000);
-    const instId = setInterval(fetchInstructorThread, 4000);
+    const msgId = setInterval(fetchMessages, collapsed ? SLOW_POLL_MS : 3000);
+    const instId = setInterval(fetchInstructorThread, collapsed ? SLOW_POLL_MS : 4000);
     return () => { clearInterval(msgId); clearInterval(instId); };
-  }, [fetchMessages, fetchInstructorThread]);
+  }, [fetchMessages, fetchInstructorThread, collapsed]);
 
   // Scroll active list to bottom when new items arrive
   useEffect(() => {

@@ -357,7 +357,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
 
   useEffect(() => {
     fetchInstructorMessages();
-    const id = setInterval(fetchInstructorMessages, 4000);
+    const id = setInterval(fetchInstructorMessages, 8000);
     return () => clearInterval(id);
   }, [fetchInstructorMessages]);
 
@@ -430,7 +430,7 @@ export default function InstructorDashboard({ pending, approved, teams, teamless
   }, [sessionAchievements]);
 
   useEffect(() => {
-    const id = setInterval(() => router.refresh(), 5000);
+    const id = setInterval(() => router.refresh(), 10000);
     return () => clearInterval(id);
   }, [router]);
 

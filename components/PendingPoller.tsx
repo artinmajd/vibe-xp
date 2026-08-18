@@ -7,7 +7,7 @@ export default function PendingPoller() {
   const router = useRouter();
 
   useEffect(() => {
-    const id = setInterval(() => router.refresh(), 5000);
+    const id = setInterval(() => router.refresh(), 10000);
     return () => clearInterval(id);
   }, [router]);
 
